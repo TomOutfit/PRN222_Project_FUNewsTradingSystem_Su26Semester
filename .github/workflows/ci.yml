@@ -1,0 +1,170 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  PROJECT_PATH: 'FUNewsTradingSystem'
+  SOLUTION_FILE: 'FUNewsTradingSystem.slnx'
+
+jobs:
+  # ============================================================
+  # Job 1: Build Check - Kiểm tra project có thể build được
+  # ============================================================
+  build:
+    name: Build Solution
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ./${{ env.PROJECT_PATH }}
+
+    - name: Build solution
+      run: dotnet build --no-restore
+      working-directory: ./${{ env.PROJECT_PATH }}
+
+  # ============================================================
+  # Job 2: Unit Tests - Chạy unit tests (bỏ qua nếu không có test project)
+  # ============================================================
+  test:
+    name: Unit Tests
+    runs-on: windows-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ./${{ env.PROJECT_PATH }}
+
+    - name: Find test projects
+      id: find-tests
+      run: |
+        $testProjects = Get-ChildItem -Path "./${{ env.PROJECT_PATH }}" -Filter "*Test*.csproj" -Recurse -File -ErrorAction SilentlyContinue
+        if ($testProjects) {
+            Write-Host "Found test projects:"
+            $testProjects | ForEach-Object { Write-Host "  - $($_.FullName)" }
+            Write-Host "::set-output name=has_tests::true"
+        } else {
+            Write-Host "No test projects found, skipping tests..."
+            Write-Host "::set-output name=has_tests::false"
+        }
+      shell: pwsh
+
+    - name: Run Unit Tests
+      if: steps.find-tests.outputs.has_tests == 'true'
+      run: dotnet test --no-restore --verbosity normal
+      working-directory: ./${{ env.PROJECT_PATH }}
+
+  # ============================================================
+  # Job 3: Code Analysis - Phân tích code (bỏ qua nếu không có ruleset)
+  # ============================================================
+  analyze:
+    name: Code Analysis
+    runs-on: windows-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ./${{ env.PROJECT_PATH }}
+
+    - name: Find rule set files
+      id: find-rulesets
+      run: |
+        $rulesets = Get-ChildItem -Path "./${{ env.PROJECT_PATH }}" -Filter "*.ruleset" -Recurse -File -ErrorAction SilentlyContinue
+        if ($rulesets) {
+            Write-Host "Found rule set files:"
+            $rulesets | ForEach-Object { Write-Host "  - $($_.Name)" }
+            Write-Host "::set-output name=has_ruleset::true"
+        } else {
+            Write-Host "No rule set files found, skipping analysis..."
+            Write-Host "::set-output name=has_ruleset::false"
+        }
+      shell: pwsh
+
+    - name: Run Code Analysis
+      if: steps.find-rulesets.outputs.has_ruleset == 'true'
+      run: |
+        dotnet build ./${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} /p:EnforceCodeStyleInBuild=true /p:EnableNETAnalyzers=true /p:AnalysisLevel=recommended
+      shell: pwsh
+
+  # ============================================================
+  # Job 4: Security Check - Kiểm tra bảo mật dependencies (nếu có packages)
+  # ============================================================
+  security:
+    name: Security Audit
+    runs-on: windows-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ./${{ env.PROJECT_PATH }}
+
+    - name: Check for package references
+      id: check-packages
+      run: |
+        $csprojFiles = Get-ChildItem -Path "./${{ env.PROJECT_PATH }}" -Filter "*.csproj" -Recurse -File -ErrorAction SilentlyContinue
+        if ($csprojFiles) {
+            $hasPackages = $false
+            foreach ($file in $csprojFiles) {
+                $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+                if ($content -match '<PackageReference') {
+                    $hasPackages = $true
+                    break
+                }
+            }
+            if ($hasPackages) {
+                Write-Host "Found package references, running security check..."
+                Write-Host "::set-output name=has_packages::true"
+            } else {
+                Write-Host "No package references found, skipping security check..."
+                Write-Host "::set-output name=has_packages::false"
+            }
+        } else {
+            Write-Host "No csproj files found, skipping security check..."
+            Write-Host "::set-output name=has_packages::false"
+        }
+      shell: pwsh
+
+    - name: Check for vulnerabilities
+      if: steps.check-packages.outputs.has_packages == 'true'
+      run: dotnet list ./${{ env.PROJECT_PATH }}/package --vulnerable
+      continue-on-error: true
