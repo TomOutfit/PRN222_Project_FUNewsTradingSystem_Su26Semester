@@ -1,10 +1,10 @@
 # Product Requirements Document: FUNewsTradingSystem (FNTS)
 
 **Project Name:** FUNewsTradingSystem (Automated Trading Agents by News)
-**Document Version:** 2.0
+**Document Version:** 3.0
 **Target Framework:** ASP.NET Core MVC (.NET 8)
-**Architecture:** 3-Layer Architecture (Presentation → Service → Repository)
-**Last Updated:** 2025
+**Architecture:** 3-Layer Architecture (Presentation → BusinessLayer → DataAccessLayer)
+**Last Updated:** 2026
 
 ---
 
@@ -231,9 +231,50 @@ FUNewsTradingSystem (FNTS) is an ASP.NET Core MVC web application that helps fin
 ## Technical Specifications
 ### Project Folder Structure
 ```
-{GroupName}_{ClassCode}_A01.sln                     # Solution goc
-└── {StudentName}MVC                                  # ASP.NET Core MVC Web Project
-    ├── Controllers                                   # [Layer 3: Presentation]
+FUNewsTradingSystem.slnx
+│
+├── FUNewsTradingSystem_DataAccessLayer                # [Layer 1: DATA - Models & DbContext]
+│   ├── FUNewsTradingSystem_DataAccessLayer.csproj
+│   ├── Models/                                        # Entity Framework Core Classes
+│   │   ├── ApplicationDbContext.cs                   # DbContext (Ket noi EF Core, Fluent API / Seed data)
+│   │   ├── SystemAccount.cs
+│   │   ├── Category.cs
+│   │   ├── Tag.cs
+│   │   ├── NewsArticle.cs
+│   │   └── NewsTag.cs
+│
+├── FUNewsTradingSystem_BusinessLayer                  # [Layer 2: BUSINESS LOGIC - Repository & Service]
+│   ├── FUNewsTradingSystem_BusinessLayer.csproj
+│   ├── Repository/                                    # Data Access Layer (Truy xuat du lieu)
+│   │   ├── Interfaces/
+│   │   │   ├── ISystemAccountRepository.cs
+│   │   │   ├── ICategoryRepository.cs
+│   │   │   ├── ITagRepository.cs
+│   │   │   ├── INewsArticleRepository.cs
+│   │   │   └── INewsTagRepository.cs
+│   │   └── Implements/
+│   │       ├── SystemAccountRepository.cs
+│   │       ├── CategoryRepository.cs
+│   │       ├── TagRepository.cs
+│   │       ├── NewsArticleRepository.cs
+│   │       └── NewsTagRepository.cs
+│   ├── Service/                                       # Business Logic Layer (Xu ly nghiep vu)
+│   │   ├── Interfaces/
+│   │   │   ├── ISystemAccountService.cs
+│   │   │   ├── ICategoryService.cs
+│   │   │   ├── ITagService.cs
+│   │   │   ├── INewsArticleService.cs
+│   │   │   └── ITradingAgentService.cs              # Singleton - goi News API & OpenAI
+│   │   └── Implements/
+│   │       ├── SystemAccountService.cs
+│   │       ├── CategoryService.cs
+│   │       ├── TagService.cs
+│   │       ├── NewsArticleService.cs
+│   │       └── TradingAgentService.cs                # Xu ly HttpClient, LLM Prompts, JSON parsing
+│
+└── FUNewsTradingSystem_MVC                           # [Layer 3: PRESENTATION - Controllers & Views]
+    ├── FUNewsTradingSystem_MVC.csproj
+    ├── Controllers/                                  # Razor Controllers
     │   ├── AccountController.cs                      # Dang nhap, Dang xuat, Quan ly Profile (FR-1, FR-9)
     │   ├── AdminController.cs                        # Quan ly Users (Admin), Bao cao thong ke (FR-4, FR-10)
     │   ├── CategoryController.cs                     # Quan ly Sector / Category (FR-5)
@@ -241,96 +282,63 @@ FUNewsTradingSystem (FNTS) is an ASP.NET Core MVC web application that helps fin
     │   ├── ReportController.cs                       # Xem bao cao public, Lich su cua Staff (FR-7, FR-8)
     │   └── AnalysisController.cs                     # Giao dien chay AI Trading Pipeline (FR-3)
     │
-    ├── Services                                      # [Layer 2: Service / Business Logic]
-    │   ├── Interfaces
-    │   │   ├── ISystemAccountService.cs
-    │   │   ├── ICategoryService.cs
-    │   │   ├── ITagService.cs
-    │   │   ├── INewsArticleService.cs
-    │   │   └── ITradingAgentService.cs               # Chua logic goi News API & OpenAI (Singleton)
-    │   └── Implements
-    │       ├── SystemAccountService.cs
-    │       ├── CategoryService.cs
-    │       ├── TagService.cs
-    │       ├── NewsArticleService.cs
-    │       └── TradingAgentService.cs                # Xu ly HttpClient, LLM Prompts, JSON parsing
-    │
-    ├── Repositories                                  # [Layer 1: Repository / Data Access]
-    │   ├── Interfaces
-    │   │   ├── ISystemAccountRepository.cs
-    │   │   ├── ICategoryRepository.cs
-    │   │   ├── ITagRepository.cs
-    │   │   ├── INewsArticleRepository.cs
-    │   │   └── INewsTagRepository.cs
-    │   └── Implements
-    │       ├── SystemAccountRepository.cs
-    │       ├── CategoryRepository.cs
-    │       ├── TagRepository.cs
-    │       ├── NewsArticleRepository.cs
-    │       └── NewsTagRepository.cs
-    │
-    ├── Models                                        # Entity Framework Core Classes (Database Models)
-    │   ├── FUNewsManagementContext.cs                # DbContext (Ket noi EF Core, cau hinh Fluent API / Seed data)
-    │   ├── SystemAccount.cs
-    │   ├── Category.cs
-    │   ├── Tag.cs
-    │   ├── NewsArticle.cs
-    │   └── NewsTag.cs
-    │
-    ├── ViewModels                                    # Data Transfer Objects cho Views (Tranh lo Entities)
-    │   ├── Auth
-    │   │   ├── LoginViewModel.cs
-    │   │   └── ProfileUpdateViewModel.cs
-    │   ├── Admin
-    │   │   ├── AccountFormViewModel.cs               # Dung cho Create/Update Account Modal
+    ├── ViewModels/                                   # Data Transfer Objects cho Views
+    │   ├── LoginViewModel.cs
+    │   ├── RegisterViewModel.cs
+    │   ├── Admin/
+    │   │   ├── AccountFormViewModel.cs
     │   │   └── StatisticalReportViewModel.cs
-    │   ├── Category
-    │   │   └── CategoryFormViewModel.cs              # Dung cho Category Modal
-    │   ├── Tag
-    │   │   └── TagFormViewModel.cs                   # Dung cho Tag Modal
-    │   └── Report
-    │       ├── RunAnalysisViewModel.cs               # Chua danh sach dropdown Ticker & Sector
-    │       └── ReportDetailViewModel.cs              # Chua data tong hop cho trang doc bao cao
+    │   ├── Category/
+    │   │   └── CategoryFormViewModel.cs
+    │   ├── Tag/
+    │   │   └── TagFormViewModel.cs
+    │   └── Report/
+    │       ├── RunAnalysisViewModel.cs
+    │       └── ReportDetailViewModel.cs
     │
-    ├── Views                                         # Razor Views
-    │   ├── Account
+    ├── Views/                                        # Razor Views
+    │   ├── Account/
     │   │   ├── Login.cshtml                          # Default landing page
-    │   │   └── Profile.cshtml                        # Doi ten va mat khau
-    │   ├── Admin
-    │   │   ├── Index.cshtml                          # Quan ly Account list
-    │   │   ├── _AccountModal.cshtml                  # Partial View: Create/Update Account (Modal)
-    │   │   └── StatisticalReport.cshtml              # Bao cao loc theo Date Range
-    │   ├── Category
-    │   │   ├── Index.cshtml                          # Quan ly Category list
-    │   │   └── _CategoryModal.cshtml                 # Partial View: Create/Update Category (Modal)
-    │   ├── Tag
-    │   │   ├── Index.cshtml                          # Quan ly Tag list
-    │   │   └── _TagModal.cshtml                      # Partial View: Create/Update Tag (Modal)
-    │   ├── Report
-    │   │   ├── Index.cshtml                          # Danh sach bao cao Public (Cho Guest / Lecturer)
-    │   │   ├── Details.cshtml                        # Chi tiet bai bao cao & AI Decision
-    │   │   └── History.cshtml                        # Lich su bao cao ca nhan cua Staff (Co toggle IsActive)
-    │   ├── Analysis
-    │   │   └── Index.cshtml                          # Giao dien Run Analysis (chon Ticker, Sector & goi AI)
-    │   └── Shared
-    │       ├── _Layout.cshtml                        # Giao dien goc (chua Header, Navigation phan quyen)
-    │       ├── _ValidationScriptsPartial.cshtml      # Script cho Client-side validation
-    │       └── _Alerts.cshtml                        # Partial View cho Toast / Inline notifications
+    │   │   ├── AccessDenied.cshtml
+    │   │   └── Profile.cshtml
+    │   ├── Admin/
+    │   │   ├── Index.cshtml
+    │   │   ├── _AccountModal.cshtml
+    │   │   └── StatisticalReport.cshtml
+    │   ├── Category/
+    │   │   ├── Index.cshtml
+    │   │   └── _CategoryModal.cshtml
+    │   ├── Tag/
+    │   │   ├── Index.cshtml
+    │   │   └── _TagModal.cshtml
+    │   ├── Report/
+    │   │   ├── Index.cshtml
+    │   │   ├── Details.cshtml
+    │   │   └── History.cshtml
+    │   ├── Analysis/
+    │   │   └── Index.cshtml
+    │   ├── Home/
+    │   │   ├── Index.cshtml
+    │   │   └── Privacy.cshtml
+    │   └── Shared/
+    │       ├── _Layout.cshtml
+    │       ├── _LoginPartial.cshtml
+    │       ├── _ValidationScriptsPartial.cshtml
+    │       └── _Alerts.cshtml
     │
-    ├── wwwroot                                       # Static files
-    │   ├── css
-    │   │   └── site.css                              # Custom styles (Mau badge BUY/SELL/HOLD, Modal z-index...)
-    │   ├── js
-    │   │   ├── site.js                               # Khoi tao Modals, xu ly AJAX toggles
-    │   │   ├── ajax-crud.js                          # Script chuyen xu ly Form submit qua AJAX cho Modals
-    │   │   └── pipeline-spinner.js                   # Xu ly Loading Spinner va vo hieu hoa nut khi chay AI
-    │   └── lib                                   # Bootstrap 5, jQuery, jquery-validate, v.v.
+    ├── wwwroot/                                      # Static files
+    │   ├── css/
+    │   │   └── site.css
+    │   ├── js/
+    │   │   ├── site.js
+    │   │   ├── ajax-crud.js
+    │   │   └── pipeline-spinner.js
+    │   └── lib/                                      # Bootstrap 5, jQuery 3.x, jquery-validate
     │
-    ├── Migrations                                    # EF Core Migrations (Tu dong sinh ra)
-    │
-    ├── appsettings.json                              # Chua ConnectionString, Admin Seed, News API Key, OpenAI Key
-    ├── appsettings.Development.json
-    └── Program.cs                                    # Dang ky Dependency Injection (Singleton, Scoped), cau hinh Auth Cookie.
+    ├── appsettings.json                              # ConnectionString, Admin Seed, API Keys
+    ├── appsettings.Development.json                  # Override secrets cho local dev
+    ├── libman.json                                   # Client-side libraries config
+    └── Program.cs                                    # DI, Auth Cookie, Middleware config
 ```
 
 ### Frontend
@@ -342,12 +350,16 @@ FUNewsTradingSystem (FNTS) is an ASP.NET Core MVC web application that helps fin
 ### Backend
 - **Stack:** ASP.NET Core MVC, .NET 8, C# 12.
 - **3-Layer Architecture (strictly enforced):**
-  - **Presentation:** Controllers + Razor Views. Controllers call only Service interfaces.
-  - **Service:** Business logic, pipeline orchestration, external API calls. Services call only Repository interfaces.
-  - **Repository / Data Access:** The only layer that interacts with `DbContext`. No business logic here.
+  - **Presentation (MVC):** Controllers + Razor Views. Controllers call only Service interfaces from BusinessLayer.
+  - **Business Logic (BusinessLayer):** Services chứa business logic, pipeline orchestration, external API calls. Services call only Repository interfaces.
+  - **Repository / Data Access (DataAccessLayer):** The only layer that interacts with `DbContext`. No business logic here.
+- **Project References:**
+  - `MVC` references `BusinessLayer`
+  - `BusinessLayer` references `DataAccessLayer`
 - **Dependency Injection (`Program.cs`):**
   - `AddSingleton<ITradingAgentService, TradingAgentService>()` — reuses `HttpClient`.
-  - All other Services and Repositories: `AddScoped<>()`.
+  - All other Services: `AddScoped<ITradingAgentService, TradingAgentService>()`.
+  - All Repositories: `AddScoped<>()`.
 - **External API Integration (in `TradingAgentService`):**
   - News API: HTTP GET, JSON. Top 10 most recent articles per request (title + description only).
   - LLM API: HTTP POST, JSON. Three sequential calls per pipeline run.
@@ -464,9 +476,11 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
 ### Infrastructure
 - **Hosting:** Local IIS Express (development only). No cloud deployment required for this academic version.
 - **Solution Naming:**
-  - Solution: `{StudentName}_{ClassCode}_A01.sln`
-  - Web project: `{StudentName}MVC`
-- **Configuration:** All secrets in `appsettings.json`. File must not be committed to any public repository.
+  - Solution: `FUNewsTradingSystem.slnx`
+  - DataAccessLayer: `FUNewsTradingSystem_DataAccessLayer.csproj`
+  - BusinessLayer: `FUNewsTradingSystem_BusinessLayer.csproj`
+  - Web project: `FUNewsTradingSystem_MVC`
+- **Configuration:** All secrets in `appsettings.json`. File must not be committed to any public repository (already added to `.gitignore`).
 
 ---
 
