@@ -229,6 +229,109 @@ FUNewsTradingSystem (FNTS) is an ASP.NET Core MVC web application that helps fin
 ---
 
 ## Technical Specifications
+### Project Folder Structure
+```
+{GroupName}_{ClassCode}_A01.sln                     # Solution goc
+└── {StudentName}MVC                                  # ASP.NET Core MVC Web Project
+    ├── Controllers                                   # [Layer 3: Presentation]
+    │   ├── AccountController.cs                      # Dang nhap, Dang xuat, Quan ly Profile (FR-1, FR-9)
+    │   ├── AdminController.cs                        # Quan ly Users (Admin), Bao cao thong ke (FR-4, FR-10)
+    │   ├── CategoryController.cs                     # Quan ly Sector / Category (FR-5)
+    │   ├── TagController.cs                          # Quan ly Ticker / Tag (FR-6)
+    │   ├── ReportController.cs                       # Xem bao cao public, Lich su cua Staff (FR-7, FR-8)
+    │   └── AnalysisController.cs                     # Giao dien chay AI Trading Pipeline (FR-3)
+    │
+    ├── Services                                      # [Layer 2: Service / Business Logic]
+    │   ├── Interfaces
+    │   │   ├── ISystemAccountService.cs
+    │   │   ├── ICategoryService.cs
+    │   │   ├── ITagService.cs
+    │   │   ├── INewsArticleService.cs
+    │   │   └── ITradingAgentService.cs               # Chua logic goi News API & OpenAI (Singleton)
+    │   └── Implements
+    │       ├── SystemAccountService.cs
+    │       ├── CategoryService.cs
+    │       ├── TagService.cs
+    │       ├── NewsArticleService.cs
+    │       └── TradingAgentService.cs                # Xu ly HttpClient, LLM Prompts, JSON parsing
+    │
+    ├── Repositories                                  # [Layer 1: Repository / Data Access]
+    │   ├── Interfaces
+    │   │   ├── ISystemAccountRepository.cs
+    │   │   ├── ICategoryRepository.cs
+    │   │   ├── ITagRepository.cs
+    │   │   ├── INewsArticleRepository.cs
+    │   │   └── INewsTagRepository.cs
+    │   └── Implements
+    │       ├── SystemAccountRepository.cs
+    │       ├── CategoryRepository.cs
+    │       ├── TagRepository.cs
+    │       ├── NewsArticleRepository.cs
+    │       └── NewsTagRepository.cs
+    │
+    ├── Models                                        # Entity Framework Core Classes (Database Models)
+    │   ├── FUNewsManagementContext.cs                # DbContext (Ket noi EF Core, cau hinh Fluent API / Seed data)
+    │   ├── SystemAccount.cs
+    │   ├── Category.cs
+    │   ├── Tag.cs
+    │   ├── NewsArticle.cs
+    │   └── NewsTag.cs
+    │
+    ├── ViewModels                                    # Data Transfer Objects cho Views (Tranh lo Entities)
+    │   ├── Auth
+    │   │   ├── LoginViewModel.cs
+    │   │   └── ProfileUpdateViewModel.cs
+    │   ├── Admin
+    │   │   ├── AccountFormViewModel.cs               # Dung cho Create/Update Account Modal
+    │   │   └── StatisticalReportViewModel.cs
+    │   ├── Category
+    │   │   └── CategoryFormViewModel.cs              # Dung cho Category Modal
+    │   ├── Tag
+    │   │   └── TagFormViewModel.cs                   # Dung cho Tag Modal
+    │   └── Report
+    │       ├── RunAnalysisViewModel.cs               # Chua danh sach dropdown Ticker & Sector
+    │       └── ReportDetailViewModel.cs              # Chua data tong hop cho trang doc bao cao
+    │
+    ├── Views                                         # Razor Views
+    │   ├── Account
+    │   │   ├── Login.cshtml                          # Default landing page
+    │   │   └── Profile.cshtml                        # Doi ten va mat khau
+    │   ├── Admin
+    │   │   ├── Index.cshtml                          # Quan ly Account list
+    │   │   ├── _AccountModal.cshtml                  # Partial View: Create/Update Account (Modal)
+    │   │   └── StatisticalReport.cshtml              # Bao cao loc theo Date Range
+    │   ├── Category
+    │   │   ├── Index.cshtml                          # Quan ly Category list
+    │   │   └── _CategoryModal.cshtml                 # Partial View: Create/Update Category (Modal)
+    │   ├── Tag
+    │   │   ├── Index.cshtml                          # Quan ly Tag list
+    │   │   └── _TagModal.cshtml                      # Partial View: Create/Update Tag (Modal)
+    │   ├── Report
+    │   │   ├── Index.cshtml                          # Danh sach bao cao Public (Cho Guest / Lecturer)
+    │   │   ├── Details.cshtml                        # Chi tiet bai bao cao & AI Decision
+    │   │   └── History.cshtml                        # Lich su bao cao ca nhan cua Staff (Co toggle IsActive)
+    │   ├── Analysis
+    │   │   └── Index.cshtml                          # Giao dien Run Analysis (chon Ticker, Sector & goi AI)
+    │   └── Shared
+    │       ├── _Layout.cshtml                        # Giao dien goc (chua Header, Navigation phan quyen)
+    │       ├── _ValidationScriptsPartial.cshtml      # Script cho Client-side validation
+    │       └── _Alerts.cshtml                        # Partial View cho Toast / Inline notifications
+    │
+    ├── wwwroot                                       # Static files
+    │   ├── css
+    │   │   └── site.css                              # Custom styles (Mau badge BUY/SELL/HOLD, Modal z-index...)
+    │   ├── js
+    │   │   ├── site.js                               # Khoi tao Modals, xu ly AJAX toggles
+    │   │   ├── ajax-crud.js                          # Script chuyen xu ly Form submit qua AJAX cho Modals
+    │   │   └── pipeline-spinner.js                   # Xu ly Loading Spinner va vo hieu hoa nut khi chay AI
+    │   └── lib                                   # Bootstrap 5, jQuery, jquery-validate, v.v.
+    │
+    ├── Migrations                                    # EF Core Migrations (Tu dong sinh ra)
+    │
+    ├── appsettings.json                              # Chua ConnectionString, Admin Seed, News API Key, OpenAI Key
+    ├── appsettings.Development.json
+    └── Program.cs                                    # Dang ky Dependency Injection (Singleton, Scoped), cau hinh Auth Cookie.
+```
 
 ### Frontend
 - **Stack:** ASP.NET Core Razor Views, HTML5, CSS3, Bootstrap 5, jQuery 3.x.
