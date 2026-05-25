@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 
-namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
+public interface ITagService
 {
-    internal interface TagService
-    {
-    }
 }

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces;
 
-namespace FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces
+namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements;
+
+public class NewsArticleRepository : INewsArticleRepository
 {
-    public class NewsArticleRepository
-    {
-    }
 }

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 
-namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
+namespace FUNewsTradingSystem_BusinessLayer.Services.Implements;
+
+public class CategoryService : ICategoryService
 {
-    public class CategoryService
-    {
-    }
 }
