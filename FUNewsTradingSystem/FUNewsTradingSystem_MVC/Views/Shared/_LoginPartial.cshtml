@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Authentication;
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="d-flex align-items-center">
+        @Html.AntiForgeryToken()
+        <span class="navbar-text me-3 text-truncate" style="max-width: 200px;">
+            @User.Identity.Name
+        </span>
+        <button type="submit" class="btn btn-outline-light btn-sm">
+            Logout
+        </button>
+    </form>
+}

@@ -1,0 +1,6 @@
+@model IEnumerable<FUNewsTradingSystem_MVC.ViewModels.Admin.AccountFormViewModel>
+@{
+    ViewData["Title"] = "Account Management";
+    var currentAdminId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+}
+
