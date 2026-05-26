@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FUNewsTradingSystem_DataAccessLayer\FUNewsTradingSystem_DataAccessLayer.csproj" />
+  </ItemGroup>
+
 </Project>
