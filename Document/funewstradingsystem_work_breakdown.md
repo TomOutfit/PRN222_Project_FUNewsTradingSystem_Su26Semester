@@ -23,13 +23,13 @@
 > Owns the entire skeleton, auth system, and AI pipeline. If P1's work breaks, nothing else runs.
 
 ### 🔧 Solution & Project Setup (10 tasks)
-- [ ] Create Visual Studio solution: `{StudentName}_{ClassCode}_A01.sln`
-- [ ] Create ASP.NET Core MVC project: `{StudentName}MVC` targeting .NET 8
-- [ ] Install NuGet packages: `Microsoft.EntityFrameworkCore.SqlServer`, `Microsoft.EntityFrameworkCore.Tools`, `Microsoft.AspNetCore.Authentication.Cookies`, `Newtonsoft.Json`
-- [ ] Create project folder structure: `/Models`, `/ViewModels`, `/Repositories`, `/Services`, `/Controllers`, `/Views`, `/wwwroot/css`, `/wwwroot/js`, `/wwwroot/lib`
-- [ ] Add Bootstrap 5 and jQuery 3.x via libman.json or CDN in `_Layout.cshtml`
-- [ ] Add `jquery-validate` and `jquery-validate-unobtrusive` to the project
-- [ ] Configure `appsettings.json`:
+- [X] Create Visual Studio solution: `FUNewsTradingSystem.sln`
+- [X] Create ASP.NET Core MVC project: `FUNewsTradingSystem_MVC` targeting .NET 10
+- [X] Install NuGet packages: `Microsoft.EntityFrameworkCore.SqlServer`, `Microsoft.EntityFrameworkCore.Tools`, `Microsoft.AspNetCore.Authentication.Cookies`, `Newtonsoft.Json`
+- [X] Create project folder structure: `/Models`, `/ViewModels`, `/Repositories`, `/Services`, `/Controllers`, `/Views`, `/wwwroot/css`, `/wwwroot/js`, `/wwwroot/lib`
+- [X] Add Bootstrap 5 and jQuery 3.x via libman.json or CDN in `_Layout.cshtml`
+- [X] Add `jquery-validate` and `jquery-validate-unobtrusive` to the project
+- [X] Configure `appsettings.json`:
   ```json
   {
     "ConnectionStrings": { "DefaultConnection": "..." },
@@ -38,9 +38,9 @@
     "OpenAI": { "ApiKey": "...", "BaseUrl": "https://api.openai.com/v1/chat/completions", "Model": "gpt-4o" }
   }
   ```
-- [ ] Configure `appsettings.Development.json` to override secrets for local development
-- [ ] Add `appsettings.json` to `.gitignore`
-- [ ] Configure `Program.cs`: DbContext, Cookie Auth middleware (`HttpOnly=true`, `SlidingExpiration=true`, `ExpireTimeSpan=60min`), Authorization middleware, default route (`controller=Account, action=Login`), static files middleware
+- [X] Configure `appsettings.Development.json` to override secrets for local development
+- [X] Add `appsettings.json` to `.gitignore`
+- [X] Configure `Program.cs`: DbContext, Cookie Auth middleware (`HttpOnly=true`, `SlidingExpiration=true`, `ExpireTimeSpan=60min`), Authorization middleware, default route (`controller=Account, action=Login`), static files middleware
 
 ### 💻 Entity Classes (6 tasks)
 - [ ] Create `SystemAccount.cs`: AccountID (PK), AccountName, AccountEmail, AccountRole, AccountPassword
