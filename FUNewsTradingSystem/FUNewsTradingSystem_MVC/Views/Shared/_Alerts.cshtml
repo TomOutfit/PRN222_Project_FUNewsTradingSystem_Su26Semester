@@ -1,10 +1,16 @@
 @*
     Reusable alert partial for success / error / warning / info alerts.
-    Usage: <partial name="_Alerts" model='new { Type = "success", Message = "Saved!" }' />
+    Usage:
+    <partial name="_Alerts"
+             model='new { Type = "success", Message = "Saved!" }' />
 *@
-@model AlertModel
+
+@model dynamic
+
 @{
-    var alertClass = Model.Type?.ToLowerInvariant() switch
+    var type = Model?.Type?.ToString()?.ToLowerInvariant();
+
+    var alertClass = type switch
     {
         "success" => "alert-success",
         "danger" or "error" => "alert-danger",
@@ -13,15 +19,13 @@
         _ => "alert-secondary"
     };
 }
-<div class="alert @alertClass alert-dismissible fade show" role="alert">
-    @Model.Message
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
 
-@functions {
-    public class AlertModel
-    {
-        public string? Type { get; set; }
-        public string? Message { get; set; }
-    }
-}
+<div class="alert @alertClass alert-dismissible fade show" role="alert">
+    @Model?.Message
+
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close">
+    </button>
+</div>
