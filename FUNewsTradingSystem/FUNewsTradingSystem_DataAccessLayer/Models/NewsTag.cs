@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace FUNewsTradingSystem_DataAccessLayer.Models;
 
-namespace FUNewsTradingSystem_DataAccessLayer.Models
+public class NewsTag
 {
-    internal class NewsTag
-    {
-    }
+    public int NewsArticleID { get; set; }
+    public int TagID { get; set; }
+
+    public NewsArticle NewsArticle { get; set; } = null!;
+    public Tag Tag { get; set; } = null!;
 }
