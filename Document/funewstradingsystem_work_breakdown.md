@@ -43,12 +43,12 @@
 - [X] Configure `Program.cs`: DbContext, Cookie Auth middleware (`HttpOnly=true`, `SlidingExpiration=true`, `ExpireTimeSpan=60min`), Authorization middleware, default route (`controller=Account, action=Login`), static files middleware
 
 ### 💻 Entity Classes (6 tasks)
-- [ ] Create `SystemAccount.cs`: AccountID (PK), AccountName, AccountEmail, AccountRole, AccountPassword
-- [ ] Create `Category.cs`: CategoryID (PK), CategoryName, CategoryDescription, ParentCategoryID (FK self-ref, nullable), IsActive; navigation properties `ParentCategory` and `ChildCategories`
-- [ ] Create `Tag.cs`: TagID (PK), TagName, Note
-- [ ] Create `NewsArticle.cs`: all 11 columns; FK navigation to `Category`, `CreatedByAccount`, `UpdatedByAccount`, `NewsTagList`
-- [ ] Create `NewsTag.cs`: composite PK (NewsArticleID + TagID), navigation properties to `NewsArticle` and `Tag`
-- [ ] Create `FUNewsManagementContext.cs`: `DbSet<>` for all 5 entities; `OnModelCreating` — composite PK on `NewsTag`, self-ref FK on `Category`, `ON DELETE SET NULL` on `NewsArticle.CreatedByID`, `ON DELETE NO ACTION` on `NewsArticle.UpdatedByID`, unique index on `AccountEmail` and `TagName`; `HasData` seed — read Admin credentials from `IConfiguration`, hash with `IPasswordHasher<SystemAccount>`, insert `AccountRole=3`
+- [X] Create `SystemAccount.cs`: AccountID (PK), AccountName, AccountEmail, AccountRole, AccountPassword
+- [X] Create `Category.cs`: CategoryID (PK), CategoryName, CategoryDescription, ParentCategoryID (FK self-ref, nullable), IsActive; navigation properties `ParentCategory` and `ChildCategories`
+- [X] Create `Tag.cs`: TagID (PK), TagName, Note
+- [X] Create `NewsArticle.cs`: all 11 columns; FK navigation to `Category`, `CreatedByAccount`, `UpdatedByAccount`, `NewsTagList`
+- [X] Create `NewsTag.cs`: composite PK (NewsArticleID + TagID), navigation properties to `NewsArticle` and `Tag`
+- [X] Create `FUNewsManagementContext.cs`: `DbSet<>` for all 5 entities; `OnModelCreating` — composite PK on `NewsTag`, self-ref FK on `Category`, `ON DELETE SET NULL` on `NewsArticle.CreatedByID`, `ON DELETE NO ACTION` on `NewsArticle.UpdatedByID`, unique index on `AccountEmail` and `TagName`; `HasData` seed — read Admin credentials from `IConfiguration`, hash with `IPasswordHasher<SystemAccount>`, insert `AccountRole=3`
 
 ### 🔐 Authentication — FR-1 (6 tasks)
 - [ ] Create `AccountController.cs` with `[AllowAnonymous]` on Login actions
