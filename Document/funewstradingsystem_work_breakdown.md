@@ -218,15 +218,15 @@
 > Owns all shared JS/CSS infrastructure, the Run Analysis UI, Profile Management, Staff Dashboard, documentation, and the shared smoke test tracker.
 
 ### 🎨 Shared CSS & UI Infrastructure (6 tasks)
-- [ ] Create `wwwroot/css/site.css`: decision badge color overrides (`bg-success`=BUY, `bg-danger`=SELL, `bg-secondary`=HOLD), modal z-index fixes, loading spinner sizing, navbar brand styling, form layout spacing, card hover effects for Dashboard
-- [ ] Create `wwwroot/js/modal-helpers.js`: `openModal(modalId)`, `closeModal(modalId)`, `submitModalForm(formId, listRefreshCallback)` (AJAX POST → success: close modal + call refresh; error: show inline error inside modal), `confirmDelete(entityName, deleteUrl, listRefreshCallback)` (populate `_ConfirmDeleteModal` → show → on confirm: AJAX POST → call refresh)
-- [ ] Create `wwwroot/js/toast-helpers.js`: `showSuccess(message)` (Bootstrap toast, green, auto-dismiss 3s), `showError(message)` (red, auto-dismiss 5s)
-- [ ] Create `wwwroot/js/validate-extensions.js`:
+- [X] Create `wwwroot/css/site.css`: decision badge color overrides (`bg-success`=BUY, `bg-danger`=SELL, `bg-secondary`=HOLD), modal z-index fixes, loading spinner sizing, navbar brand styling, form layout spacing, card hover effects for Dashboard
+- [X] Create `wwwroot/js/modal-helpers.js`: `openModal(modalId)`, `closeModal(modalId)`, `submitModalForm(formId, listRefreshCallback)` (AJAX POST → success: close modal + call refresh; error: show inline error inside modal), `confirmDelete(entityName, deleteUrl, listRefreshCallback)` (populate `_ConfirmDeleteModal` → show → on confirm: AJAX POST → call refresh)
+- [X] Create `wwwroot/js/toast-helpers.js`: `showSuccess(message)` (Bootstrap toast, green, auto-dismiss 3s), `showError(message)` (red, auto-dismiss 5s)
+- [X] Create `wwwroot/js/validate-extensions.js`:
   - `dateRange` validator — blocks submit if StartDate > EndDate (used on Statistics filter)
   - `notSelf` validator — blocks submit if ParentCategoryID dropdown value == current CategoryID (used on Edit Category modal)
   - `passwordMatch` validator — blocks submit if ConfirmNewPassword ≠ NewPassword (used on Profile Change Password)
-- [ ] Wire `validate-extensions.js` onto the relevant forms via `data-val-*` attributes or explicit jQuery Validate calls
-- [ ] Test all shared JS helpers in isolation: open/close modal, confirm delete flow, success/error toast display
+- [X] Wire `validate-extensions.js` onto the relevant forms via `data-val-*` attributes or explicit jQuery Validate calls
+- [X] Test all shared JS helpers in isolation: open/close modal, confirm delete flow, success/error toast display
 
 ### 🚀 Run Analysis View & JS (4 tasks)
 - [ ] Create `Views/Staff/RunAnalysis.cshtml`: two `<select>` dropdowns (`SelectedTagId` and `SelectedCategoryId`), "Run Analysis" button (`id="btnRunAnalysis"`), hidden loading spinner (`<div id="loadingSpinner" class="d-none"><div class="spinner-border"></div> Analyzing...</div>`), result area (`<div id="resultArea" class="d-none">`)
