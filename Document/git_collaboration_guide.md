@@ -1,6 +1,6 @@
-# Git Collaboration Guide (Galaxy Defender)
+# Git Collaboration Guide (FUNews Management System)
 
-This document specifies how 4 members (P1, P2, P3, P4) collaborate on Git. The core goal is to **minimize the process**, **avoid Merge Conflicts caused by Unity**, and **keep the project always running**.
+This document specifies how 4 members (P1, P2, P3, P4) collaborate on Git. The core goal is to **minimize the process**, **avoid Merge Conflicts caused by Entity Framework (EF)**, and **keep the project always running**.
 
 ---
 
@@ -9,7 +9,7 @@ This document specifies how 4 members (P1, P2, P3, P4) collaborate on Git. The c
 With an 8-week project for 4 people, applying GitFlow (with a `dev` branch in the middle) is **unnecessary and redundant**. We will use **GitHub Flow**.
 
 - **There is only one fixed branch: `main`.**
-- **The Supreme Rule:** Code on `main` **MUST ALWAYS BE RUNNING**. Never push code that is broken or has a corrupted scene to `main`.
+- **The Supreme Rule:** Code on `main` **MUST ALWAYS BE RUNNING**. Never push code that has a corrupted migration to `main`.
 - **Create a short-term branch (Feature Branch):** Each time you work on a new feature, create a branch from `main`, finish it, merge it straight into `main`, and **delete that branch**.
 
 ---
@@ -19,10 +19,10 @@ With an 8-week project for 4 people, applying GitFlow (with a `dev` branch in th
 The branch name must clearly show who is doing what. Syntax: `[role]/[feature-name]` (lowercase, no accents, use hyphens).
 
 **Examples:**
-- `p1/player-movement` (P1 does movement)
-- `p2/wave-manager-setup` (P2 does wave system)
-- `p3/level1-tilemap` (P3 draws map)
-- `p4/import-audio-sfx` (P4 pushes assets)
+- `p1/authentication-system` (P1 does authentication)
+- `p2/user-profile-system` (P2 does user profile)
+- `p3/news-display-system` (P3 does news display)
+- `p4/news-management-system` (P4 does news management)
 
 ---
 
@@ -63,27 +63,22 @@ Each time you start working on a new task, follow these 5 steps exactly:
 
 ---
 
-## 4. ⚠️ UNITY PROJECT RULES ⚠️
+## 4. ⚠️ Entity Framework (EF) PROJECT RULES ⚠️
 
-Unity generates many complex system files (especially YAML). If not careful, the team will fall into "Merge Conflict Hell" (hell of code conflicts). Here are 3 golden rules:
+EF generates many complex migration files (especially SQL scripts). If not careful, the team will fall into "Merge Conflict Hell" (hell of code conflicts). Here are 3 golden rules:
 
-### Rule 1: Never edit the same scene with another person at the same time.
-- Unity Scene files (`.unity`) are very fragile and can be corrupted if two people edit and push them at the same time. 
-- **Solution:** Divide tasks clearly. For example, if P3 is drawing the map in `Level1.unity`, P1 and P2 must **absolutely not open and save that Scene file**. 
-- Instead, P1 and P2 should work on **Prefabs** (e.g., open `Player.prefab` to code/attach scripts). When P1 pushes the Prefab, P3's Scene will be updated automatically without any Conflict.
+### Rule 1: Never edit the same migration file with another person at the same time.
+- EF migration files (`.cs` in `Migrations` folder) are very fragile and can be corrupted if two people edit and push them at the same time. 
+- **Solution:** Divide tasks clearly. For example, if P3 is editing the migration file for the news system, P1 and P2 must **absolutely not open and save that migration file**. 
+- Instead, P1 and P2 should work on **model classes** (e.g., `News.cs`, `Category.cs`). When P1 pushes the model class, P3's migration file will be updated automatically without any Conflict.
 
-### Rule 2: Always remember to commit `.meta` files
-- Every file in the `Assets` folder (whether it's an image, audio, or script) is automatically created by Unity along with a `.meta` file containing a GUID.
-- **Never ignore or forget to commit `.meta` files.** If you delete or move a file, you must remember to delete or move the corresponding `.meta` file.
-- If you push an image file without pushing its `.meta` file, P3's computer will generate a new `.meta` code $\rightarrow$ Result: The image will lose its link (Pink Missing Texture) in all Prefabs.
-
-### Rule 3: How to deal with Unity merge conflicts
+### Rule 2: How to deal with EF merge conflicts
 - If a conflict occurs in C# code (`.cs`), calmly open VS Code and resolve it as usual.
-- But if the conflict occurs in `.unity` (Scene) or `.prefab` files: **NEVER try to fix it manually (by reading YAML)** because 99% it will corrupt the file.
-- **The Solution:** Discuss whose code is more important, choose to Accept Incoming or Accept Current (keep one side completely), the other person should be patient enough to open Unity and drag & drop the assets back for a few minutes. This is 10 times faster and safer than trying to fix YAML.
+- But if the conflict occurs in `.cs` (Code) files: **NEVER try to fix it manually** because 99% it will corrupt the file.
+- **The Solution:** Discuss whose code is more important, choose to Accept Incoming or Accept Current (keep one side completely), the other person should open Visual Studio or Visual Studio Code and fix it.
 
 ---
 
 ## 5. Communication Summary
-- Before creating a dynamic branch into someone else's system, chat in the group: *"I'm editing the Boss Prefab, everyone please don't touch that Prefab."*
-- P4, when pushing image and audio files, remember to remind P1, P2, P3 to pull the code. Avoid the situation where P3 is drawing UI but missing images.
+- Before creating a dynamic branch into someone else's system, chat in the group: *"I'm editing the EF migration files, everyone please don't touch that EF migration file."* 
+- P1, when pushing EF migration files, remember to remind P2, P3, P4 to pull the code.
