@@ -123,20 +123,20 @@
 
 
 ### 👤 Account Management — FR-4 (backend + views) (17 tasks)
-- [ ] Create `AdminAccountController.cs` with `[Authorize(Policy = "AdminOnly")]`
-- [ ] `GET /Admin/Accounts`: call `GetAllAccountsAsync()`, return Index view
-- [ ] `GET /Admin/Accounts/CreatePartial`: return `_CreateAccountModal` partial with empty `CreateAccountViewModel`
-- [ ] `POST /Admin/Accounts/Create` (AJAX JSON): validate ModelState → `CreateAccountAsync()` → return `{ success }` or `{ success: false, errors }`
-- [ ] `GET /Admin/Accounts/EditPartial/{id}`: call `GetAccountForEditAsync(id)`, return `_EditAccountModal` partial
-- [ ] `POST /Admin/Accounts/Edit` (AJAX JSON): validate → `UpdateAccountAsync()` → return result JSON
-- [ ] `POST /Admin/Accounts/Delete/{id}` (AJAX JSON + `[ValidateAntiForgeryToken]`): `DeleteAccountAsync(id, currentAdminId)` → return result JSON
+- [X] Create `AdminAccountController.cs` with `[Authorize(Policy = "AdminOnly")]`
+- [X] `GET /Admin/Accounts`: call `GetAllAccountsAsync()`, return Index view
+- [X] `GET /Admin/Accounts/CreatePartial`: return `_CreateAccountModal` partial with empty `CreateAccountViewModel`
+- [X] `POST /Admin/Accounts/Create` (AJAX JSON): validate ModelState → `CreateAccountAsync()` → return `{ success }` or `{ success: false, errors }`
+- [X] `GET /Admin/Accounts/EditPartial/{id}`: call `GetAccountForEditAsync(id)`, return `_EditAccountModal` partial
+- [X] `POST /Admin/Accounts/Edit` (AJAX JSON): validate → `UpdateAccountAsync()` → return result JSON
+- [X] `POST /Admin/Accounts/Delete/{id}` (AJAX JSON + `[ValidateAntiForgeryToken]`): `DeleteAccountAsync(id, currentAdminId)` → return result JSON
 - [ ] `GET /Admin/Dashboard`: landing page with links to Accounts and Statistics
-- [ ] Create `CreateAccountViewModel.cs`: AccountName (Required, 2–100), AccountEmail (Required, EmailAddress), AccountPassword (Required, MinLength 8), AccountRole (Required, Range 1–2)
-- [ ] Create `EditAccountViewModel.cs`: same fields + AccountId (Required); AccountPassword optional on Edit
-- [ ] Create `Views/Admin/Accounts/Index.cshtml`: table (ID | Name | Email | Role label | Edit | Delete); Delete hidden for Admin's own row; "Add Account" button; modal container divs
-- [ ] Create `Views/Admin/Accounts/_CreateAccountModal.cshtml`: form fields, validation spans, Save button
-- [ ] Create `Views/Admin/Accounts/_EditAccountModal.cshtml`: same + hidden AccountId field
-- [ ] Create `wwwroot/js/accounts.js`: `openCreateModal()` (AJAX GET partial → inject → show), `openEditModal(id)`, `submitCreateForm()` (AJAX POST → handle → refresh list), `submitEditForm()`, `deleteAccount(id, name)` (populate `_ConfirmDeleteModal` → confirm → AJAX POST → refresh), `refreshAccountTable()`
+- [X] Create `CreateAccountViewModel.cs`: AccountName (Required, 2–100), AccountEmail (Required, EmailAddress), AccountPassword (Required, MinLength 8), AccountRole (Required, Range 1–2)
+- [X] Create `EditAccountViewModel.cs`: same fields + AccountId (Required); AccountPassword optional on Edit
+- [X] Create `Views/Admin/Accounts/Index.cshtml`: table (ID | Name | Email | Role label | Edit | Delete); Delete hidden for Admin's own row; "Add Account" button; modal container divs
+- [X] Create `Views/Admin/Accounts/_CreateAccountModal.cshtml`: form fields, validation spans, Save button
+- [X] Create `Views/Admin/Accounts/_EditAccountModal.cshtml`: same + hidden AccountId field
+- [X] Create `wwwroot/js/accounts.js`: `openCreateModal()` (AJAX GET partial → inject → show), `openEditModal(id)`, `submitCreateForm()` (AJAX POST → handle → refresh list), `submitEditForm()`, `deleteAccount(id, name)` (populate `_ConfirmDeleteModal` → confirm → AJAX POST → refresh), `refreshAccountTable()`
 
 ### 📊 Admin Statistical Report — FR-10 (7 tasks)
 - [ ] Create `AdminStatisticsController.cs` with `[Authorize(Policy = "AdminOnly")]`
