@@ -92,5 +92,35 @@ public class FUNewsManagementContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // --- Seed Data ---
+        modelBuilder.Entity<SystemAccount>().HasData(new SystemAccount
+        {
+            AccountID = 1,
+            AccountName = "System Admin",
+            AccountEmail = "admin@FUNewsTradingSystem.org",
+            AccountRole = 3,
+            AccountPassword = "@@abc123@@_HASH_PLACEHOLDER"
+        });
+
+        modelBuilder.Entity<Category>().HasData(
+            new Category { CategoryID = 1, CategoryName = "Technology", CategoryDescription = "Technology sector", IsActive = true },
+            new Category { CategoryID = 2, CategoryName = "Healthcare", CategoryDescription = "Healthcare sector", IsActive = true },
+            new Category { CategoryID = 3, CategoryName = "Finance", CategoryDescription = "Financial sector", IsActive = true },
+            new Category { CategoryID = 4, CategoryName = "Energy", CategoryDescription = "Energy sector", IsActive = true },
+            new Category { CategoryID = 5, CategoryName = "Cryptocurrencies", CategoryDescription = "Digital assets", IsActive = true },
+            new Category { CategoryID = 6, CategoryName = "Consumer Goods", CategoryDescription = "Goods bought and used by consumers", IsActive = true }
+        );
+
+        modelBuilder.Entity<Tag>().HasData(
+            new Tag { TagID = 1, TagName = "AAPL", Note = "Apple Inc." },
+            new Tag { TagID = 2, TagName = "NVDA", Note = "NVIDIA Corporation" },
+            new Tag { TagID = 3, TagName = "MSFT", Note = "Microsoft Corporation" },
+            new Tag { TagID = 4, TagName = "GOOGL", Note = "Alphabet Inc. (Google)" },
+            new Tag { TagID = 5, TagName = "TSLA", Note = "Tesla, Inc." },
+            new Tag { TagID = 6, TagName = "BTC", Note = "Bitcoin" },
+            new Tag { TagID = 7, TagName = "ETH", Note = "Ethereum" },
+            new Tag { TagID = 8, TagName = "AMZN", Note = "Amazon.com, Inc." }
+        );
+
     }
 }
