@@ -1,0 +1,83 @@
+@model IEnumerable<FUNewsTradingSystem_DataAccessLayer.Models.SystemAccount>
+@{
+    ViewData["Title"] = "Account Management";
+}
+
+<div class="container-fluid py-4">
+    @Html.AntiForgeryToken()
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Account Management</h2>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+            <i class="bi bi-plus-circle me-1"></i> Add Account
+        </button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var account in Model)
+                        {
+                            var roleLabel = account.AccountRole switch
+                            {
+                                1 => "Staff",
+                                2 => "Lecturer",
+                                3 => "Admin",
+                                _ => "Guest"
+                            };
+                            
+                            var roleBadge = account.AccountRole switch
+                            {
+                                1 => "bg-info",
+                                2 => "bg-primary",
+                                3 => "bg-danger",
+                                _ => "bg-secondary"
+                            };
+
+                            var currentUserIdClaim = User.FindFirst("AccountID")?.Value;
+                            var isSelf = currentUserIdClaim != null && currentUserIdClaim == account.AccountID.ToString();
+
+                            <tr>
+                                <td>@account.AccountID</td>
+                                <td>@account.AccountName</td>
+                                <td>@account.AccountEmail</td>
+                                <td><span class="badge @roleBadge">@roleLabel</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-2" onclick="openEditModal(@account.AccountID)">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                    @if (!isSelf)
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAccount(@account.AccountID, '@account.AccountName')">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Containers -->
+<div id="createModalContainer"></div>
+<div id="editModalContainer"></div>
+<partial name="_ConfirmDeleteModal" />
+
+@section Scripts {
+    <partial name="_ValidationScripts" />
+    <script src="~/js/accounts.js"></script>
+}

@@ -232,3 +232,4 @@ C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN22
 C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\MVC\obj\Debug\net10.0\MVC.pdb
 C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\MVC\obj\Debug\net10.0\MVC.genruntimeconfig.cache
 C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\MVC\obj\Debug\net10.0\ref\MVC.dll
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\MVC\obj\Debug\net10.0\compressed\n5q1z4klvf-{0}-b6b11mx4ys-b6b11mx4ys.gz
