@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Authentication;
+@using FUNewsTradingSystem_MVC.Extensions
+@if (User.Identity?.IsAuthenticated == true)
+{
+    var roleLabel = User.GetAccountRole() switch
+    {
+        1 => "Staff",
+        2 => "Lecturer",
+        3 => "Admin",
+        _ => "Guest"
+    };
+
+    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="d-flex align-items-center gap-2">
+        @Html.AntiForgeryToken()
+        <span class="navbar-text text-truncate" style="max-width: 180px;">
+            <i class="bi bi-person-circle me-1"></i>@User.Identity.Name
+            <span class="badge bg-secondary ms-1">@roleLabel</span>
+        </span>
+        <button type="submit" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-box-arrow-right me-1"></i>Logout
+        </button>
+    </form>
+}
+else
+{
+    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-sm">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Login
+    </a>
+}
