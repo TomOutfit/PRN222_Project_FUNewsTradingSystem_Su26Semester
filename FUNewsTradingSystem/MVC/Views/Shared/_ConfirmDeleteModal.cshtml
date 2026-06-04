@@ -1,34 +1,19 @@
-@*
-    _ConfirmDeleteModal.cshtml — reusable Bootstrap confirmation dialog for delete operations.
-    Usage:
-      1. Include this partial in your page:  <partial name="_ConfirmDeleteModal" />
-      2. Call  ModalHelpers.confirmDelete(entityName, deleteUrl, csrfToken, successCallback)
-         (or wire via data- attributes on the delete button).
-*@
-
-<div class="modal fade" id="_ConfirmDeleteModal" tabindex="-1" aria-labelledby="_ConfirmDeleteModalLabel"
-     aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-danger">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="_ConfirmDeleteModalLabel">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Confirm Delete
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>
-                    Are you sure you want to delete
-                    <strong class="confirm-entity-name text-danger" data-confirm-entity-name></strong>?
-                </p>
-                <p class="text-muted small mb-0">This action cannot be undone.</p>
+                <p>Are you sure you want to delete <strong id="deleteEntityName"></strong>?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+                <input type="hidden" id="deleteUrl" />
+                <div id="deleteErrors" class="alert alert-danger d-none"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" data-confirm-delete-btn>
-                    <i class="bi bi-trash me-1"></i>Delete
-                </button>
+                <button type="button" class="btn btn-danger" onclick="executeDelete()">Delete</button>
             </div>
         </div>
     </div>
