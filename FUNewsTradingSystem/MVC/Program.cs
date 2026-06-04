@@ -55,14 +55,14 @@ builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interf
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.INewsArticleRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.NewsArticleRepository>();
 
 // Services — Scoped
-// builder.Services.AddScoped<IServices.Interfaces.ISystemAccountService, Services.Implements.SystemAccountService>();
-// builder.Services.AddScoped<IServices.Interfaces.ICategoryService, Services.Implements.CategoryService>();
-// builder.Services.AddScoped<IServices.Interfaces.ITagService, Services.Implements.TagService>();
-// builder.Services.AddScoped<IServices.Interfaces.INewsArticleService, Services.Implements.NewsArticleService>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ISystemAccountService, FUNewsTradingSystem_BusinessLayer.Services.Implements.SystemAccountService>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ICategoryService, FUNewsTradingSystem_BusinessLayer.Services.Implements.CategoryService>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ITagService, FUNewsTradingSystem_BusinessLayer.Services.Implements.TagService>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.INewsArticleService, FUNewsTradingSystem_BusinessLayer.Services.Implements.NewsArticleService>();
 
 // TradingAgentService — Singleton (reuses HttpClient, thread-safe)
-// builder.Services.AddSingleton<HttpClient>(sp => new HttpClient { Timeout = TimeSpan.FromSeconds(10) });
-// builder.Services.AddSingleton<IServices.Interfaces.ITradingAgentService, Services.Implements.TradingAgentService>();
+builder.Services.AddSingleton<HttpClient>(sp => new HttpClient { Timeout = TimeSpan.FromSeconds(10) });
+builder.Services.AddSingleton<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ITradingAgentService, FUNewsTradingSystem_BusinessLayer.Services.Implements.TradingAgentService>();
 
 // ─────────────────────────────────────────────
 // 4. MVC + Views
