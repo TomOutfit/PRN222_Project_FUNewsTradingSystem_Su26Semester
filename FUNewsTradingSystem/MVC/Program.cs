@@ -49,11 +49,10 @@ builder.Services.AddAuthorization(options =>
 //    (uncomment and wire up once service implementations are available)
 // ─────────────────────────────────────────────
 // Repositories — Scoped
-// builder.Services.AddScoped<IRepositories.Interfaces.ISystemAccountRepository, Repositories.Implements.SystemAccountRepository>();
-// builder.Services.AddScoped<IRepositories.Interfaces.ICategoryRepository, Repositories.Implements.CategoryRepository>();
-// builder.Services.AddScoped<IRepositories.Interfaces.ITagRepository, Repositories.Implements.TagRepository>();
-// builder.Services.AddScoped<IRepositories.Interfaces.INewsArticleRepository, Repositories.Implements.NewsArticleRepository>();
-// builder.Services.AddScoped<IRepositories.Interfaces.INewsTagRepository, Repositories.Implements.NewsTagRepository>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.ISystemAccountRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.SystemAccountRepository>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.ICategoryRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.CategoryRepository>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.ITagRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.TagRepository>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.INewsArticleRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.NewsArticleRepository>();
 
 // Services — Scoped
 // builder.Services.AddScoped<IServices.Interfaces.ISystemAccountService, Services.Implements.SystemAccountService>();
