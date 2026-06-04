@@ -1,0 +1,16 @@
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\bin\Debug\net10.0\BusinessLayer.deps.json
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\bin\Debug\net10.0\BusinessLayer.dll
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\bin\Debug\net10.0\BusinessLayer.pdb
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\bin\Debug\net10.0\DataAccessLayer.dll
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\bin\Debug\net10.0\DataAccessLayer.pdb
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\BusinessLayer.csproj.AssemblyReference.cache
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\BusinessLayer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\BusinessLayer.AssemblyInfoInputs.cache
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\BusinessLayer.AssemblyInfo.cs
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\BusinessLayer.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\BusinessLayer.sourcelink.json
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\Business.EA331CBA.Up2Date
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\BusinessLayer.dll
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\refint\BusinessLayer.dll
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\BusinessLayer.pdb
+C:\Users\Administrator\Downloads\FPT Studying 2024 - 2028\2026, Semester 7\PRN222_Project_FUNewsTradingSystem_Su26Semester\FUNewsTradingSystem\BusinessLayer\obj\Debug\net10.0\ref\BusinessLayer.dll

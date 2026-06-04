@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FUNewsTradingSystem_DataAccessLayer", "FUNewsTradingSystem\FUNewsTradingSystem_DataAccessLayer\FUNewsTradingSystem_DataAccessLayer.csproj", "{00000000-0000-0000-0000-000000000001}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "FUNewsTradingSystem\DataAccessLayer\DataAccessLayer.csproj", "{00000000-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FUNewsTradingSystem_BusinessLayer", "FUNewsTradingSystem\FUNewsTradingSystem_BusinessLayer\FUNewsTradingSystem_BusinessLayer.csproj", "{00000000-0000-0000-0000-000000000002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLayer", "FUNewsTradingSystem\BusinessLayer\BusinessLayer.csproj", "{00000000-0000-0000-0000-000000000002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FUNewsTradingSystem_MVC", "FUNewsTradingSystem\FUNewsTradingSystem_MVC\FUNewsTradingSystem_MVC.csproj", "{00000000-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVC", "FUNewsTradingSystem\MVC\MVC.csproj", "{00000000-0000-0000-0000-000000000003}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
