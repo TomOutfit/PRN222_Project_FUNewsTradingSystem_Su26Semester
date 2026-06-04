@@ -1,5 +1,5 @@
 -- =====================================================================================
--- Database Script for FUNewsTradingSystem (FUNewsManagement)
+-- Database Script for FUNewsTradingSystem (FUNewsTradingSystem)
 -- Role: P2 - Backend Developer
 -- Description: Creates the database schema, tables, relationships, and seed data.
 -- target RDBMS: SQL Server
@@ -8,17 +8,17 @@
 USE master;
 GO
 
-IF DB_ID('FUNewsManagement') IS NOT NULL
+IF DB_ID('FUNewsTradingSystem') IS NOT NULL
 BEGIN
-    ALTER DATABASE FUNewsManagement SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE FUNewsManagement;
+    ALTER DATABASE FUNewsTradingSystem SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE FUNewsTradingSystem;
 END
 GO
 
-CREATE DATABASE FUNewsManagement;
+CREATE DATABASE FUNewsTradingSystem;
 GO
 
-USE FUNewsManagement;
+USE FUNewsTradingSystem;
 GO
 
 -- =====================================================================================
