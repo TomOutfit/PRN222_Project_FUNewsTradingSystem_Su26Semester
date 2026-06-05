@@ -230,33 +230,33 @@
 - [X] Test all shared JS helpers in isolation: open/close modal, confirm delete flow, success/error toast display
 
 ### 🚀 Run Analysis View & JS (4 tasks)
-- [ ] Create `Views/Staff/RunAnalysis.cshtml`: two `<select>` dropdowns (`SelectedTagId` and `SelectedCategoryId`), "Run Analysis" button (`id="btnRunAnalysis"`), hidden loading spinner (`<div id="loadingSpinner" class="d-none"><div class="spinner-border"></div> Analyzing...</div>`), result area (`<div id="resultArea" class="d-none">`)
-- [ ] Create `wwwroot/js/run-analysis.js`:
+- [X] Create `Views/Staff/RunAnalysis.cshtml`: two `<select>` dropdowns (`SelectedTagId` and `SelectedCategoryId`), "Run Analysis" button (`id="btnRunAnalysis"`), hidden loading spinner (`<div id="loadingSpinner" class="d-none"><div class="spinner-border"></div> Analyzing...</div>`), result area (`<div id="resultArea" class="d-none">`)
+- [X] Create `wwwroot/js/run-analysis.js`:
   - On `#btnRunAnalysis` click: disable button + show spinner + hide result area
   - `fetch('/Staff/RunAnalysis', { method: 'POST', headers: {...}, body: formData })`
   - On `result.success == true`: hide spinner, re-enable button, show `#resultArea` with green success alert + link `<a href="/News/Detail/{result.newsArticleId}">View Report →</a>`
   - On `result.success == false`: hide spinner, re-enable button, show `#resultArea` with red alert containing `result.errorMessage`
   - On network error: hide spinner, re-enable button, show "Unexpected network error. Please try again."
-- [ ] Verify: button is disabled and spinner visible during pipeline execution (cannot double-submit)
-- [ ] Verify: success case shows green alert with correct link to new report; error case shows red alert with the specific message from the pipeline
+- [X] Verify: button is disabled and spinner visible during pipeline execution (cannot double-submit)
+- [X] Verify: success case shows green alert with correct link to new report; error case shows red alert with the specific message from the pipeline
 
 ### 👤 Profile Management — FR-9 (12 tasks)
-- [ ] Add to `StaffController.cs`: `GET /Staff/Profile` → query current account from DB by `AccountID` claim → populate `ProfileViewModel` → return view
-- [ ] Add `POST /Staff/Profile/UpdateName` (AntiForgery): validate `UpdateNameViewModel` → call `_accountService.UpdateAccountNameAsync()` → TempData["NameSuccess"] = "Profile updated successfully." → redirect to GET
-- [ ] Add `POST /Staff/Profile/ChangePassword` (AntiForgery): validate `ChangePasswordViewModel` → call `_accountService.ChangePasswordAsync()` → on fail: ModelState error "Current password is incorrect." → on success: TempData["PwdSuccess"] = "Password changed successfully." → redirect to GET
-- [ ] Create `ProfileViewModel.cs`: AccountName (editable), AccountEmail (read-only), AccountRoleLabel ("Staff")
-- [ ] Create `UpdateNameViewModel.cs`: AccountName (Required, 2–100 chars)
-- [ ] Create `ChangePasswordViewModel.cs`: CurrentPassword (Required), NewPassword (Required, MinLength 8), ConfirmNewPassword (Required, `[Compare("NewPassword")]`)
-- [ ] Create `Views/Staff/Profile/Index.cshtml`:
+- [X] Add to `StaffController.cs`: `GET /Staff/Profile` → query current account from DB by `AccountID` claim → populate `ProfileViewModel` → return view
+- [X] Add `POST /Staff/Profile/UpdateName` (AntiForgery): validate `UpdateNameViewModel` → call `_accountService.UpdateAccountNameAsync()` → TempData["NameSuccess"] = "Profile updated successfully." → redirect to GET
+- [X] Add `POST /Staff/Profile/ChangePassword` (AntiForgery): validate `ChangePasswordViewModel` → call `_accountService.ChangePasswordAsync()` → on fail: ModelState error "Current password is incorrect." → on success: TempData["PwdSuccess"] = "Password changed successfully." → redirect to GET
+- [X] Create `ProfileViewModel.cs`: AccountName (editable), AccountEmail (read-only), AccountRoleLabel ("Staff")
+- [X] Create `UpdateNameViewModel.cs`: AccountName (Required, 2–100 chars)
+- [X] Create `ChangePasswordViewModel.cs`: CurrentPassword (Required), NewPassword (Required, MinLength 8), ConfirmNewPassword (Required, `[Compare("NewPassword")]`)
+- [X] Create `Views/Staff/Profile/Index.cshtml`:
   - Section 1 "Update Display Name": AccountName input, Save Name button (separate form, POST to UpdateName); success message from `TempData["NameSuccess"]`
   - Section 2 "Change Password": CurrentPassword, NewPassword, ConfirmNewPassword inputs; Save Password button (separate form, POST to ChangePassword); success message from `TempData["PwdSuccess"]`
   - AccountEmail and AccountRole as read-only `<p>` elements (not `<input>`)
   - Each section is a separate Bootstrap card
-- [ ] Verify: AccountEmail and AccountRole have no `<input>` — cannot be submitted
-- [ ] Verify: wrong current password → "Current password is incorrect." inline; password unchanged
-- [ ] Verify: mismatched new passwords → `[Compare]` validation error shown before submit
-- [ ] Verify: new password < 8 chars → MinLength validation error shown before submit
-- [ ] Verify: successful password change → log out → log in with new password → access granted
+- [X] Verify: AccountEmail and AccountRole have no `<input>` — cannot be submitted
+- [X] Verify: wrong current password → "Current password is incorrect." inline; password unchanged
+- [X] Verify: mismatched new passwords → `[Compare]` validation error shown before submit
+- [X] Verify: new password < 8 chars → MinLength validation error shown before submit
+- [X] Verify: successful password change → log out → log in with new password → access granted
 
 ### 🏠 Staff Dashboard (4 tasks)
 - [ ] Add `GET /Staff/Dashboard` to `StaffController.cs`: call `GetReportsByCreatorAsync(currentAccountId)` for count; return view with AccountName claim + report count
