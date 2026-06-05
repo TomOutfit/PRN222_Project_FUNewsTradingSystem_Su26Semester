@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -19,19 +19,22 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @* 1. GUEST HOẶC LECTURER (ROLE 2) -> CHỈ XEM REPORTS *@
+                        @if (!User.Identity?.IsAuthenticated == true || User.IsInRole("2"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
+                                   asp-controller="Report" asp-action="Index">Reports</a>
+                            </li>
+                        }
 
-                    @* Authenticated navigation *@
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <ul class="navbar-nav flex-grow-1">
-
-                            @* Staff navigation (Role = 1) *@
+                        @* THÀNH VIÊN ĐÃ ĐĂNG NHẬP *@
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @* 2. STAFF NAVIGATION (ROLE 1) *@
                             @if (User.IsInRole("1"))
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" ? "active" : "")"
-                                       asp-controller="Staff" asp-action="Index">Dashboard</a>
-                                </li>
                                 <li class="nav-item">
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Analysis" ? "active" : "")"
                                        asp-controller="Analysis" asp-action="Index">Run Analysis</a>
@@ -42,56 +45,56 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Tag" ? "active" : "")"
-                                       asp-controller="Tag" asp-action="Index">Tickers</a>
+                                       asp-controller="Tag" asp-action="Index">Tags</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "History" ? "active" : "")"
                                        asp-controller="Report" asp-action="History">My Reports</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
-                                       asp-controller="Staff" asp-action="Profile">My Profile</a>
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                                       asp-controller="Account" asp-action="Profile">Profile</a>
                                 </li>
                             }
 
-                            @* Admin navigation (Role = 3) *@
+                            @* 3. ADMIN NAVIGATION (ROLE 3) *@
                             @if (User.IsInRole("3"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
-                                       asp-controller="Admin" asp-action="Index">Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["action"]?.ToString() == "Accounts" ? "active" : "")"
-                                       asp-controller="Admin" asp-action="Accounts">Accounts</a>
+                                       asp-controller="Admin" asp-action="Index">Accounts</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["action"]?.ToString() == "StatisticalReport" ? "active" : "")"
                                        asp-controller="Admin" asp-action="StatisticalReport">Statistics</a>
                                 </li>
                             }
+                        }
+                    </ul>
 
-                            @* Lecturer (Role = 2) and Guest navigation *@
-                            @if (User.IsInRole("2") || !User.Identity.IsAuthenticated)
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" ? "active" : "")"
-                                       asp-controller="Report" asp-action="Index">Reports</a>
-                                </li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <ul class="navbar-nav flex-grow-1">
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" ? "active" : "")"
-                                   asp-controller="Report" asp-action="Index">Reports</a>
-                            </li>
-                        </ul>
-                    }
+                    @* KHU VỰC ĐĂNG NHẬP / ĐĂNG XUẤT PHÍA BÊN PHẢI NAVBAR *@
+                    <div class="d-flex align-items-center">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <span class="navbar-text me-3 text-secondary">
+                                Hello, <strong>@User.Identity.Name</strong>
+                                <span class="badge bg-light text-dark border">
+                                    @(User.IsInRole("3") ? "Admin" : User.IsInRole("1") ? "Staff" : "Lecturer")
+                                </span>
+                            </span>
 
-                    <partial name="_LoginPartial" />
+                            @* Bắt buộc sử dụng FORM POST + AntiForgeryToken cho nút Logout *@
+                            <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger btn-sm fw-medium">Logout</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary btn-sm fw-medium px-3" asp-controller="Account" asp-action="Login">Login</a>
+                        }
+                    </div>
+
                 </div>
             </div>
         </nav>
@@ -103,8 +106,8 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-auto">
-        <div class="container">
+    <footer class="border-top footer text-muted mt-auto py-3 bg-light">
+        <div class="container text-center text-sm-start">
             &copy; 2026 — FUNewsTradingSystem (Automated AI Trading Analysis)
         </div>
     </footer>
@@ -112,6 +115,8 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @* Render section Scripts đúng chuẩn không bắt buộc ở cuối trang *@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
