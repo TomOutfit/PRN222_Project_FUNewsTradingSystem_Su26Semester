@@ -2,13 +2,13 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
 {
     public interface ITradingAgentService
     {
-        Task<TradingAnalysisResult> AnalyzeArticleAsync(string rawContent);
+        Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId);
     }
 
-    public class TradingAnalysisResult
+    public class TradingAgentResult
     {
-        public string Sentiment { get; set; } = string.Empty;
-        public string TradingSignal { get; set; } = string.Empty;
-        public double ConfidenceScore { get; set; }
+        public bool Success { get; set; }
+        public int? NewsArticleID { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 }

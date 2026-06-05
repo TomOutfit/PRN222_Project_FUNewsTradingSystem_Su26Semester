@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "Staff Dashboard";
     var accountName = ViewData["AccountName"] ?? "Staff";
+    var reportCount = ViewData["ReportCount"] ?? 0;
 }
 
 <div class="row mb-4">
@@ -12,7 +13,7 @@
 
 <div class="row g-4">
     <div class="col-md-4">
-        <div class="card h-100 border-primary shadow-sm">
+        <div class="card h-100 border-primary shadow-sm card-dashboard">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-cpu text-primary" viewBox="0 0 16 16">
@@ -27,7 +28,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100 border-success shadow-sm">
+        <div class="card h-100 border-success shadow-sm card-dashboard">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-folder2 text-success" viewBox="0 0 16 16">
@@ -41,7 +42,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100 border-warning shadow-sm">
+        <div class="card h-100 border-warning shadow-sm card-dashboard">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-tags text-warning" viewBox="0 0 16 16">
@@ -55,7 +56,7 @@
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card h-100 border-info shadow-sm">
+        <div class="card h-100 border-info shadow-sm card-dashboard">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-clock-history text-info" viewBox="0 0 16 16">
@@ -63,14 +64,20 @@
                         <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM1.5 8a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0z"/>
                     </svg>
                 </div>
-                <h5 class="card-title">My Reports</h5>
+                <h5 class="card-title">
+                    My Reports
+                    @if ((int)reportCount > 0)
+                    {
+                        <span class="badge bg-info ms-2">@reportCount</span>
+                    }
+                </h5>
                 <p class="card-text text-muted small">View all reports you have generated and manage their visibility.</p>
                 <a asp-controller="Report" asp-action="History" class="btn btn-info text-white stretched-link">View History</a>
             </div>
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card h-100 border-secondary shadow-sm">
+        <div class="card h-100 border-secondary shadow-sm card-dashboard">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-person-circle text-secondary" viewBox="0 0 16 16">
@@ -80,7 +87,7 @@
                 </div>
                 <h5 class="card-title">My Profile</h5>
                 <p class="card-text text-muted small">Update your display name and change your password.</p>
-                <a asp-controller="Account" asp-action="Profile" class="btn btn-secondary stretched-link">Edit Profile</a>
+                <a asp-controller="Staff" asp-action="Profile" class="btn btn-secondary stretched-link">Edit Profile</a>
             </div>
         </div>
     </div>
