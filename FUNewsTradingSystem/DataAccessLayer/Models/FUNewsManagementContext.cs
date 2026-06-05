@@ -93,14 +93,25 @@ public class FUNewsManagementContext : DbContext
         });
 
         // --- Seed Data ---
-        modelBuilder.Entity<SystemAccount>().HasData(new SystemAccount
-        {
-            AccountID = 1,
-            AccountName = "System Admin",
-            AccountEmail = "admin@FUNewsTradingSystem.org",
-            AccountRole = 3,
-            AccountPassword = "AQAAAAEAACcQAAAAELs+PZVdRHadHlMuaXWvzHD+7oMv2jsRUY/UxVGi1j32aL9NjpmmwVSDm9hKDppDjQ=="
-        });
+        // Note: Admin account is seeded via appsettings.json on startup.
+        modelBuilder.Entity<SystemAccount>().HasData(
+            new SystemAccount
+            {
+                AccountID = 1,
+                AccountName = "Test Staff",
+                AccountEmail = "staff@FUNewsTradingSystem.org",
+                AccountRole = 1,
+                AccountPassword = "@@abc123@@_HASH_PLACEHOLDER"
+            },
+            new SystemAccount
+            {
+                AccountID = 2,
+                AccountName = "Test Lecturer",
+                AccountEmail = "lecturer@FUNewsTradingSystem.org",
+                AccountRole = 2,
+                AccountPassword = "@@abc123@@_HASH_PLACEHOLDER"
+            }
+        );
 
         modelBuilder.Entity<Category>().HasData(
             new Category { CategoryID = 1, CategoryName = "Technology", CategoryDescription = "Technology sector", IsActive = true },
