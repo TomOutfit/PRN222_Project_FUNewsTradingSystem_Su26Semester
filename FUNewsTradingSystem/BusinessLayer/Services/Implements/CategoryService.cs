@@ -1,9 +1,10 @@
 using FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces;
+using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_DataAccessLayer.Models;
 
 namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
 {
-    public class CategoryService : Interfaces.ICategoryService
+    public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _repository;
 
@@ -12,43 +13,46 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
             _repository = repository;
         }
 
-        public async Task<List<Category>> GetAllAsync() => await _repository.GetAllAsync();
+        public async Task<List<Category>> GetAllCategoriesAsync() => await _repository.GetAllAsync();
         public async Task<List<Category>> GetActiveAsync() => await _repository.GetActiveAsync();
         public async Task<List<Category>> GetTopLevelAsync() => await _repository.GetTopLevelAsync();
-        public async Task<Category?> GetByIdAsync(int id) => await _repository.GetByIdAsync(id);
+        public async Task<Category?> GetCategoryByIdAsync(int id) => await _repository.GetByIdAsync(id);
 
-        public async Task<ServiceResult> CreateAsync(Category category)
+        public async Task<bool> CreateCategoryAsync(Category category)
         {
             var created = await _repository.CreateAsync(category);
-            return new ServiceResult { Success = true, EntityId = created.CategoryID };
+            return created != null && created.CategoryID > 0;
         }
 
-        public async Task<ServiceResult> UpdateAsync(Category category)
+        public async Task<bool> UpdateCategoryAsync(Category category)
         {
+            var existing = await _repository.GetByIdAsync(category.CategoryID);
+            if (existing == null) return false;
+
             await _repository.UpdateAsync(category);
-            return new ServiceResult { Success = true, EntityId = category.CategoryID };
+            return true;
         }
 
-        public async Task<ServiceResult> ToggleActiveAsync(int categoryId)
+        public async Task<bool> ToggleActiveAsync(int id)
         {
-            await _repository.ToggleActiveAsync(categoryId);
-            return new ServiceResult { Success = true };
+            var category = await _repository.GetByIdAsync(id);
+            if (category == null) return false;
+
+            category.IsActive = !category.IsActive;
+            await _repository.UpdateAsync(category);
+            return category.IsActive;
         }
 
-        public async Task<ServiceResult> DeleteAsync(int categoryId)
+        public async Task<bool> DeleteCategoryAsync(int id)
         {
-            if (await _repository.IsReferencedByAnyArticleAsync(categoryId))
+            if (await _repository.IsReferencedByAnyArticleAsync(id) ||
+                await _repository.HasChildCategoriesReferencedByArticlesAsync(id))
             {
-                return new ServiceResult { Success = false, ErrorMessage = "Cannot delete category: it is referenced by one or more articles." };
+                return false; 
             }
 
-            if (await _repository.HasChildCategoriesReferencedByArticlesAsync(categoryId))
-            {
-                return new ServiceResult { Success = false, ErrorMessage = "Cannot delete category: its child categories are referenced by one or more articles." };
-            }
-
-            await _repository.DeleteWithReparentChildrenAsync(categoryId);
-            return new ServiceResult { Success = true };
+            await _repository.DeleteWithReparentChildrenAsync(id);
+            return true;
         }
     }
 }
