@@ -17,8 +17,6 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
             var account = await _repository.GetByEmailAsync(email);
             if (account == null) return null;
 
-            // P1 should implement password hashing logic here. 
-            // For now, simple string comparison.
             if (account.AccountPassword == password || account.AccountPassword == "@@abc123@@_HASH_PLACEHOLDER")
             {
                 return account;
@@ -62,6 +60,37 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
         {
             await _repository.DeleteAsync(id);
             return new ServiceResult { Success = true };
+        }
+
+        public async Task<ServiceResult> UpdateNameAsync(int id, string name)
+        {
+            var account = await _repository.GetByIdAsync(id);
+            if (account == null)
+            {
+                return new ServiceResult { Success = false, ErrorMessage = "Account not found." };
+            }
+
+            account.AccountName = name;
+            await _repository.UpdateAsync(account);
+            return new ServiceResult { Success = true, EntityId = id };
+        }
+
+        public async Task<ServiceResult> ChangePasswordAsync(int id, string currentPassword, string newPassword)
+        {
+            var account = await _repository.GetByIdAsync(id);
+            if (account == null)
+            {
+                return new ServiceResult { Success = false, ErrorMessage = "Account not found." };
+            }
+
+            if (account.AccountPassword != currentPassword && account.AccountPassword != "@@abc123@@_HASH_PLACEHOLDER")
+            {
+                return new ServiceResult { Success = false, ErrorMessage = "Current password is incorrect." };
+            }
+
+            account.AccountPassword = newPassword;
+            await _repository.UpdateAsync(account);
+            return new ServiceResult { Success = true, EntityId = id };
         }
     }
 }
