@@ -59,13 +59,13 @@
 - [X] Create `Views/Account/Login.cshtml`: form with Email/Password inputs, `asp-for` tag helpers, `<span asp-validation-for>` on each field, `@Html.AntiForgeryToken()`, validation scripts partial, Bootstrap styling
 
 ### 🛡️ Authorization — FR-2 (7 tasks)
-- [ ] Create `/Filters/RoleAuthorizeAttribute.cs`: custom `IAuthorizationFilter` reading role from claims; return 403 or redirect to Login on violation
-- [ ] Configure policies in `Program.cs`: `"StaffOnly"` (Role=1), `"AdminOnly"` (Role=3), `"StaffOrLecturer"` (Role=1 or 2)
-- [ ] Apply `[Authorize(Policy = "StaffOnly")]` to all Staff controller actions (Category, Tag, RunAnalysis, History, Profile, Dashboard)
-- [ ] Apply `[Authorize(Policy = "AdminOnly")]` to all Admin controller actions (Accounts, Statistics)
-- [ ] Ensure `NewsController.Index` and `NewsController.Detail` have `[AllowAnonymous]`
-- [ ] Create `ClaimsPrincipalExtensions.GetAccountId()`: parses AccountID claim as `int` for use across controllers
-- [ ] Add role-based nav rendering to `_Layout.cshtml` using `User.IsInRole()`
+- [X] Create `/Filters/RoleAuthorizeAttribute.cs`: custom `IAuthorizationFilter` reading role from claims; return 403 or redirect to Login on violation
+- [X] Configure policies in `Program.cs`: `"StaffOnly"` (Role=1), `"AdminOnly"` (Role=3), `"StaffOrLecturer"` (Role=1 or 2)
+- [X] Apply `[Authorize(Policy = "StaffOnly")]` to all Staff controller actions (Category, Tag, RunAnalysis, History, Profile, Dashboard)
+- [X] Apply `[Authorize(Policy = "AdminOnly")]` to all Admin controller actions (Accounts, Statistics)
+- [X] Ensure `NewsController.Index` and `NewsController.Detail` have `[AllowAnonymous]`
+- [X] Create `ClaimsPrincipalExtensions.GetAccountId()`: parses AccountID claim as `int` for use across controllers
+- [X] Add role-based nav rendering to `_Layout.cshtml` using `User.IsInRole()`
 
 ### 🤖 AI Trading Pipeline — FR-3 (19 tasks)
 - [ ] Create `/Models/DTOs/NewsApiArticle.cs`: `title`, `description`, `publishedAt`, `source`
