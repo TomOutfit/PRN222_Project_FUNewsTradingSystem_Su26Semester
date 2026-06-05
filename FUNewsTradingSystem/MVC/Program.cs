@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using FUNewsTradingSystem_DataAccessLayer.Models;
 
@@ -70,6 +71,9 @@ builder.Services.AddSingleton<FUNewsTradingSystem_BusinessLayer.Services.Interfa
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
+// IPasswordHasher — used by AccountController for login verification
+builder.Services.AddScoped<IPasswordHasher<SystemAccount>, PasswordHasher<SystemAccount>>();
+
 var app = builder.Build();
 
 // ─────────────────────────────────────────────
@@ -93,6 +97,23 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}")
     .WithStaticAssets();
+// ─────────────────────────────────────────────
+// 6. Auto-apply pending EF migrations on startup (best-effort)
+// ─────────────────────────────────────────────
+try
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<FUNewsManagementContext>();
+    db.Database.Migrate();
+}
+catch (Exception ex)
+{
+    // Log warning but don't crash — DB may already be up-to-date
+    // or LocalDB isn't reachable from this shell context.
+    var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger("Startup");
+    logger.LogWarning(ex, "Auto-migration skipped: {Message}", ex.Message);
+}
 
 app.Run();
 

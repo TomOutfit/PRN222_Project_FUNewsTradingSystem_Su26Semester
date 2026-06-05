@@ -12,6 +12,11 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
             _repository = repository;
         }
 
+        public async Task<SystemAccount?> GetByEmailAsync(string email)
+        {
+            return await _repository.GetByEmailAsync(email);
+        }
+
         public async Task<SystemAccount?> AuthenticateAsync(string email, string password)
         {
             var account = await _repository.GetByEmailAsync(email);
