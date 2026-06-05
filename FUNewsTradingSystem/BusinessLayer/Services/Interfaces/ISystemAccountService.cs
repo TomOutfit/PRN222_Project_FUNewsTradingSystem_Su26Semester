@@ -11,5 +11,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
         Task<ServiceResult> CreateAsync(SystemAccount account);
         Task<ServiceResult> UpdateAsync(SystemAccount account);
         Task<ServiceResult> DeleteAsync(int id);
+        Task<ServiceResult> UpdateNameAsync(int id, string name);
+        Task<ServiceResult> ChangePasswordAsync(int id, string currentPassword, string newPassword);
     }
 }
