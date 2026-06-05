@@ -160,11 +160,11 @@
 > Owns Category/Tag management (full stack) and the public-facing Report Viewer. Can scaffold views on Day 1 in parallel with P2.
 
 ### 🖼️ Layout & Shared Views (5 tasks)
-- [ ] Implement `Views/Shared/_Layout.cshtml`: Bootstrap 5 navbar; role-gated nav links via `@if (User.IsInRole("1"))` guards (Staff: Run Analysis, Categories, Tags, My Reports, Profile; Admin: Accounts, Statistics; Lecturer/Guest: Reports only); Logout POST form with AntiForgeryToken; `@RenderBody()`; `@RenderSection("Scripts", required: false)` at bottom
-- [ ] Create `Views/Shared/_ValidationScripts.cshtml` partial: `jquery-validate` + `jquery-validate-unobtrusive` script tags
-- [ ] Create `Views/Shared/_ConfirmDeleteModal.cshtml`: reusable Bootstrap modal; `data-entity-name` and `data-delete-url` attributes drive content; Cancel + Confirm buttons
-- [ ] Create `Views/Shared/Error.cshtml`: status code + friendly message display
-- [ ] Test nav visibility manually for all 4 roles after P1 completes auth
+- [x] Implement `Views/Shared/_Layout.cshtml`: Bootstrap 5 navbar; role-gated nav links via `@if (User.IsInRole("1"))` guards (Staff: Run Analysis, Categories, Tags, My Reports, Profile; Admin: Accounts, Statistics; Lecturer/Guest: Reports only); Logout POST form with AntiForgeryToken; `@RenderBody()`; `@RenderSection("Scripts", required: false)` at bottom
+- [x] Create `Views/Shared/_ValidationScripts.cshtml` partial: `jquery-validate` + `jquery-validate-unobtrusive` script tags
+- [x] Create `Views/Shared/_ConfirmDeleteModal.cshtml`: reusable Bootstrap modal; `data-entity-name` and `data-delete-url` attributes drive content; Cancel + Confirm buttons
+- [x] Create `Views/Shared/Error.cshtml`: status code + friendly message display
+- [x] Test nav visibility manually for all 4 roles after P1 completes auth
 
 ### 🗂️ Category Management — FR-5 (15 tasks)
 - [ ] Create `CategoryController.cs` with `[Authorize(Policy = "StaffOnly")]`
