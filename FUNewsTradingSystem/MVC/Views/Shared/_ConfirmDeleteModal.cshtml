@@ -1,20 +1,112 @@
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+@* Partial View: Modal xác nhận xóa dùng chung cho toàn hệ thống (Categories, Tags, Accounts...) *@
+
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete <strong id="deleteEntityName"></strong>?</p>
-                <p class="text-danger"><small>This action cannot be undone.</small></p>
+                <p>Are you sure you want to delete <strong id="deleteEntityName" class="text-break"></strong>?</p>
+                <p class="text-danger mb-0"><small><i class="bi bi-info-circle me-1"></i>This action cannot be undone.</small></p>
+
+                @* Lưu trữ URL xóa tạm thời *@
                 <input type="hidden" id="deleteUrl" />
-                <div id="deleteErrors" class="alert alert-danger d-none"></div>
+
+                @* Nơi hiển thị thông báo lỗi nếu AJAX Server trả về thất bại *@
+                <div id="deleteErrors" class="alert alert-danger d-none mt-3"></div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="executeDelete()">Delete</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDelete" onclick="executeDelete()">
+                    <span id="deleteSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    Delete
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+@* Form ẩn sinh Anti-Forgery Token để nhúng vào tiêu đề AJAX Request nhằm chống tấn công CSRF *@
+<form id="antiForgeryForm" method="post">
+    @Html.AntiForgeryToken()
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var modalElement = document.getElementById('confirmDeleteModal');
+        if (modalElement) {
+            // Lắng nghe sự kiện trước khi hiển thị Modal của Bootstrap 5
+            modalElement.addEventListener('show.bs.modal', function (event) {
+                // Nút kích hoạt mở modal
+                var button = event.relatedTarget;
+
+                // Trích xuất thông tin từ các thuộc tính data-entity-name và data-delete-url
+                var entityName = button.getAttribute('data-entity-name');
+                var deleteUrl = button.getAttribute('data-delete-url');
+
+                // Điền dữ liệu vào các thẻ bên trong modal
+                document.getElementById('deleteEntityName').textContent = entityName;
+                document.getElementById('deleteUrl').value = deleteUrl;
+
+                // Reset lại trạng thái lỗi và nút bấm cũ
+                var errorDiv = document.getElementById('deleteErrors');
+                errorDiv.classList.add('d-none');
+                errorDiv.textContent = '';
+
+                document.getElementById('btnConfirmDelete').removeAttribute('disabled');
+                document.getElementById('deleteSpinner').classList.add('d-none');
+            });
+        }
+    });
+
+    function executeDelete() {
+        var deleteUrl = document.getElementById('deleteUrl').value;
+        var errorDiv = document.getElementById('deleteErrors');
+        var btnDelete = document.getElementById('btnConfirmDelete');
+        var spinner = document.getElementById('deleteSpinner');
+
+        // Thu thập Anti-Forgery Token bảo mật từ Form ẩn bên trên
+        var token = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]').value;
+
+        if (!deleteUrl) return;
+
+        // Trạng thái đang xử lý (Loading UI)
+        btnDelete.setAttribute('disabled', 'true');
+        spinner.classList.remove('d-none');
+        errorDiv.classList.add('d-none');
+
+        // Gửi yêu cầu xóa bất đồng bộ qua AJAX POST (An toàn hơn GET)
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': token // Truyền Token bảo mật lên Server
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Nếu xóa thành công, tiến hành reload lại trang để cập nhật danh sách
+                window.location.reload();
+            } else {
+                return response.json().then(data => {
+                    throw new Error(data.message || "An error occurred while trying to delete this item.");
+                }).catch(() => {
+                    throw new Error("Server returned an error status code: " + response.status);
+                });
+            }
+        })
+        .catch(error => {
+            // Hiển thị lỗi lên giao diện modal nếu thất bại
+            errorDiv.textContent = error.message;
+            errorDiv.classList.remove('d-none');
+
+            // Trả lại trạng thái nút bấm cho phép thao tác lại
+            btnDelete.removeAttribute('disabled');
+            spinner.classList.add('d-none');
+        });
+    }
+</script>
