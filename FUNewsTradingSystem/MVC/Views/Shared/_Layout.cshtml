@@ -48,6 +48,10 @@
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "History" ? "active" : "")"
                                        asp-controller="Report" asp-action="History">My Reports</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                                       asp-controller="Staff" asp-action="Profile">My Profile</a>
+                                </li>
                             }
 
                             @* Admin navigation (Role = 3) *@
