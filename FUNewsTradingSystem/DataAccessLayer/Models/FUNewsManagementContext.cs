@@ -99,7 +99,7 @@ public class FUNewsManagementContext : DbContext
             AccountName = "System Admin",
             AccountEmail = "admin@FUNewsTradingSystem.org",
             AccountRole = 3,
-            AccountPassword = "@@abc123@@_HASH_PLACEHOLDER"
+            AccountPassword = "AQAAAAEAACcQAAAAELs+PZVdRHadHlMuaXWvzHD+7oMv2jsRUY/UxVGi1j32aL9NjpmmwVSDm9hKDppDjQ=="
         });
 
         modelBuilder.Entity<Category>().HasData(
