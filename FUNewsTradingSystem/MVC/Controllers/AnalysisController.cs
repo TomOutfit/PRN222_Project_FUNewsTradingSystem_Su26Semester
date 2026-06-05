@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
+using FUNewsTradingSystem_MVC.Extensions;
 using FUNewsTradingSystem_MVC.ViewModels.Report;
 
 namespace FUNewsTradingSystem_MVC.Controllers;
@@ -56,8 +57,8 @@ public class AnalysisController : Controller
         }
 
         // Get current user's account ID from claims
-        var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(accountIdClaim, out int accountId))
+        var accountId = User.GetAccountId();
+        if (!accountId.HasValue)
         {
             return Json(new { success = false, errorMessage = "Unable to identify current user." });
         }
@@ -67,7 +68,7 @@ public class AnalysisController : Controller
             var result = await _tradingAgentService.RunAnalysisAsync(
                 request.SelectedTagId,
                 request.SelectedCategoryId,
-                accountId);
+                accountId.Value);
 
             return Json(new
             {
