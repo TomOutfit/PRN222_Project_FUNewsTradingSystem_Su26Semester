@@ -51,12 +51,12 @@
 - [X] Create `FUNewsManagementContext.cs`: `DbSet<>` for all 5 entities; `OnModelCreating` — composite PK on `NewsTag`, self-ref FK on `Category`, `ON DELETE SET NULL` on `NewsArticle.CreatedByID`, `ON DELETE NO ACTION` on `NewsArticle.UpdatedByID`, unique index on `AccountEmail` and `TagName`; `HasData` seed — read Admin credentials from `IConfiguration`, hash with `IPasswordHasher<SystemAccount>`, insert `AccountRole=3`
 
 ### 🔐 Authentication — FR-1 (6 tasks)
-- [ ] Create `AccountController.cs` with `[AllowAnonymous]` on Login actions
-- [ ] `GET /Account/Login`: return Login view; if already authenticated, redirect by role
-- [ ] `POST /Account/Login`: validate ModelState → query `SystemAccount` by email → `IPasswordHasher.VerifyHashedPassword()` → on fail: ModelError "Invalid email or password." (no email-existence hint) → on success: create `ClaimsPrincipal` (claims: AccountID, AccountEmail, AccountRole) → `HttpContext.SignInAsync()` with `IsPersistent=false` → redirect Role=1→`/Staff/Dashboard`, Role=2→`/News/Index`, Role=3→`/Admin/Dashboard`
-- [ ] `POST /Account/Logout` with `[ValidateAntiForgeryToken]`: `HttpContext.SignOutAsync()` → redirect to Login
-- [ ] Create `LoginViewModel.cs`: Email (Required, EmailAddress), Password (Required, MinLength 8)
-- [ ] Create `Views/Account/Login.cshtml`: form with Email/Password inputs, `asp-for` tag helpers, `<span asp-validation-for>` on each field, `@Html.AntiForgeryToken()`, validation scripts partial, Bootstrap styling
+- [X] Create `AccountController.cs` with `[AllowAnonymous]` on Login actions
+- [X] `GET /Account/Login`: return Login view; if already authenticated, redirect by role
+- [X] `POST /Account/Login`: validate ModelState → query `SystemAccount` by email → `IPasswordHasher.VerifyHashedPassword()` → on fail: ModelError "Invalid email or password." (no email-existence hint) → on success: create `ClaimsPrincipal` (claims: AccountID, AccountEmail, AccountRole) → `HttpContext.SignInAsync()` with `IsPersistent=false` → redirect Role=1→`/Staff/Dashboard`, Role=2→`/News/Index`, Role=3→`/Admin/Dashboard`
+- [X] `POST /Account/Logout` with `[ValidateAntiForgeryToken]`: `HttpContext.SignOutAsync()` → redirect to Login
+- [X] Create `LoginViewModel.cs`: Email (Required, EmailAddress), Password (Required, MinLength 8)
+- [X] Create `Views/Account/Login.cshtml`: form with Email/Password inputs, `asp-for` tag helpers, `<span asp-validation-for>` on each field, `@Html.AntiForgeryToken()`, validation scripts partial, Bootstrap styling
 
 ### 🛡️ Authorization — FR-2 (7 tasks)
 - [ ] Create `/Filters/RoleAuthorizeAttribute.cs`: custom `IAuthorizationFilter` reading role from claims; return 403 or redirect to Login on violation
