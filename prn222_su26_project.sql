@@ -105,10 +105,12 @@ GO
 -- 2. Initial Seed Data
 -- =====================================================================================
 
--- SystemAccount 
--- Note: In the actual application, the password will be hashed using ASP.NET Core IPasswordHasher
+-- Note: Admin account is seeded via appsettings.json on startup.
+-- Seed test Staff and Lecturer accounts here.
 INSERT INTO SystemAccount (AccountName, AccountEmail, AccountRole, AccountPassword)
-VALUES ('System Admin', 'admin@FUNewsTradingSystem.org', 3, '@@abc123@@_HASH_PLACEHOLDER');
+VALUES 
+('Test Staff', 'staff@FUNewsTradingSystem.org', 1, '@@abc123@@_HASH_PLACEHOLDER'),
+('Test Lecturer', 'lecturer@FUNewsTradingSystem.org', 2, '@@abc123@@_HASH_PLACEHOLDER');
 GO
 
 -- Seed Categories

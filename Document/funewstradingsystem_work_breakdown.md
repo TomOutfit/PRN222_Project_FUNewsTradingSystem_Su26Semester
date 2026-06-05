@@ -130,7 +130,7 @@
 - [X] `GET /Admin/Accounts/EditPartial/{id}`: call `GetAccountForEditAsync(id)`, return `_EditAccountModal` partial
 - [X] `POST /Admin/Accounts/Edit` (AJAX JSON): validate → `UpdateAccountAsync()` → return result JSON
 - [X] `POST /Admin/Accounts/Delete/{id}` (AJAX JSON + `[ValidateAntiForgeryToken]`): `DeleteAccountAsync(id, currentAdminId)` → return result JSON
-- [ ] `GET /Admin/Dashboard`: landing page with links to Accounts and Statistics
+- [X] `GET /Admin/Dashboard`: landing page with links to Accounts and Statistics
 - [X] Create `CreateAccountViewModel.cs`: AccountName (Required, 2–100), AccountEmail (Required, EmailAddress), AccountPassword (Required, MinLength 8), AccountRole (Required, Range 1–2)
 - [X] Create `EditAccountViewModel.cs`: same fields + AccountId (Required); AccountPassword optional on Edit
 - [X] Create `Views/Admin/Accounts/Index.cshtml`: table (ID | Name | Email | Role label | Edit | Delete); Delete hidden for Admin's own row; "Add Account" button; modal container divs
