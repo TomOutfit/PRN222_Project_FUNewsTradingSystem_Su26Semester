@@ -1,5 +1,243 @@
 @model FUNewsTradingSystem_MVC.ViewModels.LoginViewModel
 @{
     Layout = null;
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign In — FUNewsTradingSystem";
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sign in to FUNewsTradingSystem — AI-powered market news &amp; trading analysis." />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        :root {
+            --accent:       #6366f1;
+            --accent-dark:  #4f46e5;
+            --surface:      #1e1e2e;
+            --surface-card: #2a2a3e;
+            --border:       rgba(255,255,255,0.08);
+            --text-muted:   #94a3b8;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at 60% 20%, #1a1050 0%, #0f0f1a 60%);
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #e2e8f0;
+        }
+
+        /* ── animated background dots ─────────────── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                radial-gradient(circle, rgba(99,102,241,.12) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ── card ───────────────────────────────────── */
+        .login-card {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 420px;
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem 2.25rem;
+            box-shadow:
+                0 0 0 1px rgba(99,102,241,.15),
+                0 20px 60px rgba(0,0,0,.5);
+            backdrop-filter: blur(12px);
+            animation: fadeUp .4s ease both;
+        }
+
+        @@keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+
+        /* ── logo / brand ───────────────────────────── */
+        .brand-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--accent), #818cf8);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin: 0 auto 1.25rem;
+            box-shadow: 0 4px 20px rgba(99,102,241,.4);
+        }
+
+        h1.login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: .25rem;
+            color: #f1f5f9;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: .875rem;
+            margin-bottom: 2rem;
+        }
+
+        /* ── form controls ──────────────────────────── */
+        .form-label {
+            font-size: .8125rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: .375rem;
+        }
+
+        .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: #f1f5f9;
+            padding: .625rem .875rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .form-control:focus {
+            background: rgba(255,255,255,0.07);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,.25);
+            color: #f1f5f9;
+            outline: none;
+        }
+
+        .form-control::placeholder { color: #475569; }
+
+        .form-control.input-validation-error {
+            border-color: #ef4444;
+        }
+
+        /* ── validation messages ────────────────────── */
+        .field-validation-error,
+        .text-danger {
+            font-size: .78rem;
+            color: #f87171;
+        }
+
+        .validation-summary-errors ul {
+            margin: 0; padding-left: 1.25rem;
+            list-style: disc;
+        }
+
+        .alert-danger {
+            background: rgba(239,68,68,.12);
+            border: 1px solid rgba(239,68,68,.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            font-size: .875rem;
+        }
+
+        /* ── submit button ──────────────────────────── */
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: .7rem;
+            cursor: pointer;
+            transition: opacity .2s, transform .15s, box-shadow .2s;
+            box-shadow: 0 4px 18px rgba(99,102,241,.4);
+            margin-top: .5rem;
+        }
+
+        .btn-login:hover  { opacity: .92; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,.55); }
+        .btn-login:active { transform: translateY(0); }
+
+        /* ── footer note ────────────────────────────── */
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: .8125rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+
+        <!-- Brand icon -->
+        <div class="brand-icon" aria-hidden="true">📈</div>
+
+        <h1 class="login-title">Welcome back</h1>
+        <p class="login-subtitle">Sign in to FUNewsTradingSystem</p>
+
+        <!-- Server-side validation summary (e.g. "Invalid email or password.") -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger" role="alert" id="validation-summary">
+                <div asp-validation-summary="ModelOnly"></div>
+            </div>
+        }
+
+        <form id="login-form" asp-controller="Account" asp-action="Login" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            @if (ViewData["ReturnUrl"] is string returnUrl && !string.IsNullOrEmpty(returnUrl))
+            {
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+            }
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email"
+                       id="Email"
+                       class="form-control"
+                       type="email"
+                       placeholder="you@example.com"
+                       autocomplete="email"
+                       autofocus />
+                <span asp-validation-for="Email" class="field-validation-error"></span>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password"
+                       id="Password"
+                       class="form-control"
+                       type="password"
+                       placeholder="••••••••"
+                       autocomplete="current-password" />
+                <span asp-validation-for="Password" class="field-validation-error"></span>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="login-submit" class="btn-login">
+                Sign in
+            </button>
+        </form>
+
+        <p class="login-footer">
+            FUNewsTradingSystem &copy; @DateTime.Now.Year
+        </p>
+    </div>
+
+    <!-- jQuery + jQuery Validation (unobtrusive client-side validation) -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    @* Render validation scripts partial for consistency *@
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+</body>
+</html>

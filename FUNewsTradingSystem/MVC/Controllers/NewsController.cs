@@ -3,12 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FUNewsTradingSystem_MVC.Controllers;
 
-[Authorize(Policy = "StaffOnly")]
-public class StaffController : Controller
+[Authorize(Policy = "StaffOrLecturer")]
+public class NewsController : Controller
 {
-    [HttpGet]
-    public IActionResult Dashboard() => View("Index");
-
     [HttpGet]
     public IActionResult Index() => View();
 }
