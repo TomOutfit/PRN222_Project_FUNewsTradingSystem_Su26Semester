@@ -75,16 +75,16 @@
 - [X] Create `/Models/DTOs/OpenAiResponse.cs`: maps `choices[0].message.content`
 - [X] Create `ITradingAgentService.cs`: single method `Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)`
 - [X] Create `TradingAgentResult.cs`: `bool Success`, `int? NewsArticleID`, `string ErrorMessage`
-- [ ] Define prompt constants as `static readonly string` in `TradingAgentService`: `SENTIMENT_AGENT_PROMPT_TEMPLATE`, `FUNDAMENTAL_AGENT_PROMPT_TEMPLATE`, `PORTFOLIO_MANAGER_PROMPT_TEMPLATE`
-- [ ] Implement `FetchNewsAsync(string tickerName)`: GET NewsAPI.org `q={ticker}&sortBy=publishedAt&pageSize=10`; extract top 10 as numbered list `"1. {title} – {description}"`; throw `PipelineException("NO_NEWS")` if 0 results
-- [ ] Implement `RunSentimentAgentAsync(string ticker, string headlines)`: POST to OpenAI with Sentiment prompt; extract `choices[0].message.content`; throw `PipelineException("LLM_TIMEOUT")` or `PipelineException("LLM_ERROR")` on failure
-- [ ] Implement `RunFundamentalAgentAsync(string ticker, string headlines, string sentimentOutput)`: same pattern as Sentiment step
-- [ ] Implement `RunPortfolioManagerAsync(...)`: POST to OpenAI; receive raw string; call `PreprocessJsonResponse()`; deserialize to `PortfolioManagerResponse`; throw `PipelineException("JSON_PARSE_ERROR")` on failure
-- [ ] Implement `PreprocessJsonResponse(string raw)`: strip leading ` ```json ` and trailing ` ``` ` if present; trim whitespace
-- [ ] Implement `ValidatePortfolioResponse(PortfolioManagerResponse r)`: `r.decision = r.decision.ToUpperInvariant()`; assert `decision ∈ {"BUY","SELL","HOLD"}`; assert all 5 fields non-empty; throw `PipelineException("INVALID_DECISION")` on failure
-- [ ] Implement `SaveReportAsync(...)`: open DB transaction → insert `NewsArticle` (`NewsTitle="[{decision}] {TagName} Automated Analysis"`, `CreatedByID`, `CreatedDate=DateTime.UtcNow`, `NewsStatus=1`) → insert `NewsTag` → commit; rollback + throw `PipelineException("DB_ERROR")` on failure
-- [ ] Implement `RunAnalysisAsync(...)`: orchestrate all steps; catch `PipelineException`; return `TradingAgentResult` with success/error state
-- [ ] Register in `Program.cs`: `AddSingleton<HttpClient>` with `Timeout=TimeSpan.FromSeconds(10)`; `AddSingleton<ITradingAgentService, TradingAgentService>()`
+- [x] Define prompt constants as `static readonly string` in `TradingAgentService`: `SENTIMENT_AGENT_PROMPT_TEMPLATE`, `FUNDAMENTAL_AGENT_PROMPT_TEMPLATE`, `PORTFOLIO_MANAGER_PROMPT_TEMPLATE`
+- [x] Implement `FetchNewsAsync(string tickerName)`: GET NewsAPI.org `q={ticker}&sortBy=publishedAt&pageSize=10`; extract top 10 as numbered list `"1. {title} – {description}"`; throw `PipelineException("NO_NEWS")` if 0 results
+- [x] Implement `RunSentimentAgentAsync(string ticker, string headlines)`: POST to OpenAI with Sentiment prompt; extract `choices[0].message.content`; throw `PipelineException("LLM_TIMEOUT")` or `PipelineException("LLM_ERROR")` on failure
+- [x] Implement `RunFundamentalAgentAsync(string ticker, string headlines, string sentimentOutput)`: same pattern as Sentiment step
+- [x] Implement `RunPortfolioManagerAsync(...)`: POST to OpenAI; receive raw string; call `PreprocessJsonResponse()`; deserialize to `PortfolioManagerResponse`; throw `PipelineException("JSON_PARSE_ERROR")` on failure
+- [x] Implement `PreprocessJsonResponse(string raw)`: strip leading ` ```json ` and trailing ` ``` ` if present; trim whitespace
+- [x] Implement `ValidatePortfolioResponse(PortfolioManagerResponse r)`: `r.decision = r.decision.ToUpperInvariant()`; assert `decision ∈ {"BUY","SELL","HOLD"}`; assert all 5 fields non-empty; throw `PipelineException("INVALID_DECISION")` on failure
+- [x] Implement `SaveReportAsync(...)`: open DB transaction → insert `NewsArticle` (`NewsTitle="[{decision}] {TagName} Automated Analysis"`, `CreatedByID`, `CreatedDate=DateTime.UtcNow`, `NewsStatus=1`) → insert `NewsTag` → commit; rollback + throw `PipelineException("DB_ERROR")` on failure
+- [x] Implement `RunAnalysisAsync(...)`: orchestrate all steps; catch `PipelineException`; return `TradingAgentResult` with success/error state
+- [x] Register in `Program.cs`: `AddSingleton<HttpClient>` with `Timeout=TimeSpan.FromSeconds(10)`; `AddSingleton<ITradingAgentService, TradingAgentService>()`
 - [X] Create `RunAnalysisController.cs` with `[Authorize(Policy = "StaffOnly")]`: `GET /Staff/RunAnalysis` (populate Ticker + active Sector dropdowns, return view); `POST /Staff/RunAnalysis` async (call `RunAnalysisAsync()`, return JSON `{ success, newsArticleId, errorMessage }`)
 - [X] Create `RunAnalysisViewModel.cs`: `SelectedTagId` (Required), `SelectedCategoryId` (Required), `AvailableTags: SelectList`, `AvailableCategories: SelectList`
 
