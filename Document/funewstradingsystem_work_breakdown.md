@@ -68,13 +68,13 @@
 - [X] Add role-based nav rendering to `_Layout.cshtml` using `User.IsInRole()`
 
 ### 🤖 AI Trading Pipeline — FR-3 (19 tasks)
-- [ ] Create `/Models/DTOs/NewsApiArticle.cs`: `title`, `description`, `publishedAt`, `source`
-- [ ] Create `/Models/DTOs/NewsApiResponse.cs`: `status`, `totalResults`, `articles: List<NewsApiArticle>`
-- [ ] Create `/Models/DTOs/PortfolioManagerResponse.cs`: `decision`, `title`, `headline`, `content`, `source`
-- [ ] Create `/Models/DTOs/OpenAiRequest.cs`: `model`, `messages`, `temperature`, `max_tokens`
-- [ ] Create `/Models/DTOs/OpenAiResponse.cs`: maps `choices[0].message.content`
-- [ ] Create `ITradingAgentService.cs`: single method `Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)`
-- [ ] Create `TradingAgentResult.cs`: `bool Success`, `int? NewsArticleID`, `string ErrorMessage`
+- [X] Create `/Models/DTOs/NewsApiArticle.cs`: `title`, `description`, `publishedAt`, `source`
+- [X] Create `/Models/DTOs/NewsApiResponse.cs`: `status`, `totalResults`, `articles: List<NewsApiArticle>`
+- [X] Create `/Models/DTOs/PortfolioManagerResponse.cs`: `decision`, `title`, `headline`, `content`, `source`
+- [X] Create `/Models/DTOs/OpenAiRequest.cs`: `model`, `messages`, `temperature`, `max_tokens`
+- [X] Create `/Models/DTOs/OpenAiResponse.cs`: maps `choices[0].message.content`
+- [X] Create `ITradingAgentService.cs`: single method `Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)`
+- [X] Create `TradingAgentResult.cs`: `bool Success`, `int? NewsArticleID`, `string ErrorMessage`
 - [ ] Define prompt constants as `static readonly string` in `TradingAgentService`: `SENTIMENT_AGENT_PROMPT_TEMPLATE`, `FUNDAMENTAL_AGENT_PROMPT_TEMPLATE`, `PORTFOLIO_MANAGER_PROMPT_TEMPLATE`
 - [ ] Implement `FetchNewsAsync(string tickerName)`: GET NewsAPI.org `q={ticker}&sortBy=publishedAt&pageSize=10`; extract top 10 as numbered list `"1. {title} – {description}"`; throw `PipelineException("NO_NEWS")` if 0 results
 - [ ] Implement `RunSentimentAgentAsync(string ticker, string headlines)`: POST to OpenAI with Sentiment prompt; extract `choices[0].message.content`; throw `PipelineException("LLM_TIMEOUT")` or `PipelineException("LLM_ERROR")` on failure
@@ -85,8 +85,8 @@
 - [ ] Implement `SaveReportAsync(...)`: open DB transaction → insert `NewsArticle` (`NewsTitle="[{decision}] {TagName} Automated Analysis"`, `CreatedByID`, `CreatedDate=DateTime.UtcNow`, `NewsStatus=1`) → insert `NewsTag` → commit; rollback + throw `PipelineException("DB_ERROR")` on failure
 - [ ] Implement `RunAnalysisAsync(...)`: orchestrate all steps; catch `PipelineException`; return `TradingAgentResult` with success/error state
 - [ ] Register in `Program.cs`: `AddSingleton<HttpClient>` with `Timeout=TimeSpan.FromSeconds(10)`; `AddSingleton<ITradingAgentService, TradingAgentService>()`
-- [ ] Create `RunAnalysisController.cs` with `[Authorize(Policy = "StaffOnly")]`: `GET /Staff/RunAnalysis` (populate Ticker + active Sector dropdowns, return view); `POST /Staff/RunAnalysis` async (call `RunAnalysisAsync()`, return JSON `{ success, newsArticleId, errorMessage }`)
-- [ ] Create `RunAnalysisViewModel.cs`: `SelectedTagId` (Required), `SelectedCategoryId` (Required), `AvailableTags: SelectList`, `AvailableCategories: SelectList`
+- [X] Create `RunAnalysisController.cs` with `[Authorize(Policy = "StaffOnly")]`: `GET /Staff/RunAnalysis` (populate Ticker + active Sector dropdowns, return view); `POST /Staff/RunAnalysis` async (call `RunAnalysisAsync()`, return JSON `{ success, newsArticleId, errorMessage }`)
+- [X] Create `RunAnalysisViewModel.cs`: `SelectedTagId` (Required), `SelectedCategoryId` (Required), `AvailableTags: SelectList`, `AvailableCategories: SelectList`
 
 ### 🧪 P1 Self-test (smoke tests to run before handoff)
 - [ ] Verify Login success for all 3 roles with correct redirects
