@@ -36,8 +36,8 @@
                             @if (User.IsInRole("1"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Analysis" ? "active" : "")"
-                                       asp-controller="Analysis" asp-action="Index">Run Analysis</a>
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "RunAnalysis" ? "active" : "")"
+                                       asp-controller="RunAnalysis" asp-action="Index">Run Analysis</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")"
