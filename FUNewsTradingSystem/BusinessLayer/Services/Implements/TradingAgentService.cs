@@ -1,5 +1,15 @@
-using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
+using FUNewsTradingSystem_BusinessLayer.Exceptions;
+using FUNewsTradingSystem_DataAccessLayer.Models;
+using FUNewsTradingSystem_DataAccessLayer.Models.DTOs;
 
 namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
 {
@@ -47,24 +57,361 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
 }";
 
         private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
+        private readonly IServiceProvider _serviceProvider;
 
-        public TradingAgentService(HttpClient httpClient)
+        public TradingAgentService(
+            HttpClient httpClient, 
+            IConfiguration configuration, 
+            IServiceProvider serviceProvider)
         {
             _httpClient = httpClient;
+            _configuration = configuration;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)
         {
-            // TODO: Implement full pipeline with actual API calls
-            await Task.Delay(100); // Simulate network call
-
-            // Mock implementation - replace with actual pipeline
-            return new TradingAgentResult
+            try
             {
-                Success = true,
-                NewsArticleID = 1,
-                ErrorMessage = null
+                // 1. Resolve Tag and Ticker symbol
+                string ticker;
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<FUNewsManagementContext>();
+                    var tag = await context.Tags.FindAsync(tagId);
+                    if (tag == null)
+                    {
+                        throw new PipelineException("DB_ERROR");
+                    }
+                    ticker = tag.TagName;
+                }
+
+                // 2. Fetch News headlines
+                var headlines = await FetchNewsAsync(ticker);
+
+                // 3. Run Sentiment Agent
+                var sentimentOutput = await RunSentimentAgentAsync(ticker, headlines);
+
+                // 4. Run Fundamental Agent
+                var fundamentalOutput = await RunFundamentalAgentAsync(ticker, headlines, sentimentOutput);
+
+                // 5. Run Portfolio Manager Agent
+                var portfolioResponse = await RunPortfolioManagerAsync(ticker, sentimentOutput, fundamentalOutput);
+
+                // 6. Save Report to Database
+                var newsArticleId = await SaveReportAsync(portfolioResponse, tagId, categoryId, createdByAccountId);
+
+                return new TradingAgentResult
+                {
+                    Success = true,
+                    NewsArticleID = newsArticleId,
+                    ErrorMessage = null
+                };
+            }
+            catch (PipelineException ex)
+            {
+                return new TradingAgentResult
+                {
+                    Success = false,
+                    NewsArticleID = null,
+                    ErrorMessage = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new TradingAgentResult
+                {
+                    Success = false,
+                    NewsArticleID = null,
+                    ErrorMessage = "UNEXPECTED_ERROR: " + ex.Message
+                };
+            }
+        }
+
+        private async Task<string> FetchNewsAsync(string tickerName)
+        {
+            var apiKey = _configuration["NewsApi:ApiKey"];
+            var baseUrl = _configuration["NewsApi:BaseUrl"] ?? "https://newsapi.org/v2/everything";
+
+            var requestUrl = $"{baseUrl}?q={Uri.EscapeDataString(tickerName)}&sortBy=publishedAt&pageSize=10&apiKey={apiKey}";
+            
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+            request.Headers.Add("User-Agent", "FUNewsTradingSystem");
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await _httpClient.SendAsync(request);
+            }
+            catch (TaskCanceledException)
+            {
+                throw new PipelineException("NEWS_TIMEOUT");
+            }
+            catch (Exception ex)
+            {
+                throw new PipelineException("NEWS_API_ERROR", ex);
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new PipelineException("NEWS_API_ERROR");
+            }
+
+            string json = await response.Content.ReadAsStringAsync();
+            NewsApiResponse? newsResponse;
+            try
+            {
+                newsResponse = JsonSerializer.Deserialize<NewsApiResponse>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new PipelineException("NEWS_API_ERROR", ex);
+            }
+
+            if (newsResponse == null || newsResponse.Articles == null || newsResponse.Articles.Count == 0)
+            {
+                throw new PipelineException("NO_NEWS");
+            }
+
+            var numberedList = new List<string>();
+            for (int i = 0; i < newsResponse.Articles.Count; i++)
+            {
+                var title = newsResponse.Articles[i].Title ?? "";
+                var description = newsResponse.Articles[i].Description ?? "";
+                numberedList.Add($"{i + 1}. {title} – {description}");
+            }
+
+            return string.Join("\n", numberedList);
+        }
+
+        private async Task<string> RunSentimentAgentAsync(string ticker, string headlines)
+        {
+            var prompt = SENTIMENT_AGENT_PROMPT_TEMPLATE
+                .Replace("{ticker}", ticker)
+                .Replace("{headlines_numbered_list}", headlines);
+            return await CallOpenAiAsync(prompt);
+        }
+
+        private async Task<string> RunFundamentalAgentAsync(string ticker, string headlines, string sentimentOutput)
+        {
+            var prompt = FUNDAMENTAL_AGENT_PROMPT_TEMPLATE
+                .Replace("{ticker}", ticker)
+                .Replace("{headlines_numbered_list}", headlines)
+                .Replace("{sentiment_output}", sentimentOutput);
+            return await CallOpenAiAsync(prompt);
+        }
+
+        private async Task<PortfolioManagerResponse> RunPortfolioManagerAsync(
+            string ticker, 
+            string sentimentOutput, 
+            string fundamentalOutput)
+        {
+            var prompt = PORTFOLIO_MANAGER_PROMPT_TEMPLATE
+                .Replace("{ticker}", ticker)
+                .Replace("{sentiment_output}", sentimentOutput)
+                .Replace("{fundamental_output}", fundamentalOutput);
+
+            var rawResponse = await CallOpenAiAsync(prompt);
+            var preprocessed = PreprocessJsonResponse(rawResponse);
+
+            PortfolioManagerResponse? result;
+            try
+            {
+                result = JsonSerializer.Deserialize<PortfolioManagerResponse>(preprocessed, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new PipelineException("JSON_PARSE_ERROR", ex);
+            }
+
+            if (result == null)
+            {
+                throw new PipelineException("JSON_PARSE_ERROR");
+            }
+
+            ValidatePortfolioResponse(result);
+            return result;
+        }
+
+        private async Task<string> CallOpenAiAsync(string prompt)
+        {
+            var apiKey = _configuration["OpenAI:ApiKey"];
+            var baseUrl = _configuration["OpenAI:BaseUrl"] ?? "https://api.openai.com/v1/chat/completions";
+            var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+
+            var openAiRequest = new OpenAiRequest
+            {
+                Model = model,
+                Messages = new List<OpenAiMessage>
+                {
+                    new OpenAiMessage { Role = "user", Content = prompt }
+                },
+                Temperature = 0.2,
+                MaxTokens = 1000
             };
+
+            var jsonContent = JsonSerializer.Serialize(openAiRequest, new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            });
+
+            var request = new HttpRequestMessage(HttpMethod.Post, baseUrl);
+            request.Headers.Add("Authorization", $"Bearer {apiKey}");
+            request.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await _httpClient.SendAsync(request);
+            }
+            catch (TaskCanceledException)
+            {
+                throw new PipelineException("LLM_TIMEOUT");
+            }
+            catch (Exception ex)
+            {
+                throw new PipelineException("LLM_ERROR", ex);
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new PipelineException("LLM_ERROR");
+            }
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            OpenAiResponse? openAiResponse;
+            try
+            {
+                openAiResponse = JsonSerializer.Deserialize<OpenAiResponse>(responseJson, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new PipelineException("LLM_ERROR", ex);
+            }
+
+            var content = openAiResponse?.Choices?[0]?.Message?.Content;
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new PipelineException("LLM_ERROR");
+            }
+
+            return content;
+        }
+
+        private string PreprocessJsonResponse(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return string.Empty;
+            }
+
+            var trimmed = raw.Trim();
+            
+            // Strip leading ```json or ```
+            if (trimmed.StartsWith("```json", StringComparison.OrdinalIgnoreCase))
+            {
+                trimmed = trimmed.Substring(7);
+            }
+            else if (trimmed.StartsWith("```", StringComparison.OrdinalIgnoreCase))
+            {
+                trimmed = trimmed.Substring(3);
+            }
+
+            // Strip trailing ```
+            if (trimmed.EndsWith("```", StringComparison.OrdinalIgnoreCase))
+            {
+                trimmed = trimmed.Substring(0, trimmed.Length - 3);
+            }
+
+            return trimmed.Trim();
+        }
+
+        private void ValidatePortfolioResponse(PortfolioManagerResponse r)
+        {
+            if (r == null)
+            {
+                throw new PipelineException("INVALID_DECISION");
+            }
+
+            if (string.IsNullOrWhiteSpace(r.Decision) ||
+                string.IsNullOrWhiteSpace(r.Title) ||
+                string.IsNullOrWhiteSpace(r.Headline) ||
+                string.IsNullOrWhiteSpace(r.Content) ||
+                string.IsNullOrWhiteSpace(r.Source))
+            {
+                throw new PipelineException("INVALID_DECISION");
+            }
+
+            r.Decision = r.Decision.Trim().ToUpperInvariant();
+
+            if (r.Decision != "BUY" && r.Decision != "SELL" && r.Decision != "HOLD")
+            {
+                throw new PipelineException("INVALID_DECISION");
+            }
+        }
+
+        private async Task<int> SaveReportAsync(
+            PortfolioManagerResponse response, 
+            int tagId, 
+            int categoryId, 
+            int createdByAccountId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<FUNewsManagementContext>();
+                using (var transaction = await context.Database.BeginTransactionAsync())
+                {
+                    try
+                    {
+                        var tag = await context.Tags.FindAsync(tagId);
+                        if (tag == null)
+                        {
+                            throw new PipelineException("DB_ERROR");
+                        }
+
+                        var article = new NewsArticle
+                        {
+                            NewsTitle = $"[{response.Decision}] {tag.TagName} Automated Analysis",
+                            Headline = response.Headline,
+                            NewsContent = response.Content,
+                            NewsSource = response.Source,
+                            CategoryID = categoryId,
+                            CreatedByID = createdByAccountId,
+                            CreatedDate = DateTime.UtcNow,
+                            NewsStatus = true
+                        };
+
+                        context.NewsArticles.Add(article);
+                        await context.SaveChangesAsync();
+
+                        var newsTag = new NewsTag
+                        {
+                            NewsArticleID = article.NewsArticleID,
+                            TagID = tagId
+                        };
+                        context.NewsTags.Add(newsTag);
+                        await context.SaveChangesAsync();
+
+                        await transaction.CommitAsync();
+                        return article.NewsArticleID;
+                    }
+                    catch (Exception ex) when (!(ex is PipelineException))
+                    {
+                        await transaction.RollbackAsync();
+                        throw new PipelineException("DB_ERROR", ex);
+                    }
+                }
+            }
         }
     }
 }
