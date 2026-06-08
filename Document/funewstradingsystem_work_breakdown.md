@@ -148,7 +148,7 @@
 - [X] Server-side filter: `CreatedDate >= StartDate 00:00:00 UTC` AND `CreatedDate <= EndDate 23:59:59 UTC`; sort descending by CreatedDate
 
 ### 🧪 P2 Self-test (smoke tests to run before handoff)
-- [ ] Verify seed data (Categories + Tags) appears in DB and in pipeline dropdowns after fresh migration
+- [X] Verify seed data (Categories + Tags) appears in DB and in pipeline dropdowns after fresh migration
 - [ ] Verify Account CRUD: create duplicate email → error; edit with blank password → existing password retained; delete own account → blocked
 - [ ] Verify Statistics filter: correct date range, descending sort, "Deleted User" for null CreatedByID
 - [ ] Verify all Repository methods return correct data by inspecting DB before and after each operation
