@@ -1,0 +1,26 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=FUNewsTradingSystem;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+  "AdminAccount": {
+    "Email": "admin@FUNewsTradingSystem.org",
+    "Password": "@@abc123@@",
+    "Name": "System Admin"
+  },
+  "NewsApi": {
+    "ApiKey": "YOUR_NEWSAPI_KEY_HERE",
+    "BaseUrl": "https://newsapi.org/v2/everything"
+  },
+  "OpenAI": {
+    "ApiKey": "YOUR_OPENAI_API_KEY_HERE",
+    "BaseUrl": "https://api.openai.com/v1/chat/completions",
+    "Model": "gpt-4o"
+  }
+}
