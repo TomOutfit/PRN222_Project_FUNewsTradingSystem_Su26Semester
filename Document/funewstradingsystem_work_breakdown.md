@@ -145,7 +145,7 @@
 - [X] Create `StatisticsFilterViewModel.cs`: StartDate (Required), EndDate (Required)
 - [X] Create `StatisticsResultViewModel.cs`: Filter, Results (`List<NewsArticleStatDto>`), HasResults (bool)
 - [X] Create `Views/Admin/Statistics/Index.cshtml`: date filter form (StartDate + EndDate date pickers, "Generate Report" button); client-side block if StartDate > EndDate ("Start date must be before or equal to end date."); results table (Title | Headline | Created Date UTC | Sector | Created By); "No reports found for the selected period." when empty
-- [ ] Server-side filter: `CreatedDate >= StartDate 00:00:00 UTC` AND `CreatedDate <= EndDate 23:59:59 UTC`; sort descending by CreatedDate
+- [X] Server-side filter: `CreatedDate >= StartDate 00:00:00 UTC` AND `CreatedDate <= EndDate 23:59:59 UTC`; sort descending by CreatedDate
 
 ### 🧪 P2 Self-test (smoke tests to run before handoff)
 - [ ] Verify seed data (Categories + Tags) appears in DB and in pipeline dropdowns after fresh migration
