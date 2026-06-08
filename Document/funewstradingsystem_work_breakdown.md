@@ -151,7 +151,7 @@
 - [X] Verify seed data (Categories + Tags) appears in DB and in pipeline dropdowns after fresh migration
 - [X] Verify Account CRUD: create duplicate email → error; edit with blank password → existing password retained; delete own account → blocked
 - [X] Verify Statistics filter: correct date range, descending sort, "Deleted User" for null CreatedByID
-- [ ] Verify all Repository methods return correct data by inspecting DB before and after each operation
+- [X] Verify all Repository methods return correct data by inspecting DB before and after each operation
 
 ---
 
