@@ -139,8 +139,8 @@
 - [X] Create `wwwroot/js/accounts.js`: `openCreateModal()` (AJAX GET partial → inject → show), `openEditModal(id)`, `submitCreateForm()` (AJAX POST → handle → refresh list), `submitEditForm()`, `deleteAccount(id, name)` (populate `_ConfirmDeleteModal` → confirm → AJAX POST → refresh), `refreshAccountTable()`
 
 ### 📊 Admin Statistical Report — FR-10 (7 tasks)
-- [ ] Create `AdminStatisticsController.cs` with `[Authorize(Policy = "AdminOnly")]`
-- [ ] `GET /Admin/Statistics`: return view with empty `StatisticsFilterViewModel` (no results on initial load)
+- [X] Create `AdminStatisticsController.cs` with `[Authorize(Policy = "AdminOnly")]`
+- [X] `GET /Admin/Statistics`: return view with empty `StatisticsFilterViewModel` (no results on initial load)
 - [ ] `POST /Admin/Statistics`: validate dates → `GetReportsByDateRangeAsync()` → return view with results
 - [ ] Create `StatisticsFilterViewModel.cs`: StartDate (Required), EndDate (Required)
 - [ ] Create `StatisticsResultViewModel.cs`: Filter, Results (`List<NewsArticleStatDto>`), HasResults (bool)
