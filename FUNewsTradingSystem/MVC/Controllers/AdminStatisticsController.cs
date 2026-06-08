@@ -59,7 +59,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
                 Headline = a.Headline,
                 CreatedDate = a.CreatedDate,
                 CategoryName = a.Category?.CategoryName ?? "Unknown",
-                CreatedByName = a.CreatedBy?.AccountName ?? "Deleted User"
+                CreatedByName = a.CreatedByAccount?.AccountName ?? "Deleted User"
             }).ToList();
 
             vm.HasResults = true;
