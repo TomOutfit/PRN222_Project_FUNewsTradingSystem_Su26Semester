@@ -141,7 +141,7 @@
 ### 📊 Admin Statistical Report — FR-10 (7 tasks)
 - [X] Create `AdminStatisticsController.cs` with `[Authorize(Policy = "AdminOnly")]`
 - [X] `GET /Admin/Statistics`: return view with empty `StatisticsFilterViewModel` (no results on initial load)
-- [ ] `POST /Admin/Statistics`: validate dates → `GetReportsByDateRangeAsync()` → return view with results
+- [X] `POST /Admin/Statistics`: validate dates → `GetReportsByDateRangeAsync()` → return view with results
 - [ ] Create `StatisticsFilterViewModel.cs`: StartDate (Required), EndDate (Required)
 - [ ] Create `StatisticsResultViewModel.cs`: Filter, Results (`List<NewsArticleStatDto>`), HasResults (bool)
 - [ ] Create `Views/Admin/Statistics/Index.cshtml`: date filter form (StartDate + EndDate date pickers, "Generate Report" button); client-side block if StartDate > EndDate ("Start date must be before or equal to end date."); results table (Title | Headline | Created Date UTC | Sector | Created By); "No reports found for the selected period." when empty
