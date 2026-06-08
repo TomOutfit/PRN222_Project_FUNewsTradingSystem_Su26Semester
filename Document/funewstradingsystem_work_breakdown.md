@@ -140,7 +140,7 @@
 
 ### 📊 Admin Statistical Report — FR-10 (7 tasks)
 - [X] Create `AdminStatisticsController.cs` with `[Authorize(Policy = "AdminOnly")]`
-- [ ] `GET /Admin/Statistics`: return view with empty `StatisticsFilterViewModel` (no results on initial load)
+- [X] `GET /Admin/Statistics`: return view with empty `StatisticsFilterViewModel` (no results on initial load)
 - [ ] `POST /Admin/Statistics`: validate dates → `GetReportsByDateRangeAsync()` → return view with results
 - [ ] Create `StatisticsFilterViewModel.cs`: StartDate (Required), EndDate (Required)
 - [ ] Create `StatisticsResultViewModel.cs`: Filter, Results (`List<NewsArticleStatDto>`), HasResults (bool)
