@@ -1,0 +1,101 @@
+@model FUNewsTradingSystem_MVC.ViewModels.Statistics.StatisticsResultViewModel
+@{
+    ViewData["Title"] = "Statistical Reports";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Statistical Reports</h2>
+        <a href="/Admin/Dashboard" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form id="filterForm" asp-controller="AdminStatistics" asp-action="Index" method="post">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label asp-for="Filter.StartDate" class="form-label"></label>
+                        <input asp-for="Filter.StartDate" class="form-control" type="date" id="startDate" />
+                        <span asp-validation-for="Filter.StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Filter.EndDate" class="form-label"></label>
+                        <input asp-for="Filter.EndDate" class="form-control" type="date" id="endDate" />
+                        <span asp-validation-for="Filter.EndDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100" onclick="return validateDates()">
+                            <i class="bi bi-funnel me-1"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    @if (Model.HasResults)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                @if (Model.Results != null && Model.Results.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Headline</th>
+                                    <th>Created Date (UTC)</th>
+                                    <th>Sector</th>
+                                    <th>Created By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Results)
+                                {
+                                    <tr>
+                                        <td><strong>@item.NewsTitle</strong></td>
+                                        <td><small class="text-muted">@item.Headline</small></td>
+                                        <td>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td><span class="badge bg-secondary">@item.CategoryName</span></td>
+                                        <td>@item.CreatedByName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i> No reports found for the selected period.
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScripts" />
+    <script>
+        function validateDates() {
+            var startDateStr = document.getElementById("startDate").value;
+            var endDateStr = document.getElementById("endDate").value;
+            
+            if (startDateStr && endDateStr) {
+                var start = new Date(startDateStr);
+                var end = new Date(endDateStr);
+                if (start > end) {
+                    alert("Start date must be before or equal to end date.");
+                    return false; // block submission
+                }
+            }
+            return true;
+        }
+    </script>
+}
