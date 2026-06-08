@@ -7,6 +7,11 @@ namespace FUNewsTradingSystem_MVC.Controllers
     [Route("Admin/Statistics")]
     public class AdminStatisticsController : Controller
     {
-        // Controller shell for Admin Statistical Report
+        [HttpGet("")]
+        public IActionResult Index()
+        {
+            var vm = new FUNewsTradingSystem_MVC.ViewModels.Statistics.StatisticsFilterViewModel();
+            return View("~/Views/AdminStatistics/Index.cshtml", vm);
+        }
     }
 }
