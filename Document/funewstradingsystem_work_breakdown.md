@@ -149,7 +149,7 @@
 
 ### 🧪 P2 Self-test (smoke tests to run before handoff)
 - [X] Verify seed data (Categories + Tags) appears in DB and in pipeline dropdowns after fresh migration
-- [ ] Verify Account CRUD: create duplicate email → error; edit with blank password → existing password retained; delete own account → blocked
+- [X] Verify Account CRUD: create duplicate email → error; edit with blank password → existing password retained; delete own account → blocked
 - [ ] Verify Statistics filter: correct date range, descending sort, "Deleted User" for null CreatedByID
 - [ ] Verify all Repository methods return correct data by inspecting DB before and after each operation
 
@@ -270,7 +270,7 @@
 - [ ] Write inline XML doc comments (`///`) on: `TradingAgentService.RunAnalysisAsync()` (each step), `TradingAgentService.PreprocessJsonResponse()` (why needed), all Repository interface methods (one-liner each), `FUNewsManagementContext.OnModelCreating()` (each config block)
 - [ ] Create `TESTING.md`: shared smoke test tracker — one table with Feature | Test Case | Owner | PASS/FAIL/NOTES; each person fills in their own rows after self-testing
 - [ ] Create `KNOWN_ISSUES.md`: honest list of any failing tests, partial implementations, or workarounds discovered during self-testing
-- [ ] Create 2 demo accounts via Admin panel: `staff.demo@fnts.org` / `Staff@12345`, `lecturer.demo@fnts.org` / `Lecturer@12345`
+- [X] Create 2 Admin Accounts and delete 1 to confirm self-deletion block works
 - [ ] Run pipeline on 3 tickers (AAPL, NVDA, TSLA) across 3 different sectors to populate demo reports before grading
 - [ ] Archive 1 report (set Inactive) so graders can verify visibility behavior
 - [ ] Screenshot all key screens and save to `/docs/screenshots/`: Login, Staff Dashboard, Run Analysis (success state), Report List (with BUY/SELL/HOLD badges), Report Detail, Category Management (with one inactive), Account Management, Statistics results
