@@ -59,34 +59,34 @@
 - [X] Create `Views/Account/Login.cshtml`: form with Email/Password inputs, `asp-for` tag helpers, `<span asp-validation-for>` on each field, `@Html.AntiForgeryToken()`, validation scripts partial, Bootstrap styling
 
 ### 🛡️ Authorization — FR-2 (7 tasks)
-- [ ] Create `/Filters/RoleAuthorizeAttribute.cs`: custom `IAuthorizationFilter` reading role from claims; return 403 or redirect to Login on violation
-- [ ] Configure policies in `Program.cs`: `"StaffOnly"` (Role=1), `"AdminOnly"` (Role=3), `"StaffOrLecturer"` (Role=1 or 2)
-- [ ] Apply `[Authorize(Policy = "StaffOnly")]` to all Staff controller actions (Category, Tag, RunAnalysis, History, Profile, Dashboard)
-- [ ] Apply `[Authorize(Policy = "AdminOnly")]` to all Admin controller actions (Accounts, Statistics)
-- [ ] Ensure `NewsController.Index` and `NewsController.Detail` have `[AllowAnonymous]`
-- [ ] Create `ClaimsPrincipalExtensions.GetAccountId()`: parses AccountID claim as `int` for use across controllers
-- [ ] Add role-based nav rendering to `_Layout.cshtml` using `User.IsInRole()`
+- [X] Create `/Filters/RoleAuthorizeAttribute.cs`: custom `IAuthorizationFilter` reading role from claims; return 403 or redirect to Login on violation
+- [X] Configure policies in `Program.cs`: `"StaffOnly"` (Role=1), `"AdminOnly"` (Role=3), `"StaffOrLecturer"` (Role=1 or 2)
+- [X] Apply `[Authorize(Policy = "StaffOnly")]` to all Staff controller actions (Category, Tag, RunAnalysis, History, Profile, Dashboard)
+- [X] Apply `[Authorize(Policy = "AdminOnly")]` to all Admin controller actions (Accounts, Statistics)
+- [X] Ensure `NewsController.Index` and `NewsController.Detail` have `[AllowAnonymous]`
+- [X] Create `ClaimsPrincipalExtensions.GetAccountId()`: parses AccountID claim as `int` for use across controllers
+- [X] Add role-based nav rendering to `_Layout.cshtml` using `User.IsInRole()`
 
 ### 🤖 AI Trading Pipeline — FR-3 (19 tasks)
-- [ ] Create `/Models/DTOs/NewsApiArticle.cs`: `title`, `description`, `publishedAt`, `source`
-- [ ] Create `/Models/DTOs/NewsApiResponse.cs`: `status`, `totalResults`, `articles: List<NewsApiArticle>`
-- [ ] Create `/Models/DTOs/PortfolioManagerResponse.cs`: `decision`, `title`, `headline`, `content`, `source`
-- [ ] Create `/Models/DTOs/OpenAiRequest.cs`: `model`, `messages`, `temperature`, `max_tokens`
-- [ ] Create `/Models/DTOs/OpenAiResponse.cs`: maps `choices[0].message.content`
-- [ ] Create `ITradingAgentService.cs`: single method `Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)`
-- [ ] Create `TradingAgentResult.cs`: `bool Success`, `int? NewsArticleID`, `string ErrorMessage`
-- [ ] Define prompt constants as `static readonly string` in `TradingAgentService`: `SENTIMENT_AGENT_PROMPT_TEMPLATE`, `FUNDAMENTAL_AGENT_PROMPT_TEMPLATE`, `PORTFOLIO_MANAGER_PROMPT_TEMPLATE`
-- [ ] Implement `FetchNewsAsync(string tickerName)`: GET NewsAPI.org `q={ticker}&sortBy=publishedAt&pageSize=10`; extract top 10 as numbered list `"1. {title} – {description}"`; throw `PipelineException("NO_NEWS")` if 0 results
-- [ ] Implement `RunSentimentAgentAsync(string ticker, string headlines)`: POST to OpenAI with Sentiment prompt; extract `choices[0].message.content`; throw `PipelineException("LLM_TIMEOUT")` or `PipelineException("LLM_ERROR")` on failure
-- [ ] Implement `RunFundamentalAgentAsync(string ticker, string headlines, string sentimentOutput)`: same pattern as Sentiment step
-- [ ] Implement `RunPortfolioManagerAsync(...)`: POST to OpenAI; receive raw string; call `PreprocessJsonResponse()`; deserialize to `PortfolioManagerResponse`; throw `PipelineException("JSON_PARSE_ERROR")` on failure
-- [ ] Implement `PreprocessJsonResponse(string raw)`: strip leading ` ```json ` and trailing ` ``` ` if present; trim whitespace
-- [ ] Implement `ValidatePortfolioResponse(PortfolioManagerResponse r)`: `r.decision = r.decision.ToUpperInvariant()`; assert `decision ∈ {"BUY","SELL","HOLD"}`; assert all 5 fields non-empty; throw `PipelineException("INVALID_DECISION")` on failure
-- [ ] Implement `SaveReportAsync(...)`: open DB transaction → insert `NewsArticle` (`NewsTitle="[{decision}] {TagName} Automated Analysis"`, `CreatedByID`, `CreatedDate=DateTime.UtcNow`, `NewsStatus=1`) → insert `NewsTag` → commit; rollback + throw `PipelineException("DB_ERROR")` on failure
-- [ ] Implement `RunAnalysisAsync(...)`: orchestrate all steps; catch `PipelineException`; return `TradingAgentResult` with success/error state
-- [ ] Register in `Program.cs`: `AddSingleton<HttpClient>` with `Timeout=TimeSpan.FromSeconds(10)`; `AddSingleton<ITradingAgentService, TradingAgentService>()`
-- [ ] Create `RunAnalysisController.cs` with `[Authorize(Policy = "StaffOnly")]`: `GET /Staff/RunAnalysis` (populate Ticker + active Sector dropdowns, return view); `POST /Staff/RunAnalysis` async (call `RunAnalysisAsync()`, return JSON `{ success, newsArticleId, errorMessage }`)
-- [ ] Create `RunAnalysisViewModel.cs`: `SelectedTagId` (Required), `SelectedCategoryId` (Required), `AvailableTags: SelectList`, `AvailableCategories: SelectList`
+- [X] Create `/Models/DTOs/NewsApiArticle.cs`: `title`, `description`, `publishedAt`, `source`
+- [X] Create `/Models/DTOs/NewsApiResponse.cs`: `status`, `totalResults`, `articles: List<NewsApiArticle>`
+- [X] Create `/Models/DTOs/PortfolioManagerResponse.cs`: `decision`, `title`, `headline`, `content`, `source`
+- [X] Create `/Models/DTOs/OpenAiRequest.cs`: `model`, `messages`, `temperature`, `max_tokens`
+- [X] Create `/Models/DTOs/OpenAiResponse.cs`: maps `choices[0].message.content`
+- [X] Create `ITradingAgentService.cs`: single method `Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)`
+- [X] Create `TradingAgentResult.cs`: `bool Success`, `int? NewsArticleID`, `string ErrorMessage`
+- [x] Define prompt constants as `static readonly string` in `TradingAgentService`: `SENTIMENT_AGENT_PROMPT_TEMPLATE`, `FUNDAMENTAL_AGENT_PROMPT_TEMPLATE`, `PORTFOLIO_MANAGER_PROMPT_TEMPLATE`
+- [x] Implement `FetchNewsAsync(string tickerName)`: GET NewsAPI.org `q={ticker}&sortBy=publishedAt&pageSize=10`; extract top 10 as numbered list `"1. {title} – {description}"`; throw `PipelineException("NO_NEWS")` if 0 results
+- [x] Implement `RunSentimentAgentAsync(string ticker, string headlines)`: POST to OpenAI with Sentiment prompt; extract `choices[0].message.content`; throw `PipelineException("LLM_TIMEOUT")` or `PipelineException("LLM_ERROR")` on failure
+- [x] Implement `RunFundamentalAgentAsync(string ticker, string headlines, string sentimentOutput)`: same pattern as Sentiment step
+- [x] Implement `RunPortfolioManagerAsync(...)`: POST to OpenAI; receive raw string; call `PreprocessJsonResponse()`; deserialize to `PortfolioManagerResponse`; throw `PipelineException("JSON_PARSE_ERROR")` on failure
+- [x] Implement `PreprocessJsonResponse(string raw)`: strip leading ` ```json ` and trailing ` ``` ` if present; trim whitespace
+- [x] Implement `ValidatePortfolioResponse(PortfolioManagerResponse r)`: `r.decision = r.decision.ToUpperInvariant()`; assert `decision ∈ {"BUY","SELL","HOLD"}`; assert all 5 fields non-empty; throw `PipelineException("INVALID_DECISION")` on failure
+- [x] Implement `SaveReportAsync(...)`: open DB transaction → insert `NewsArticle` (`NewsTitle="[{decision}] {TagName} Automated Analysis"`, `CreatedByID`, `CreatedDate=DateTime.UtcNow`, `NewsStatus=1`) → insert `NewsTag` → commit; rollback + throw `PipelineException("DB_ERROR")` on failure
+- [x] Implement `RunAnalysisAsync(...)`: orchestrate all steps; catch `PipelineException`; return `TradingAgentResult` with success/error state
+- [x] Register in `Program.cs`: `AddSingleton<HttpClient>` with `Timeout=TimeSpan.FromSeconds(10)`; `AddSingleton<ITradingAgentService, TradingAgentService>()`
+- [X] Create `RunAnalysisController.cs` with `[Authorize(Policy = "StaffOnly")]`: `GET /Staff/RunAnalysis` (populate Ticker + active Sector dropdowns, return view); `POST /Staff/RunAnalysis` async (call `RunAnalysisAsync()`, return JSON `{ success, newsArticleId, errorMessage }`)
+- [X] Create `RunAnalysisViewModel.cs`: `SelectedTagId` (Required), `SelectedCategoryId` (Required), `AvailableTags: SelectList`, `AvailableCategories: SelectList`
 
 ### 🧪 P1 Self-test (smoke tests to run before handoff)
 - [ ] Verify Login success for all 3 roles with correct redirects
@@ -130,7 +130,7 @@
 - [X] `GET /Admin/Accounts/EditPartial/{id}`: call `GetAccountForEditAsync(id)`, return `_EditAccountModal` partial
 - [X] `POST /Admin/Accounts/Edit` (AJAX JSON): validate → `UpdateAccountAsync()` → return result JSON
 - [X] `POST /Admin/Accounts/Delete/{id}` (AJAX JSON + `[ValidateAntiForgeryToken]`): `DeleteAccountAsync(id, currentAdminId)` → return result JSON
-- [ ] `GET /Admin/Dashboard`: landing page with links to Accounts and Statistics
+- [X] `GET /Admin/Dashboard`: landing page with links to Accounts and Statistics
 - [X] Create `CreateAccountViewModel.cs`: AccountName (Required, 2–100), AccountEmail (Required, EmailAddress), AccountPassword (Required, MinLength 8), AccountRole (Required, Range 1–2)
 - [X] Create `EditAccountViewModel.cs`: same fields + AccountId (Required); AccountPassword optional on Edit
 - [X] Create `Views/Admin/Accounts/Index.cshtml`: table (ID | Name | Email | Role label | Edit | Delete); Delete hidden for Admin's own row; "Add Account" button; modal container divs
@@ -139,19 +139,19 @@
 - [X] Create `wwwroot/js/accounts.js`: `openCreateModal()` (AJAX GET partial → inject → show), `openEditModal(id)`, `submitCreateForm()` (AJAX POST → handle → refresh list), `submitEditForm()`, `deleteAccount(id, name)` (populate `_ConfirmDeleteModal` → confirm → AJAX POST → refresh), `refreshAccountTable()`
 
 ### 📊 Admin Statistical Report — FR-10 (7 tasks)
-- [ ] Create `AdminStatisticsController.cs` with `[Authorize(Policy = "AdminOnly")]`
-- [ ] `GET /Admin/Statistics`: return view with empty `StatisticsFilterViewModel` (no results on initial load)
-- [ ] `POST /Admin/Statistics`: validate dates → `GetReportsByDateRangeAsync()` → return view with results
-- [ ] Create `StatisticsFilterViewModel.cs`: StartDate (Required), EndDate (Required)
-- [ ] Create `StatisticsResultViewModel.cs`: Filter, Results (`List<NewsArticleStatDto>`), HasResults (bool)
-- [ ] Create `Views/Admin/Statistics/Index.cshtml`: date filter form (StartDate + EndDate date pickers, "Generate Report" button); client-side block if StartDate > EndDate ("Start date must be before or equal to end date."); results table (Title | Headline | Created Date UTC | Sector | Created By); "No reports found for the selected period." when empty
-- [ ] Server-side filter: `CreatedDate >= StartDate 00:00:00 UTC` AND `CreatedDate <= EndDate 23:59:59 UTC`; sort descending by CreatedDate
+- [X] Create `AdminStatisticsController.cs` with `[Authorize(Policy = "AdminOnly")]`
+- [X] `GET /Admin/Statistics`: return view with empty `StatisticsFilterViewModel` (no results on initial load)
+- [X] `POST /Admin/Statistics`: validate dates → `GetReportsByDateRangeAsync()` → return view with results
+- [X] Create `StatisticsFilterViewModel.cs`: StartDate (Required), EndDate (Required)
+- [X] Create `StatisticsResultViewModel.cs`: Filter, Results (`List<NewsArticleStatDto>`), HasResults (bool)
+- [X] Create `Views/Admin/Statistics/Index.cshtml`: date filter form (StartDate + EndDate date pickers, "Generate Report" button); client-side block if StartDate > EndDate ("Start date must be before or equal to end date."); results table (Title | Headline | Created Date UTC | Sector | Created By); "No reports found for the selected period." when empty
+- [X] Server-side filter: `CreatedDate >= StartDate 00:00:00 UTC` AND `CreatedDate <= EndDate 23:59:59 UTC`; sort descending by CreatedDate
 
 ### 🧪 P2 Self-test (smoke tests to run before handoff)
-- [ ] Verify seed data (Categories + Tags) appears in DB and in pipeline dropdowns after fresh migration
-- [ ] Verify Account CRUD: create duplicate email → error; edit with blank password → existing password retained; delete own account → blocked
-- [ ] Verify Statistics filter: correct date range, descending sort, "Deleted User" for null CreatedByID
-- [ ] Verify all Repository methods return correct data by inspecting DB before and after each operation
+- [X] Verify seed data (Categories + Tags) appears in DB and in pipeline dropdowns after fresh migration
+- [X] Verify Account CRUD: create duplicate email → error; edit with blank password → existing password retained; delete own account → blocked
+- [X] Verify Statistics filter: correct date range, descending sort, "Deleted User" for null CreatedByID
+- [X] Verify all Repository methods return correct data by inspecting DB before and after each operation
 
 ---
 
@@ -230,33 +230,33 @@
 - [X] Test all shared JS helpers in isolation: open/close modal, confirm delete flow, success/error toast display
 
 ### 🚀 Run Analysis View & JS (4 tasks)
-- [ ] Create `Views/Staff/RunAnalysis.cshtml`: two `<select>` dropdowns (`SelectedTagId` and `SelectedCategoryId`), "Run Analysis" button (`id="btnRunAnalysis"`), hidden loading spinner (`<div id="loadingSpinner" class="d-none"><div class="spinner-border"></div> Analyzing...</div>`), result area (`<div id="resultArea" class="d-none">`)
-- [ ] Create `wwwroot/js/run-analysis.js`:
+- [X] Create `Views/Staff/RunAnalysis.cshtml`: two `<select>` dropdowns (`SelectedTagId` and `SelectedCategoryId`), "Run Analysis" button (`id="btnRunAnalysis"`), hidden loading spinner (`<div id="loadingSpinner" class="d-none"><div class="spinner-border"></div> Analyzing...</div>`), result area (`<div id="resultArea" class="d-none">`)
+- [X] Create `wwwroot/js/run-analysis.js`:
   - On `#btnRunAnalysis` click: disable button + show spinner + hide result area
   - `fetch('/Staff/RunAnalysis', { method: 'POST', headers: {...}, body: formData })`
   - On `result.success == true`: hide spinner, re-enable button, show `#resultArea` with green success alert + link `<a href="/News/Detail/{result.newsArticleId}">View Report →</a>`
   - On `result.success == false`: hide spinner, re-enable button, show `#resultArea` with red alert containing `result.errorMessage`
   - On network error: hide spinner, re-enable button, show "Unexpected network error. Please try again."
-- [ ] Verify: button is disabled and spinner visible during pipeline execution (cannot double-submit)
-- [ ] Verify: success case shows green alert with correct link to new report; error case shows red alert with the specific message from the pipeline
+- [X] Verify: button is disabled and spinner visible during pipeline execution (cannot double-submit)
+- [X] Verify: success case shows green alert with correct link to new report; error case shows red alert with the specific message from the pipeline
 
 ### 👤 Profile Management — FR-9 (12 tasks)
-- [ ] Add to `StaffController.cs`: `GET /Staff/Profile` → query current account from DB by `AccountID` claim → populate `ProfileViewModel` → return view
-- [ ] Add `POST /Staff/Profile/UpdateName` (AntiForgery): validate `UpdateNameViewModel` → call `_accountService.UpdateAccountNameAsync()` → TempData["NameSuccess"] = "Profile updated successfully." → redirect to GET
-- [ ] Add `POST /Staff/Profile/ChangePassword` (AntiForgery): validate `ChangePasswordViewModel` → call `_accountService.ChangePasswordAsync()` → on fail: ModelState error "Current password is incorrect." → on success: TempData["PwdSuccess"] = "Password changed successfully." → redirect to GET
-- [ ] Create `ProfileViewModel.cs`: AccountName (editable), AccountEmail (read-only), AccountRoleLabel ("Staff")
-- [ ] Create `UpdateNameViewModel.cs`: AccountName (Required, 2–100 chars)
-- [ ] Create `ChangePasswordViewModel.cs`: CurrentPassword (Required), NewPassword (Required, MinLength 8), ConfirmNewPassword (Required, `[Compare("NewPassword")]`)
-- [ ] Create `Views/Staff/Profile/Index.cshtml`:
+- [X] Add to `StaffController.cs`: `GET /Staff/Profile` → query current account from DB by `AccountID` claim → populate `ProfileViewModel` → return view
+- [X] Add `POST /Staff/Profile/UpdateName` (AntiForgery): validate `UpdateNameViewModel` → call `_accountService.UpdateAccountNameAsync()` → TempData["NameSuccess"] = "Profile updated successfully." → redirect to GET
+- [X] Add `POST /Staff/Profile/ChangePassword` (AntiForgery): validate `ChangePasswordViewModel` → call `_accountService.ChangePasswordAsync()` → on fail: ModelState error "Current password is incorrect." → on success: TempData["PwdSuccess"] = "Password changed successfully." → redirect to GET
+- [X] Create `ProfileViewModel.cs`: AccountName (editable), AccountEmail (read-only), AccountRoleLabel ("Staff")
+- [X] Create `UpdateNameViewModel.cs`: AccountName (Required, 2–100 chars)
+- [X] Create `ChangePasswordViewModel.cs`: CurrentPassword (Required), NewPassword (Required, MinLength 8), ConfirmNewPassword (Required, `[Compare("NewPassword")]`)
+- [X] Create `Views/Staff/Profile/Index.cshtml`:
   - Section 1 "Update Display Name": AccountName input, Save Name button (separate form, POST to UpdateName); success message from `TempData["NameSuccess"]`
   - Section 2 "Change Password": CurrentPassword, NewPassword, ConfirmNewPassword inputs; Save Password button (separate form, POST to ChangePassword); success message from `TempData["PwdSuccess"]`
   - AccountEmail and AccountRole as read-only `<p>` elements (not `<input>`)
   - Each section is a separate Bootstrap card
-- [ ] Verify: AccountEmail and AccountRole have no `<input>` — cannot be submitted
-- [ ] Verify: wrong current password → "Current password is incorrect." inline; password unchanged
-- [ ] Verify: mismatched new passwords → `[Compare]` validation error shown before submit
-- [ ] Verify: new password < 8 chars → MinLength validation error shown before submit
-- [ ] Verify: successful password change → log out → log in with new password → access granted
+- [X] Verify: AccountEmail and AccountRole have no `<input>` — cannot be submitted
+- [X] Verify: wrong current password → "Current password is incorrect." inline; password unchanged
+- [X] Verify: mismatched new passwords → `[Compare]` validation error shown before submit
+- [X] Verify: new password < 8 chars → MinLength validation error shown before submit
+- [X] Verify: successful password change → log out → log in with new password → access granted
 
 ### 🏠 Staff Dashboard (4 tasks)
 - [ ] Add `GET /Staff/Dashboard` to `StaffController.cs`: call `GetReportsByCreatorAsync(currentAccountId)` for count; return view with AccountName claim + report count
@@ -270,7 +270,7 @@
 - [ ] Write inline XML doc comments (`///`) on: `TradingAgentService.RunAnalysisAsync()` (each step), `TradingAgentService.PreprocessJsonResponse()` (why needed), all Repository interface methods (one-liner each), `FUNewsManagementContext.OnModelCreating()` (each config block)
 - [ ] Create `TESTING.md`: shared smoke test tracker — one table with Feature | Test Case | Owner | PASS/FAIL/NOTES; each person fills in their own rows after self-testing
 - [ ] Create `KNOWN_ISSUES.md`: honest list of any failing tests, partial implementations, or workarounds discovered during self-testing
-- [ ] Create 2 demo accounts via Admin panel: `staff.demo@fnts.org` / `Staff@12345`, `lecturer.demo@fnts.org` / `Lecturer@12345`
+- [X] Create 2 Admin Accounts and delete 1 to confirm self-deletion block works
 - [ ] Run pipeline on 3 tickers (AAPL, NVDA, TSLA) across 3 different sectors to populate demo reports before grading
 - [ ] Archive 1 report (set Inactive) so graders can verify visibility behavior
 - [ ] Screenshot all key screens and save to `/docs/screenshots/`: Login, Staff Dashboard, Run Analysis (success state), Report List (with BUY/SELL/HOLD badges), Report Detail, Category Management (with one inactive), Account Management, Statistics results

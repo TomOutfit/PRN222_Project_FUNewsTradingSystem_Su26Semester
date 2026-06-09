@@ -25,6 +25,12 @@ namespace FUNewsTradingSystem_MVC.Controllers
             return View("~/Views/AdminAccount/Index.cshtml", accounts);
         }
 
+        [HttpGet("/Admin/Dashboard")]
+        public IActionResult Dashboard()
+        {
+            return View("~/Views/AdminAccount/Dashboard.cshtml");
+        }
+
         [HttpGet("CreatePartial")]
         public IActionResult CreatePartial()
         {

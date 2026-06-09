@@ -2,18 +2,19 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
+using FUNewsTradingSystem_MVC.Extensions;
 using FUNewsTradingSystem_MVC.ViewModels.Report;
 
 namespace FUNewsTradingSystem_MVC.Controllers;
 
 [Authorize(Policy = "StaffOnly")]
-public class AnalysisController : Controller
+public class RunAnalysisController : Controller
 {
     private readonly ITradingAgentService _tradingAgentService;
     private readonly ITagService _tagService;
     private readonly ICategoryService _categoryService;
 
-    public AnalysisController(
+    public RunAnalysisController(
         ITradingAgentService tradingAgentService,
         ITagService tagService,
         ICategoryService categoryService)
@@ -26,7 +27,7 @@ public class AnalysisController : Controller
     /// <summary>
     /// GET /Staff/RunAnalysis - Display the Run Analysis form with dropdowns
     /// </summary>
-    [HttpGet]
+    [HttpGet("Staff/RunAnalysis")]
     public async Task<IActionResult> Index()
     {
         var model = new RunAnalysisViewModel();
@@ -47,7 +48,7 @@ public class AnalysisController : Controller
     /// <summary>
     /// POST /Staff/RunAnalysis - Execute the AI Trading Pipeline
     /// </summary>
-    [HttpPost]
+    [HttpPost("Staff/RunAnalysis")]
     public async Task<IActionResult> RunAnalysis([FromBody] RunAnalysisRequest request)
     {
         if (request == null || request.SelectedTagId <= 0 || request.SelectedCategoryId <= 0)
@@ -56,8 +57,8 @@ public class AnalysisController : Controller
         }
 
         // Get current user's account ID from claims
-        var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(accountIdClaim, out int accountId))
+        var accountId = User.GetAccountId();
+        if (!accountId.HasValue)
         {
             return Json(new { success = false, errorMessage = "Unable to identify current user." });
         }
@@ -67,7 +68,7 @@ public class AnalysisController : Controller
             var result = await _tradingAgentService.RunAnalysisAsync(
                 request.SelectedTagId,
                 request.SelectedCategoryId,
-                accountId);
+                accountId.Value);
 
             return Json(new
             {
