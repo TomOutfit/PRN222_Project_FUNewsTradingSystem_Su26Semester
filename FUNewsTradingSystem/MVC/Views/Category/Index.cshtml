@@ -1,4 +1,145 @@
 @model IEnumerable<FUNewsTradingSystem_MVC.ViewModels.Category.CategoryListItemViewModel>
+
 @{
     ViewData["Title"] = "Category Management";
 }
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Category Management</h2>
+
+        <button class="btn btn-success"
+                onclick="openCreateModal()">
+            Add Category
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Category Name</th>
+                    <th>Description</th>
+                    <th>Parent Category</th>
+                    <th>Status</th>
+                    <th width="220">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            No categories found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+
+                            <td>@item.CategoryId</td>
+
+                            <td>@item.CategoryName</td>
+
+                            <td>@item.CategoryDescription</td>
+
+                            <td>
+                                @(item.ParentCategoryName ?? "-")
+                            </td>
+
+                            <td>
+                                <div class="form-check form-switch">
+
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                    @(item.IsActive ? "checked" : null)
+                                           onchange="toggleActive(@item.CategoryId, this)" />
+
+                                </div>
+                            </td>
+
+                            <td>
+
+                                <button class="btn btn-primary btn-sm"
+                                        onclick="openEditModal(@item.CategoryId)">
+                                    Edit
+                                </button>
+
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="deleteCategory(@item.CategoryId, '@item.CategoryName')">
+                                    Delete
+                                </button>
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<form id="ajax-antiforgery">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="modal fade"
+     id="categoryCrudModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 id="modalTitle" class="modal-title">
+                    Category
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div id="modalBodyContainer"
+                 class="modal-body">
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+                <button type="button"
+                        id="btnSaveCategory"
+                        class="btn btn-success">
+
+                    <span id="saveSpinner"
+                          class="spinner-border spinner-border-sm d-none me-1">
+                    </span>
+
+                    Save
+
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="~/js/categories.js"></script>

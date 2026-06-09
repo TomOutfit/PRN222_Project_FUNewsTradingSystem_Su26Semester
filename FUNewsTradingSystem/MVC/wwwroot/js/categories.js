@@ -67,10 +67,23 @@ function submitCreateForm() {
     // Thu thập dữ liệu từ các ô nhập
     const payload = {
         CategoryName: form.querySelector('[name="CategoryName"]').value,
-        CategoryDes: form.querySelector('[name="CategoryDes"]').value,
-        ParentCategoryId: form.querySelector('[name="ParentCategoryId"]').value ? parseInt(form.querySelector('[name="ParentCategoryId"]').value) : null,
+        CategoryDescription: form.querySelector('[name="CategoryDescription"]').value,
+        ParentCategoryID: form.querySelector('[name="ParentCategoryID"]').value ? parseInt(form.querySelector('[name="ParentCategoryID"]').value) : null,
         IsActive: form.querySelector('[name="IsActive"]').checked
     };
+
+    const categoryName =
+        form.querySelector('[name="CategoryName"]').value.trim();
+
+    if (!categoryName) {
+
+        const input =
+            form.querySelector('[name="CategoryName"]');
+
+        input.classList.add('is-invalid');
+
+        return;
+    }
 
     // Hiển thị trạng thái Loading
     toggleSaveButtonLoading(true);
@@ -105,10 +118,23 @@ function submitEditForm() {
     const payload = {
         CategoryID: parseInt(form.querySelector('[name="CategoryID"]').value),
         CategoryName: form.querySelector('[name="CategoryName"]').value,
-        CategoryDes: form.querySelector('[name="CategoryDes"]').value,
-        ParentCategoryId: form.querySelector('[name="ParentCategoryId"]').value ? parseInt(form.querySelector('[name="ParentCategoryId"]').value) : null,
+        CategoryDescription: form.querySelector('[name="CategoryDescription"]').value,
+        ParentCategoryID: form.querySelector('[name="ParentCategoryID"]').value ? parseInt(form.querySelector('[name="ParentCategoryID"]').value) : null,
         IsActive: form.querySelector('[name="IsActive"]').checked
     };
+
+    const categoryName =
+        form.querySelector('[name="CategoryName"]').value.trim();
+
+    if (!categoryName) {
+
+        const input =
+            form.querySelector('[name="CategoryName"]');
+
+        input.classList.add('is-invalid');
+
+        return;
+    }
 
     toggleSaveButtonLoading(true);
 
