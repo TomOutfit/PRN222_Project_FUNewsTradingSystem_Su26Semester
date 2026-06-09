@@ -66,7 +66,17 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
 
         public async Task UpdateAsync(Category category)
         {
-            _context.Categories.Update(category);
+            var existing = await _context.Categories
+                .FirstOrDefaultAsync(c => c.CategoryID == category.CategoryID);
+
+            if (existing == null)
+                throw new Exception("Category not found");
+
+            existing.CategoryName = category.CategoryName;
+            existing.CategoryDescription = category.CategoryDescription;
+            existing.ParentCategoryID = category.ParentCategoryID;
+            existing.IsActive = category.IsActive;
+
             await _context.SaveChangesAsync();
         }
 

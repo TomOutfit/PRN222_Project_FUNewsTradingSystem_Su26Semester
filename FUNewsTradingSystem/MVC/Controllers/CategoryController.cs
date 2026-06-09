@@ -1,5 +1,6 @@
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_DataAccessLayer.Models;
+using FUNewsTradingSystem_MVC.ViewModels.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -22,7 +23,23 @@ namespace FUNewsTradingSystem_MVC.Controllers
         public async Task<IActionResult> Index()
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
-            return View(categories);
+
+            var model = categories.Select(c => new CategoryListItemViewModel
+            {
+                CategoryId = c.CategoryID,
+                CategoryName = c.CategoryName,
+                CategoryDescription = c.CategoryDescription,
+                ParentCategoryID = c.ParentCategoryID,
+
+                ParentCategoryName =
+        c.ParentCategory != null
+            ? c.ParentCategory.CategoryName
+            : null,
+
+                IsActive = c.IsActive
+            }).ToList();
+
+            return View(model);
         }
 
         // GET /Staff/Categories/CreatePartial
@@ -35,7 +52,8 @@ namespace FUNewsTradingSystem_MVC.Controllers
 
             var emptyCategory = new Category { IsActive = true };
 
-            return PartialView("_CreateCategoryModal", emptyCategory);
+            return PartialView("~/Views/Staff/Categories/_CreateCategoryModal.cshtml",
+                   emptyCategory);
         }
 
         // POST /Staff/Categories/Create (AJAX JSON)
@@ -70,7 +88,8 @@ namespace FUNewsTradingSystem_MVC.Controllers
 
             ViewBag.ParentCategories = new SelectList(validParentCategories, "CategoryID", "CategoryName", category.ParentCategoryID);
 
-            return PartialView("_EditCategoryModal", category);
+            return PartialView("~/Views/Staff/Categories/_EditCategoryModal.cshtml",
+                   category);
         }
 
         // POST /Staff/Categories/Edit (AJAX JSON)

@@ -1,71 +1,61 @@
 ﻿@model FUNewsTradingSystem_DataAccessLayer.Models.Category
 
-@* Form bao bọc để hỗ trợ Validation Client-side (nếu có) và đóng gói dữ liệu *@
 <form id="createCategoryForm" novalidate>
-    <div class="modal-body py-4 px-4">
 
-        @* 1. Trường nhập tên Danh mục (Category Name) *@
-        <div class="mb-4">
-            <label asp-for="CategoryName" class="form-label fw-semibold text-secondary small text-uppercase">
-                Category Name <span class="text-danger">*</span>
-            </label>
-            <div class="input-group shadow-sm rounded">
-                <span class="input-group-text bg-white border-end-0 text-muted">
-                    <i class="bi bi-tag-fill text-success"></i>
-                </span>
-                <input asp-for="CategoryName" class="form-control border-start-0 ps-0 py-2 fs-5"
-                       placeholder="e.g., Tech Stocks, Crypto Market..." required max-length="200" />
-            </div>
-            @* Thẻ hiển thị thông báo lỗi Validate nếu để trống hoặc quá 200 ký tự *@
-            <span asp-validation-for="CategoryName" class="text-danger small mt-1 d-block fw-medium"></span>
-        </div>
+    <div class="mb-3">
+        <label asp-for="CategoryName" class="form-label fw-semibold">
+            Category Name <span class="text-danger">*</span>
+        </label>
 
-        @* 2. Trường nhập mô tả (Category Description - Thay bằng thuộc tính CategoryDes của Entity) *@
-        <div class="mb-4">
-            <label asp-for="CategoryDescription" class="form-label fw-semibold text-secondary small text-uppercase">
-                Description
-            </label>
-            <textarea asp-for="CategoryDescription" class="form-control shadow-sm py-2" rows="3"
-                      placeholder="Provide a brief summary of this market economic sector..."></textarea>
-            <span asp-validation-for="CategoryDescription" class="text-danger small mt-1 d-block fw-medium"></span>
-        </div>
+        <input asp-for="CategoryName"
+               class="form-control"
+               placeholder="Enter category name"
+               maxlength="200"
+               required />
 
-        @* 3. Trường chọn Danh mục cha (Parent Category Dropdown - Chỉ hiển thị danh mục Top-level) *@
-        <div class="mb-4">
-            <label asp-for="ParentCategoryID" class="form-label fw-semibold text-secondary small text-uppercase">
-                Parent Category
-            </label>
-            <div class="input-group shadow-sm rounded">
-                <span class="input-group-text bg-white border-end-0 text-muted">
-                    <i class="bi bi-diagram-3"></i>
-                </span>
-                @* - ViewBag.ParentCategories sẽ được Controller chuẩn bị sẵn chứa các danh mục gốc.
-                   - Nếu không chọn (chọn option mặc định), giá trị sẽ truyền lên là null (mặc định Top-Level).
-                *@
-                <select asp-for="ParentCategoryID" class="form-select border-start-0 ps-0 py-2 fs-6"
-                        asp-items="@(ViewBag.ParentCategories as SelectList)">
-                    <option value="" selected>-- None (Top Level Category) --</option>
-                </select>
-            </div>
-            <span asp-validation-for="ParentCategoryID" class="text-danger small mt-1 d-block fw-medium"></span>
-            <div class="form-text text-muted small mt-1">
-                Leave as "None" if this is a primary segment. Select a parent to create a sub-sector.
-            </div>
-        </div>
-
-        @* 4. Ô Checkbox chọn trạng thái hoạt động (Is Active) *@
-        <div class="bg-light p-3 rounded border d-flex align-items-center justify-content-between">
-            <div>
-                <label asp-for="IsActive" class="form-check-label fw-bold text-dark mb-0 d-block cursor-pointer">
-                    Activate Category
-                </label>
-                <small class="text-muted d-block">If disabled, this category and its reports cannot be viewed by users.</small>
-            </div>
-            <div class="form-check form-switch mb-0">
-                @* Mặc định tích sẵn checkbox (true) *@
-                <input asp-for="IsActive" class="form-check-input cursor-pointer" type="checkbox" role="switch" checked style="transform: scale(1.3);" />
-            </div>
-        </div>
-
+        <span asp-validation-for="CategoryName"
+              class="text-danger small"></span>
     </div>
+
+    <div class="mb-3">
+        <label asp-for="CategoryDescription"
+               class="form-label fw-semibold">
+            Description
+        </label>
+
+        <textarea asp-for="CategoryDescription"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Enter category description"></textarea>
+
+        <span asp-validation-for="CategoryDescription"
+              class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ParentCategoryID"
+               class="form-label fw-semibold">
+            Parent Category
+        </label>
+
+        <select asp-for="ParentCategoryID"
+                class="form-select"
+                asp-items="@(ViewBag.ParentCategories as SelectList)">
+            <option value="">-- None (Top Level Category) --</option>
+        </select>
+
+        <span asp-validation-for="ParentCategoryID"
+              class="text-danger small"></span>
+    </div>
+
+    <div class="form-check form-switch">
+        <input asp-for="IsActive"
+               class="form-check-input" />
+
+        <label asp-for="IsActive"
+               class="form-check-label">
+            Active Category
+        </label>
+    </div>
+
 </form>
