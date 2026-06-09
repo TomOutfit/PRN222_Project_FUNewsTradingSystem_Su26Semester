@@ -4,6 +4,7 @@ using FUNewsTradingSystem_DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FUNewsTradingSystem_DataAccessLayer.Migrations
 {
     [DbContext(typeof(FUNewsManagementContext))]
-    partial class FUNewsManagementContextModelSnapshot : ModelSnapshot
+    [Migration("20260605145859_UpdateSeedData")]
+    partial class UpdateSeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,17 +206,17 @@ namespace FUNewsTradingSystem_DataAccessLayer.Migrations
                         new
                         {
                             AccountID = 1,
-                            AccountEmail = "staff@FUNewsTradingSystem.org",
-                            AccountName = "Test Staff",
-                            AccountPassword = "@@abc123@@_HASH_PLACEHOLDER",
+                            AccountEmail = "staff@funews.org",
+                            AccountName = "Staff Member",
+                            AccountPassword = "AQAAAAEAACcQAAAAELs+PZVdRHadHlMuaXWvzHD+7oMv2jsRUY/UxVGi1j32aL9NjpmmwVSDm9hKDppDjQ==",
                             AccountRole = 1
                         },
                         new
                         {
                             AccountID = 2,
-                            AccountEmail = "lecturer@FUNewsTradingSystem.org",
-                            AccountName = "Test Lecturer",
-                            AccountPassword = "@@abc123@@_HASH_PLACEHOLDER",
+                            AccountEmail = "lecturer@funews.org",
+                            AccountName = "Lecturer Member",
+                            AccountPassword = "AQAAAAEAACcQAAAAELs+PZVdRHadHlMuaXWvzHD+7oMv2jsRUY/UxVGi1j32aL9NjpmmwVSDm9hKDppDjQ==",
                             AccountRole = 2
                         });
                 });

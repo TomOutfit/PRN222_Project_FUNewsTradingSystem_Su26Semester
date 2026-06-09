@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FUNewsTradingSystem_MVC.Extensions;
 using FUNewsTradingSystem_MVC.ViewModels;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 
@@ -26,15 +27,15 @@ public class StaffController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var accountId = User.GetAccountId();
         var accountName = User.Identity?.Name ?? User.FindFirstValue(ClaimTypes.Name) ?? "Staff";
 
         ViewData["AccountName"] = accountName;
 
         // Get report count for this staff member
-        if (int.TryParse(accountId, out int id))
+        if (accountId.HasValue)
         {
-            var reports = await _newsArticleService.GetByCreatorAsync(id);
+            var reports = await _newsArticleService.GetByCreatorAsync(accountId.Value);
             ViewData["ReportCount"] = reports.Count;
         }
         else
@@ -51,13 +52,13 @@ public class StaffController : Controller
     [HttpGet]
     public async Task<IActionResult> Profile()
     {
-        var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(accountIdClaim, out int accountId))
+        var accountId = User.GetAccountId();
+        if (accountId == null)
         {
             return RedirectToAction("Login", "Account");
         }
 
-        var account = await _accountService.GetByIdAsync(accountId);
+        var account = await _accountService.GetByIdAsync(accountId.Value);
         if (account == null)
         {
             return RedirectToAction("Login", "Account");
@@ -86,13 +87,13 @@ public class StaffController : Controller
             return await Profile();
         }
 
-        var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(accountIdClaim, out int accountId))
+        var accountId = User.GetAccountId();
+        if (accountId == null)
         {
             return RedirectToAction("Login", "Account");
         }
 
-        var result = await _accountService.UpdateNameAsync(accountId, model.AccountName);
+        var result = await _accountService.UpdateNameAsync(accountId.Value, model.AccountName);
         if (result.Success)
         {
             TempData["NameSuccess"] = "Profile updated successfully.";
@@ -117,14 +118,14 @@ public class StaffController : Controller
             return await Profile();
         }
 
-        var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(accountIdClaim, out int accountId))
+        var accountId = User.GetAccountId();
+        if (accountId == null)
         {
             return RedirectToAction("Login", "Account");
         }
 
         var result = await _accountService.ChangePasswordAsync(
-            accountId, 
+            accountId.Value, 
             model.CurrentPassword, 
             model.NewPassword);
 

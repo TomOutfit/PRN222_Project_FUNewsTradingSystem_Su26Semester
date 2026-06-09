@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,7 +9,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-body-tertiary border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand fw-semibold text-primary" asp-area="" asp-controller="Home" asp-action="Index">
                     FNTS
@@ -36,8 +36,8 @@
                             @if (User.IsInRole("1"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Analysis" ? "active" : "")"
-                                       asp-controller="Analysis" asp-action="Index">Run Analysis</a>
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "RunAnalysis" ? "active" : "")"
+                                       asp-controller="RunAnalysis" asp-action="Index">Run Analysis</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")"
@@ -78,21 +78,26 @@
                         {
                             <span class="navbar-text me-3 text-secondary">
                                 Hello, <strong>@User.Identity.Name</strong>
-                                <span class="badge bg-light text-dark border">
+                                <span class="badge bg-secondary text-white border border-secondary border-opacity-25">
                                     @(User.IsInRole("3") ? "Admin" : User.IsInRole("1") ? "Staff" : "Lecturer")
                                 </span>
                             </span>
 
-                            @* Bắt buộc sử dụng FORM POST + AntiForgeryToken cho nút Logout *@
-                            <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                            <form class="form-inline me-3" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-outline-danger btn-sm fw-medium">Logout</button>
                             </form>
                         }
                         else
                         {
-                            <a class="btn btn-primary btn-sm fw-medium px-3" asp-controller="Account" asp-action="Login">Login</a>
+                            <a class="btn btn-primary btn-sm fw-medium px-3 me-3" asp-controller="Account" asp-action="Login">Login</a>
                         }
+                        
+                        <!-- Theme Toggle Button -->
+                        <button class="btn btn-sm btn-outline-secondary d-flex align-items-center" id="themeToggle" type="button" aria-label="Toggle theme">
+                            <span id="themeIcon">🌙</span>
+                            <span class="ms-2 d-none d-sm-inline">Theme</span>
+                        </button>
                     </div>
 
                 </div>
@@ -106,7 +111,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-auto py-3 bg-light">
+    <footer class="border-top footer text-muted mt-auto py-3 bg-body-tertiary">
         <div class="container text-center text-sm-start">
             &copy; 2026 — FUNewsTradingSystem (Automated AI Trading Analysis)
         </div>
@@ -115,6 +120,42 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const getStoredTheme = () => localStorage.getItem('theme');
+            const setStoredTheme = theme => localStorage.setItem('theme', theme);
+            const getPreferredTheme = () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme) {
+                    return storedTheme;
+                }
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            };
+
+            const setTheme = theme => {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                const themeIcon = document.getElementById('themeIcon');
+                if (themeIcon) {
+                    if (theme === 'dark') {
+                        themeIcon.textContent = '☀️';
+                    } else {
+                        themeIcon.textContent = '🌙';
+                    }
+                }
+            };
+
+            setTheme(getPreferredTheme());
+
+            document.getElementById('themeToggle')?.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                setStoredTheme(newTheme);
+                setTheme(newTheme);
+            });
+        });
+    </script>
 
     @* Render section Scripts đúng chuẩn không bắt buộc ở cuối trang *@
     @await RenderSectionAsync("Scripts", required: false)
