@@ -259,22 +259,22 @@
 - [X] Verify: successful password change → log out → log in with new password → access granted
 
 ### 🏠 Staff Dashboard (4 tasks)
-- [ ] Add `GET /Staff/Dashboard` to `StaffController.cs`: call `GetReportsByCreatorAsync(currentAccountId)` for count; return view with AccountName claim + report count
-- [ ] Create `Views/Staff/Dashboard/Index.cshtml`: welcome heading with AccountName; Bootstrap card grid with: "Run Analysis" (link + icon + description), "Manage Categories" (link + icon), "Manage Tags" (link + icon), "My Reports" (link + icon + badge showing report count), "My Profile" (link + icon)
-- [ ] Verify: report count badge on "My Reports" card matches actual row count in DB
-- [ ] Verify: all 5 card links navigate to correct pages
+- [x] Add `GET /Staff/Dashboard` to `StaffController.cs`: call `GetReportsByCreatorAsync(currentAccountId)` for count; return view with AccountName claim + report count
+- [x] Create `Views/Staff/Dashboard/Index.cshtml`: welcome heading with AccountName; Bootstrap card grid with: "Run Analysis" (link + icon + description), "Manage Categories" (link + icon), "Manage Tags" (link + icon), "My Reports" (link + icon + badge showing report count), "My Profile" (link + icon)
+- [x] Verify: report count badge on "My Reports" card matches actual row count in DB
+- [x] Verify: all 5 card links navigate to correct pages
 
 ### 📝 Documentation & Demo Prep (14 tasks)
-- [ ] Write `README.md`: prerequisites (.NET 8 SDK, SQL Server LocalDB, Visual Studio 2022); setup steps (clone → fill `appsettings.json` → `dotnet ef database update` → Run); default credentials table; folder structure explanation; known limitations
-- [ ] Create `appsettings.json.example`: all required keys with placeholder values — safe to commit to repo
-- [ ] Write inline XML doc comments (`///`) on: `TradingAgentService.RunAnalysisAsync()` (each step), `TradingAgentService.PreprocessJsonResponse()` (why needed), all Repository interface methods (one-liner each), `FUNewsManagementContext.OnModelCreating()` (each config block)
-- [ ] Create `TESTING.md`: shared smoke test tracker — one table with Feature | Test Case | Owner | PASS/FAIL/NOTES; each person fills in their own rows after self-testing
-- [ ] Create `KNOWN_ISSUES.md`: honest list of any failing tests, partial implementations, or workarounds discovered during self-testing
+- [x] Write `README.md`: prerequisites (.NET 8 SDK, SQL Server LocalDB, Visual Studio 2022); setup steps (clone → fill `appsettings.json` → `dotnet ef database update` → Run); default credentials table; folder structure explanation; known limitations
+- [x] Create `appsettings.json.example`: all required keys with placeholder values — safe to commit to repo
+- [x] Write inline XML doc comments (`///`) on: `TradingAgentService.RunAnalysisAsync()` (each step), `TradingAgentService.PreprocessJsonResponse()` (why needed), all Repository interface methods (one-liner each), `FUNewsManagementContext.OnModelCreating()` (each config block)
+- [x] Create `TESTING.md`: shared smoke test tracker — one table with Feature | Test Case | Owner | PASS/FAIL/NOTES; each person fills in their own rows after self-testing
+- [x] Create `KNOWN_ISSUES.md`: honest list of any failing tests, partial implementations, or workarounds discovered during self-testing
 - [X] Create 2 Admin Accounts and delete 1 to confirm self-deletion block works
 - [ ] Run pipeline on 3 tickers (AAPL, NVDA, TSLA) across 3 different sectors to populate demo reports before grading
 - [ ] Archive 1 report (set Inactive) so graders can verify visibility behavior
 - [ ] Screenshot all key screens and save to `/docs/screenshots/`: Login, Staff Dashboard, Run Analysis (success state), Report List (with BUY/SELL/HOLD badges), Report Detail, Category Management (with one inactive), Account Management, Statistics results
-- [ ] Write `ARCHITECTURE_NOTES.md`: DI registrations, auth flow summary, route map, TradingAgentService call chain — P1 to review and sign off before submission
+- [x] Create `ARCHITECTURE_NOTES.md`: DI registrations, auth flow summary, route map, TradingAgentService call chain — P1 to review and sign off before submission
 - [ ] Final pre-submission checklist: `appsettings.json` gitignored, `appsettings.json.example` committed, `README.md` complete, screenshots present, `TESTING.md` filled by all members, app launches cleanly from a fresh clone on a different machine
 - [ ] Do a dry-run demo walkthrough: follow the grading rubric top to bottom, simulate a grader's session; note anything that breaks and report to the team
 
