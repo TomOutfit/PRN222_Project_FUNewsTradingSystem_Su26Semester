@@ -1,0 +1,61 @@
+﻿@model FUNewsTradingSystem_DataAccessLayer.Models.Category
+
+<form id="createCategoryForm" novalidate>
+
+    <div class="mb-3">
+        <label asp-for="CategoryName" class="form-label fw-semibold">
+            Category Name <span class="text-danger">*</span>
+        </label>
+
+        <input asp-for="CategoryName"
+               class="form-control"
+               placeholder="Enter category name"
+               maxlength="200"
+               required />
+
+        <span asp-validation-for="CategoryName"
+              class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CategoryDescription"
+               class="form-label fw-semibold">
+            Description
+        </label>
+
+        <textarea asp-for="CategoryDescription"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Enter category description"></textarea>
+
+        <span asp-validation-for="CategoryDescription"
+              class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ParentCategoryID"
+               class="form-label fw-semibold">
+            Parent Category
+        </label>
+
+        <select asp-for="ParentCategoryID"
+                class="form-select"
+                asp-items="@(ViewBag.ParentCategories as SelectList)">
+            <option value="">-- None (Top Level Category) --</option>
+        </select>
+
+        <span asp-validation-for="ParentCategoryID"
+              class="text-danger small"></span>
+    </div>
+
+    <div class="form-check form-switch">
+        <input asp-for="IsActive"
+               class="form-check-input" />
+
+        <label asp-for="IsActive"
+               class="form-check-label">
+            Active Category
+        </label>
+    </div>
+
+</form>

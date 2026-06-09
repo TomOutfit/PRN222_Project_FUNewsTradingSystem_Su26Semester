@@ -167,20 +167,20 @@
 - [x] Test nav visibility manually for all 4 roles after P1 completes auth
 
 ### 🗂️ Category Management — FR-5 (15 tasks)
-- [ ] Create `CategoryController.cs` with `[Authorize(Policy = "StaffOnly")]`
-- [ ] `GET /Staff/Categories`: `GetAllCategoriesAsync()` → return Index view
-- [ ] `GET /Staff/Categories/CreatePartial`: return `_CreateCategoryModal` partial with empty `CreateCategoryViewModel`
-- [ ] `POST /Staff/Categories/Create` (AJAX JSON): validate → `CreateCategoryAsync()` → return result JSON
-- [ ] `GET /Staff/Categories/EditPartial/{id}`: `GetCategoryForEditAsync(id)` → return `_EditCategoryModal` partial
-- [ ] `POST /Staff/Categories/Edit` (AJAX JSON): validate → `UpdateCategoryAsync()` → return result JSON
-- [ ] `POST /Staff/Categories/ToggleActive/{id}` (AJAX JSON): `ToggleActiveAsync(id)` → return `{ success, newIsActive }`
-- [ ] `POST /Staff/Categories/Delete/{id}` (AJAX JSON + AntiForgery): `DeleteCategoryAsync(id)` → return result JSON
-- [ ] Create `CreateCategoryViewModel.cs`: CategoryName (Required, Max 200), CategoryDescription (Max 500), ParentCategoryID (int?, optional), IsActive (bool, default true)
-- [ ] Create `EditCategoryViewModel.cs`: same + CategoryID (Required)
-- [ ] Create `Views/Staff/Categories/Index.cshtml`: table (ID | Name | Description | Parent | IsActive toggle | Edit | Delete); "Add Category" button; modal container divs
-- [ ] Create `Views/Staff/Categories/_CreateCategoryModal.cshtml`: CategoryName input, CategoryDescription textarea, ParentCategoryID dropdown ("None" default, top-level only), IsActive checkbox, validation spans
-- [ ] Create `Views/Staff/Categories/_EditCategoryModal.cshtml`: same + hidden CategoryID
-- [ ] Create `wwwroot/js/categories.js`: `openCreateModal()`, `openEditModal(id)`, `submitCreateForm()`, `submitEditForm()`, `toggleActive(id, checkbox)` (AJAX POST → on failure revert checkbox + show error toast), `deleteCategory(id, name)` (shared `confirmDelete()` → confirm → AJAX → refresh), `refreshCategoryTable()`
+- [x] Create `CategoryController.cs` with `[Authorize(Policy = "StaffOnly")]`
+- [x] `GET /Staff/Categories`: `GetAllCategoriesAsync()` → return Index view
+- [x] `GET /Staff/Categories/CreatePartial`: return `_CreateCategoryModal` partial with empty `CreateCategoryViewModel`
+- [x] `POST /Staff/Categories/Create` (AJAX JSON): validate → `CreateCategoryAsync()` → return result JSON
+- [x] `GET /Staff/Categories/EditPartial/{id}`: `GetCategoryForEditAsync(id)` → return `_EditCategoryModal` partial
+- [x] `POST /Staff/Categories/Edit` (AJAX JSON): validate → `UpdateCategoryAsync()` → return result JSON
+- [x] `POST /Staff/Categories/ToggleActive/{id}` (AJAX JSON): `ToggleActiveAsync(id)` → return `{ success, newIsActive }`
+- [x] `POST /Staff/Categories/Delete/{id}` (AJAX JSON + AntiForgery): `DeleteCategoryAsync(id)` → return result JSON
+- [x] Create `CreateCategoryViewModel.cs`: CategoryName (Required, Max 200), CategoryDescription (Max 500), ParentCategoryID (int?, optional), IsActive (bool, default true)
+- [x] Create `EditCategoryViewModel.cs`: same + CategoryID (Required)
+- [x] Create `Views/Staff/Categories/Index.cshtml`: table (ID | Name | Description | Parent | IsActive toggle | Edit | Delete); "Add Category" button; modal container divs
+- [x] Create `Views/Staff/Categories/_CreateCategoryModal.cshtml`: CategoryName input, CategoryDescription textarea, ParentCategoryID dropdown ("None" default, top-level only), IsActive checkbox, validation spans
+- [x] Create `Views/Staff/Categories/_EditCategoryModal.cshtml`: same + hidden CategoryID
+- [x] Create `wwwroot/js/categories.js`: `openCreateModal()`, `openEditModal(id)`, `submitCreateForm()`, `submitEditForm()`, `toggleActive(id, checkbox)` (AJAX POST → on failure revert checkbox + show error toast), `deleteCategory(id, name)` (shared `confirmDelete()` → confirm → AJAX → refresh), `refreshCategoryTable()`
 
 ### 🏷️ Tag Management — FR-6 (10 tasks)
 - [ ] Create `TagController.cs` with `[Authorize(Policy = "StaffOnly")]`
