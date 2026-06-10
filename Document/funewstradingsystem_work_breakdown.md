@@ -194,11 +194,11 @@
 - [x] Create `wwwroot/js/tags.js`: `openCreateModal()`, `openEditModal(id)`, `submitCreateForm()`, `submitEditForm()`, `deleteTag(id, name)`, `refreshTagTable()`
 
 ### 📰 Trading Report Viewer — FR-7 (5 tasks)
-- [ ] Create `NewsController.cs` with `[AllowAnonymous]`; `GET /News/Index` → `GetActiveReportsAsync()` → view; `GET /News/Detail/{id}` → `GetReportDetailAsync(id)` → if null return 404 → view
-- [ ] Create `Views/News/Index.cshtml`: title "Trading Analysis Reports"; per report: decision badge (`badge bg-success`=BUY, `badge bg-danger`=SELL, `badge bg-secondary`=HOLD), NewsTitle, Headline, CreatedDate (`YYYY-MM-DD HH:mm UTC`), CategoryName, Tag pills; "Read Analysis" link; "No reports available." when empty; no Create/Edit/Delete controls
-- [ ] Create `Views/News/Detail.cshtml`: decision badge at top; NewsTitle as heading; metadata row (Created on | Sector | Tickers); NewsContent as formatted paragraphs; NewsSource as small caption; Back → `/News/Index`; no management buttons
-- [ ] Verify: inactive reports (`NewsStatus=0`) are NOT visible on the public list
-- [ ] Verify: no management buttons rendered for Guest or Lecturer
+- [x] Create `NewsController.cs` with `[AllowAnonymous]`; `GET /News/Index` → `GetActiveReportsAsync()` → view; `GET /News/Detail/{id}` → `GetReportDetailAsync(id)` → if null return 404 → view
+- [x] Create `Views/News/Index.cshtml`: title "Trading Analysis Reports"; per report: decision badge (`badge bg-success`=BUY, `badge bg-danger`=SELL, `badge bg-secondary`=HOLD), NewsTitle, Headline, CreatedDate (`YYYY-MM-DD HH:mm UTC`), CategoryName, Tag pills; "Read Analysis" link; "No reports available." when empty; no Create/Edit/Delete controls
+- [x] Create `Views/News/Detail.cshtml`: decision badge at top; NewsTitle as heading; metadata row (Created on | Sector | Tickers); NewsContent as formatted paragraphs; NewsSource as small caption; Back → `/News/Index`; no management buttons
+- [x] Verify: inactive reports (`NewsStatus=0`) are NOT visible on the public list
+- [x] Verify: no management buttons rendered for Guest or Lecturer
 
 ### 📋 Staff Report History — FR-8 (4 tasks)
 - [ ] Add to `StaffController.cs`: `GET /Staff/MyReports` → `GetReportsByCreatorAsync(currentAccountId)` → view; `POST /Staff/MyReports/ToggleStatus/{id}` (AJAX JSON) → `ToggleStatusAsync(id, currentAccountId)` → return `{ success, newStatus }`
