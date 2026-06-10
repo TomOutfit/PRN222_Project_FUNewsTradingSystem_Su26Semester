@@ -70,7 +70,19 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)
+        /// <summary>
+    /// Runs the full AI trading analysis pipeline for the given ticker and sector.
+    /// Orchestrates: Tag resolution → News fetch → Sentiment analysis → Fundamental analysis
+    /// → Portfolio Manager decision → DB save.
+    /// All LLM errors are caught and surfaced as a <see cref="TradingAgentResult"/> with
+    /// a descriptive <c>ErrorMessage</c>; the pipeline never throws to the caller.
+    /// </summary>
+    /// <param name="tagId">Primary key of the Tag (ticker symbol, e.g. AAPL) to analyse.</param>
+    /// <param name="categoryId">Primary key of the Category (sector) the analysis belongs under.</param>
+    /// <param name="createdByAccountId">AccountID of the Staff member triggering the pipeline.</param>
+    /// <returns>A result object where <c>Success</c> is true and <c>NewsArticleID</c> is populated
+    /// on success, or <c>Success</c> is false with an <c>ErrorMessage</c> on any failure.</returns>
+    public async Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)
         {
             try
             {
@@ -308,6 +320,14 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             return content;
         }
 
+        /// <summary>
+        /// Strips markdown code-fence wrappers that OpenAI sometimes prepends/appends to its
+        /// JSON output (e.g. <c>```json</c> … <c>```</c>). Without this step the raw string
+        /// cannot be parsed by <see cref="System.Text.Json.JsonSerializer"/> because the
+        /// leading/trailing fence characters are invalid JSON tokens.
+        /// </summary>
+        /// <param name="raw">The raw, unprocessed LLM output string.</param>
+        /// <returns>The string with any surrounding fences removed and whitespace trimmed.</returns>
         private string PreprocessJsonResponse(string raw)
         {
             if (string.IsNullOrWhiteSpace(raw))
