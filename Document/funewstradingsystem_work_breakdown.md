@@ -266,7 +266,7 @@
 
 ### 📝 Documentation & Demo Prep (14 tasks)
 - [x] Write `README.md`: prerequisites (.NET 8 SDK, SQL Server LocalDB, Visual Studio 2022); setup steps (clone → fill `appsettings.json` → `dotnet ef database update` → Run); default credentials table; folder structure explanation; known limitations
-- [ ] Create `appsettings.json.example`: all required keys with placeholder values — safe to commit to repo
+- [x] Create `appsettings.json.example`: all required keys with placeholder values — safe to commit to repo
 - [ ] Write inline XML doc comments (`///`) on: `TradingAgentService.RunAnalysisAsync()` (each step), `TradingAgentService.PreprocessJsonResponse()` (why needed), all Repository interface methods (one-liner each), `FUNewsManagementContext.OnModelCreating()` (each config block)
 - [ ] Create `TESTING.md`: shared smoke test tracker — one table with Feature | Test Case | Owner | PASS/FAIL/NOTES; each person fills in their own rows after self-testing
 - [ ] Create `KNOWN_ISSUES.md`: honest list of any failing tests, partial implementations, or workarounds discovered during self-testing
