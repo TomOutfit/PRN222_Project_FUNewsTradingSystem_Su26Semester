@@ -33,7 +33,7 @@ public class RunAnalysisController : Controller
         var model = new RunAnalysisViewModel();
 
         // Populate Ticker dropdown from Tags
-        var tags = await _tagService.GetAllAsync();
+        var tags = await _tagService.GetAllTagsAsync();
         model.AvailableTags = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
             tags, "TagID", "TagName");
 

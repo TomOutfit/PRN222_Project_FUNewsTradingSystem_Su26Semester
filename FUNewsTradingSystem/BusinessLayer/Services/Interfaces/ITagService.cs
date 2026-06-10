@@ -4,10 +4,10 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
 {
     public interface ITagService
     {
-        Task<List<Tag>> GetAllAsync();
-        Task<Tag?> GetByIdAsync(int id);
-        Task<ServiceResult> CreateAsync(Tag tag);
-        Task<ServiceResult> UpdateAsync(Tag tag);
-        Task<ServiceResult> DeleteAsync(int id);
+        Task<List<Tag>> GetAllTagsAsync();
+        Task<Tag?> GetTagByIdAsync(int id);
+        Task CreateTagAsync(Tag tag);
+        Task UpdateTagAsync(Tag tag);
+        Task DeleteTagAsync(int id);
     }
 }
