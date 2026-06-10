@@ -1,51 +1,54 @@
+using FUNewsTradingSystem_BusinessLayer.Repositories.Implements;
 using FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces;
+using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_DataAccessLayer.Models;
 
 namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
 {
-    public class TagService : Interfaces.ITagService
+    public class TagService : ITagService
     {
-        private readonly ITagRepository _repository;
+        private readonly ITagRepository _repo;
 
-        public TagService(ITagRepository repository)
+        public TagService(ITagRepository repo)
         {
-            _repository = repository;
+            _repo = repo;
         }
 
-        public async Task<List<Tag>> GetAllAsync() => await _repository.GetAllAsync();
-        public async Task<Tag?> GetByIdAsync(int id) => await _repository.GetByIdAsync(id);
+        public async Task<List<Tag>> GetAllTagsAsync()
+            => await _repo.GetAllAsync();
 
-        public async Task<ServiceResult> CreateAsync(Tag tag)
+        public async Task<Tag?> GetTagByIdAsync(int id)
+            => await _repo.GetByIdAsync(id);
+
+        public async Task CreateTagAsync(Tag tag)
         {
-            if (await _repository.TagNameExistsAsync(tag.TagName))
+            if (await _repo.ExistsByNameAsync(tag.TagName))
             {
-                return new ServiceResult { Success = false, ErrorMessage = "Tag name already exists." };
+                throw new InvalidOperationException(
+                    "Tag name already exists.");
             }
 
-            var created = await _repository.CreateAsync(tag);
-            return new ServiceResult { Success = true, EntityId = created.TagID };
+            await _repo.AddAsync(tag);
         }
 
-        public async Task<ServiceResult> UpdateAsync(Tag tag)
+        public async Task UpdateTagAsync(Tag tag)
         {
-            if (await _repository.TagNameExistsAsync(tag.TagName, tag.TagID))
+            var allTags = await _repo.GetAllAsync();
+
+            var duplicate = allTags.Any(t =>
+                t.TagID != tag.TagID &&
+                t.TagName.ToLower() == tag.TagName.ToLower());
+
+            if (duplicate)
             {
-                return new ServiceResult { Success = false, ErrorMessage = "Tag name already exists." };
+                throw new InvalidOperationException(
+                    "Tag name already exists.");
             }
 
-            await _repository.UpdateAsync(tag);
-            return new ServiceResult { Success = true, EntityId = tag.TagID };
+            await _repo.UpdateAsync(tag);
         }
 
-        public async Task<ServiceResult> DeleteAsync(int id)
-        {
-            if (await _repository.IsReferencedByAnyArticleAsync(id))
-            {
-                return new ServiceResult { Success = false, ErrorMessage = "Cannot delete tag: it is referenced by one or more articles." };
-            }
-
-            await _repository.DeleteAsync(id);
-            return new ServiceResult { Success = true };
-        }
+        public async Task DeleteTagAsync(int id)
+            => await _repo.DeleteAsync(id);
     }
 }
