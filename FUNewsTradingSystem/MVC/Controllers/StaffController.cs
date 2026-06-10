@@ -43,7 +43,7 @@ public class StaffController : Controller
             ViewData["ReportCount"] = 0;
         }
 
-        return View();
+        return View("Dashboard/Index");
     }
 
     /// <summary>
