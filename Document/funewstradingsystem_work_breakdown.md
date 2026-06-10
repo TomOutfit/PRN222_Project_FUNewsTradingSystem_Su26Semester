@@ -269,7 +269,7 @@
 - [x] Create `appsettings.json.example`: all required keys with placeholder values — safe to commit to repo
 - [x] Write inline XML doc comments (`///`) on: `TradingAgentService.RunAnalysisAsync()` (each step), `TradingAgentService.PreprocessJsonResponse()` (why needed), all Repository interface methods (one-liner each), `FUNewsManagementContext.OnModelCreating()` (each config block)
 - [X] Create `TESTING.md`: shared smoke test tracker — one table with Feature | Test Case | Owner | PASS/FAIL/NOTES; each person fills in their own rows after self-testing
-- [ ] Create `KNOWN_ISSUES.md`: honest list of any failing tests, partial implementations, or workarounds discovered during self-testing
+- [X] Create `KNOWN_ISSUES.md`: honest list of any failing tests, partial implementations, or workarounds discovered during self-testing
 - [X] Create 2 Admin Accounts and delete 1 to confirm self-deletion block works
 - [ ] Run pipeline on 3 tickers (AAPL, NVDA, TSLA) across 3 different sectors to populate demo reports before grading
 - [ ] Archive 1 report (set Inactive) so graders can verify visibility behavior
