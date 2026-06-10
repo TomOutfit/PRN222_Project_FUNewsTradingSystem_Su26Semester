@@ -10,5 +10,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
         Task<List<NewsArticle>> GetByDateRangeAsync(DateTime startUtc, DateTime endUtc);
         Task<ServiceResult> CreateWithTagAsync(NewsArticle article, int tagId);
         Task<ServiceResult> ToggleStatusAsync(int newsArticleId, int updatedByAccountId);
+        Task<List<NewsArticle>> GetActiveReportsAsync();
+        Task<NewsArticle?> GetReportDetailAsync(int id);
     }
 }

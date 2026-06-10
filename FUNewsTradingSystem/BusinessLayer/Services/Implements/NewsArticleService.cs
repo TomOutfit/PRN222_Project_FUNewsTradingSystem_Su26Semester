@@ -59,5 +59,15 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
             await _repository.ToggleStatusAsync(newsArticleId, updatedByAccountId);
             return new ServiceResult { Success = true };
         }
+
+        public async Task<List<NewsArticle>> GetActiveReportsAsync()
+        {
+            return await _repository.GetActiveReportsAsync();
+        }
+
+        public async Task<NewsArticle?> GetReportDetailAsync(int id)
+        {
+            return await _repository.GetReportDetailAsync(id);
+        }
     }
 }

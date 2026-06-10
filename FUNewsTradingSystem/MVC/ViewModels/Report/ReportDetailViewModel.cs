@@ -18,4 +18,5 @@ public class ReportDetailViewModel
     public bool NewsStatus { get; set; }
     public string Decision { get; set; } = string.Empty;
     public IEnumerable<string> TagNames { get; set; } = Enumerable.Empty<string>();
+    public List<string> Tags { get; set; } = new();
 }
