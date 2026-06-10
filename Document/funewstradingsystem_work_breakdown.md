@@ -183,15 +183,15 @@
 - [x] Create `wwwroot/js/categories.js`: `openCreateModal()`, `openEditModal(id)`, `submitCreateForm()`, `submitEditForm()`, `toggleActive(id, checkbox)` (AJAX POST → on failure revert checkbox + show error toast), `deleteCategory(id, name)` (shared `confirmDelete()` → confirm → AJAX → refresh), `refreshCategoryTable()`
 
 ### 🏷️ Tag Management — FR-6 (10 tasks)
-- [ ] Create `TagController.cs` with `[Authorize(Policy = "StaffOnly")]`
-- [ ] `GET /Staff/Tags`: `GetAllTagsAsync()` → return Index view
-- [ ] `GET /Staff/Tags/CreatePartial`, `POST /Staff/Tags/Create` (AJAX JSON)
-- [ ] `GET /Staff/Tags/EditPartial/{id}`, `POST /Staff/Tags/Edit` (AJAX JSON)
-- [ ] `POST /Staff/Tags/Delete/{id}` (AJAX JSON + AntiForgery)
-- [ ] Create `CreateTagViewModel.cs`: TagName (Required, MaxLength 50), Note (MaxLength 500); `EditTagViewModel.cs`: same + TagID (Required)
-- [ ] Create `Views/Staff/Tags/Index.cshtml`: table (ID | TagName | Note | Edit | Delete); "Add Ticker" button; modal container divs
-- [ ] Create `Views/Staff/Tags/_CreateTagModal.cshtml` and `_EditTagModal.cshtml` partials with validation spans
-- [ ] Create `wwwroot/js/tags.js`: `openCreateModal()`, `openEditModal(id)`, `submitCreateForm()`, `submitEditForm()`, `deleteTag(id, name)`, `refreshTagTable()`
+- [x] Create `TagController.cs` with `[Authorize(Policy = "StaffOnly")]`
+- [x] `GET /Staff/Tags`: `GetAllTagsAsync()` → return Index view
+- [x] `GET /Staff/Tags/CreatePartial`, `POST /Staff/Tags/Create` (AJAX JSON)
+- [x] `GET /Staff/Tags/EditPartial/{id}`, `POST /Staff/Tags/Edit` (AJAX JSON)
+- [x] `POST /Staff/Tags/Delete/{id}` (AJAX JSON + AntiForgery)
+- [x] Create `CreateTagViewModel.cs`: TagName (Required, MaxLength 50), Note (MaxLength 500); `EditTagViewModel.cs`: same + TagID (Required)
+- [x] Create `Views/Staff/Tags/Index.cshtml`: table (ID | TagName | Note | Edit | Delete); "Add Ticker" button; modal container divs
+- [x] Create `Views/Staff/Tags/_CreateTagModal.cshtml` and `_EditTagModal.cshtml` partials with validation spans
+- [x] Create `wwwroot/js/tags.js`: `openCreateModal()`, `openEditModal(id)`, `submitCreateForm()`, `submitEditForm()`, `deleteTag(id, name)`, `refreshTagTable()`
 
 ### 📰 Trading Report Viewer — FR-7 (5 tasks)
 - [ ] Create `NewsController.cs` with `[AllowAnonymous]`; `GET /News/Index` → `GetActiveReportsAsync()` → view; `GET /News/Detail/{id}` → `GetReportDetailAsync(id)` → if null return 404 → view
