@@ -1,0 +1,68 @@
+﻿@model FUNewsTradingSystem_MVC.ViewModels.Report.ReportDetailViewModel
+
+@{
+    ViewData["Title"] = Model.NewsTitle;
+
+    string badgeClass = Model.Decision switch
+    {
+        "BUY" => "bg-success",
+        "SELL" => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+
+<span class="badge @badgeClass mb-3">
+    @Model.Decision
+</span>
+
+<h2 class="mb-3">
+    @Model.NewsTitle
+</h2>
+
+<div class="text-muted mb-4">
+
+    Created on:
+
+    @Model.CreatedDate.ToString("yyyy-MM-dd HH:mm") UTC
+
+    |
+
+    Sector:
+
+    @Model.CategoryName
+
+    |
+
+    Tickers:
+
+    @string.Join(", ", Model.Tags)
+
+</div>
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        @foreach (var paragraph in Model.NewsContent.Split('\n'))
+        {
+            if (!string.IsNullOrWhiteSpace(paragraph))
+            {
+                <p>@paragraph</p>
+            }
+        }
+
+    </div>
+
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.NewsSource))
+{
+    <div class="small text-muted mt-3">
+        Source: @Model.NewsSource
+    </div>
+}
+
+<a asp-action="Index"
+   class="btn btn-secondary mt-3">
+    Back
+</a>

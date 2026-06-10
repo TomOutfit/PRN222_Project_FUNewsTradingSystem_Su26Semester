@@ -88,5 +88,27 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<NewsArticle>> GetActiveReportsAsync()
+        {
+            return await _context.NewsArticles
+                .Include(x => x.Category)
+                .Include(x => x.NewsTagList)
+                    .ThenInclude(x => x.Tag)
+                .Where(x => x.NewsStatus)
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
+        }
+
+        public async Task<NewsArticle?> GetReportDetailAsync(int id)
+        {
+            return await _context.NewsArticles
+                .Include(x => x.Category)
+                .Include(x => x.NewsTagList)
+                    .ThenInclude(x => x.Tag)
+                .FirstOrDefaultAsync(x =>
+                    x.NewsArticleID == id &&
+                    x.NewsStatus);
+        }
     }
 }

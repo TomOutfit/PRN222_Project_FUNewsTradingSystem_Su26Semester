@@ -1,6 +1,73 @@
+@model IEnumerable<FUNewsTradingSystem_MVC.ViewModels.Report.ReportListItemViewModel>
+
 @{
-    ViewData["Title"] = "News";
+    ViewData["Title"] = "Trading Analysis Reports";
 }
 
-<h1>News</h1>
-<p>News articles will be listed here.</p>
+<h2 class="mb-4">Trading Analysis Reports</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No reports available.
+    </div>
+}
+else
+{
+    @foreach (var item in Model)
+    {
+        string badgeClass = item.Decision switch
+        {
+            "BUY" => "bg-success",
+            "SELL" => "bg-danger",
+            _ => "bg-secondary"
+        };
+
+        <div class="card shadow-sm mb-3">
+
+            <div class="card-body">
+
+                <span class="badge @badgeClass mb-2">
+                    @item.Decision
+                </span>
+
+                <h4>
+                    @item.NewsTitle
+                </h4>
+
+                <p class="text-muted">
+                    @item.Headline
+                </p>
+
+                <div class="small text-secondary mb-2">
+
+                    @item.CreatedDate.ToString("yyyy-MM-dd HH:mm") UTC
+
+                    |
+
+                    @item.CategoryName
+
+                </div>
+
+                <div class="mb-3">
+
+                    @foreach (var tag in item.TagNames)
+                    {
+                        <span class="badge bg-light text-dark border me-1">
+                            @tag
+                        </span>
+                    }
+
+                </div>
+
+                <a asp-action="Detail"
+                   asp-route-id="@item.NewsArticleId"
+                   class="btn btn-primary">
+                    Read Analysis
+                </a>
+
+            </div>
+
+        </div>
+    }
+}
