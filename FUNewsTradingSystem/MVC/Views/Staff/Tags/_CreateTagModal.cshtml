@@ -1,0 +1,26 @@
+﻿@model FUNewsTradingSystem_DataAccessLayer.Models.Tag
+
+<form id="createTagForm">
+
+    <div class="mb-3">
+        <label class="form-label">Tag Name</label>
+
+        <input asp-for="TagName"
+               class="form-control" />
+
+        <span asp-validation-for="TagName"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Note</label>
+
+        <textarea asp-for="Note"
+                  rows="3"
+                  class="form-control"></textarea>
+
+        <span asp-validation-for="Note"
+              class="text-danger"></span>
+    </div>
+
+</form>
