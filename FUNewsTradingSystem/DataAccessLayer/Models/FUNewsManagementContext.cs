@@ -15,11 +15,18 @@ public class FUNewsManagementContext : DbContext
     public DbSet<NewsArticle> NewsArticles => Set<NewsArticle>();
     public DbSet<NewsTag> NewsTags => Set<NewsTag>();
 
+    /// <summary>
+    /// Configures the EF Core model: table names, column constraints, relationships,
+    /// unique/indexes, delete behaviours, and seed data for <see cref="SystemAccount"/>,
+    /// <see cref="Category"/>, and <see cref="Tag"/>.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // --- SystemAccount ---
+        // Table + unique index on email (no two accounts share an email).
+        // All string columns have explicit max lengths and are required where appropriate.
         modelBuilder.Entity<SystemAccount>(entity =>
         {
             entity.ToTable("SystemAccount");
@@ -30,6 +37,8 @@ public class FUNewsManagementContext : DbContext
         });
 
         // --- Category (self-referencing FK) ---
+        // Supports a parent-child hierarchy: a category may have one parent and many children.
+        // ParentCategoryID is nullable; NoAction prevents cycles on delete.
         modelBuilder.Entity<Category>(entity =>
         {
             entity.ToTable("Category");
@@ -42,6 +51,7 @@ public class FUNewsManagementContext : DbContext
         });
 
         // --- Tag ---
+        // TagName is unique and stored normalised to uppercase; duplicate tickers are rejected at DB level.
         modelBuilder.Entity<Tag>(entity =>
         {
             entity.ToTable("Tag");
@@ -51,6 +61,9 @@ public class FUNewsManagementContext : DbContext
         });
 
         // --- NewsArticle ---
+        // Three foreign keys: Category (Restrict to prevent orphan deletion),
+        // CreatedByAccount (SetNull so a deleted creator leaves a readable article),
+        // UpdatedByAccount (NoAction so a deleted updater does not block article deletion).
         modelBuilder.Entity<NewsArticle>(entity =>
         {
             entity.ToTable("NewsArticle");
@@ -76,6 +89,8 @@ public class FUNewsManagementContext : DbContext
         });
 
         // --- NewsTag (composite PK, junction table) ---
+        // Composite PK on (NewsArticleID, TagID) prevents duplicate pairings.
+        // Both FKs use Cascade so deleting either side removes the junction row.
         modelBuilder.Entity<NewsTag>(entity =>
         {
             entity.ToTable("NewsTag");
