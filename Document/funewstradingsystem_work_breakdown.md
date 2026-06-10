@@ -259,10 +259,10 @@
 - [X] Verify: successful password change → log out → log in with new password → access granted
 
 ### 🏠 Staff Dashboard (4 tasks)
-- [ ] Add `GET /Staff/Dashboard` to `StaffController.cs`: call `GetReportsByCreatorAsync(currentAccountId)` for count; return view with AccountName claim + report count
-- [ ] Create `Views/Staff/Dashboard/Index.cshtml`: welcome heading with AccountName; Bootstrap card grid with: "Run Analysis" (link + icon + description), "Manage Categories" (link + icon), "Manage Tags" (link + icon), "My Reports" (link + icon + badge showing report count), "My Profile" (link + icon)
-- [ ] Verify: report count badge on "My Reports" card matches actual row count in DB
-- [ ] Verify: all 5 card links navigate to correct pages
+- [x] Add `GET /Staff/Dashboard` to `StaffController.cs`: call `GetReportsByCreatorAsync(currentAccountId)` for count; return view with AccountName claim + report count
+- [x] Create `Views/Staff/Dashboard/Index.cshtml`: welcome heading with AccountName; Bootstrap card grid with: "Run Analysis" (link + icon + description), "Manage Categories" (link + icon), "Manage Tags" (link + icon), "My Reports" (link + icon + badge showing report count), "My Profile" (link + icon)
+- [x] Verify: report count badge on "My Reports" card matches actual row count in DB
+- [x] Verify: all 5 card links navigate to correct pages
 
 ### 📝 Documentation & Demo Prep (14 tasks)
 - [ ] Write `README.md`: prerequisites (.NET 8 SDK, SQL Server LocalDB, Visual Studio 2022); setup steps (clone → fill `appsettings.json` → `dotnet ef database update` → Run); default credentials table; folder structure explanation; known limitations
