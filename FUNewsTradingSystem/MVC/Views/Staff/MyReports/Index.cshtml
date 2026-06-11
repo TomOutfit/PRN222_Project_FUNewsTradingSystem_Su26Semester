@@ -1,0 +1,103 @@
+﻿@model IEnumerable<FUNewsTradingSystem_DataAccessLayer.Models.NewsArticle>
+
+@{
+    ViewData["Title"] = "My Reports";
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Trading Reports</h2>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have not created any reports yet.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover align-middle">
+
+            <thead class="table-light">
+                <tr>
+                    <th>Title</th>
+                    <th>Created Date</th>
+                    <th>Sector</th>
+                    <th>Tickers</th>
+                    <th>Status</th>
+                    <th width="130">Action</th>
+                    <th width="120">Detail</th>
+                </tr>
+            </thead>
+
+            <tbody id="reportTableBody">
+
+                @foreach (var item in Model)
+                {
+                    <tr id="report-row-@item.NewsArticleID">
+
+                        <td>
+                            @item.NewsTitle
+                        </td>
+
+                        <td>
+                            @item.CreatedDate.ToString("yyyy-MM-dd HH:mm")
+                        </td>
+
+                        <td>
+                            @item.Category?.CategoryName
+                        </td>
+
+                        <td>
+                            @string.Join(", ",
+                                     item.NewsTagList.Select(x => x.Tag.TagName))
+                        </td>
+
+                        <td>
+                            <span id="status-badge-@item.NewsArticleID"
+                                  class="badge @(item.NewsStatus
+                                                                    ? "bg-success"
+                                                                    : "bg-secondary")">
+
+                                @(item.NewsStatus
+                                    ? "Active"
+                                    : "Inactive")
+
+                            </span>
+                        </td>
+
+                        <td>
+                            <button class="btn btn-warning btn-sm"
+                                    onclick="toggleStatus(@item.NewsArticleID)">
+
+                                @(item.NewsStatus
+                                    ? "Archive"
+                                    : "Restore")
+
+                            </button>
+                        </td>
+
+                        <td>
+                            <a class="btn btn-primary btn-sm"
+                               href="/News/Detail/@item.NewsArticleID">
+                                View Detail
+                            </a>
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+    }
+
+</div>
+
+<form id="ajax-antiforgery">
+    @Html.AntiForgeryToken()
+</form>
+
+<script src="~/js/myreports.js"></script>

@@ -142,4 +142,35 @@ public class StaffController : Controller
 
         return RedirectToAction(nameof(Profile));
     }
+
+    [HttpGet]
+    [Route("Staff/MyReports")]
+    public async Task<IActionResult> MyReports()
+    {
+        var accountId =
+            int.Parse(User.FindFirst("AccountID")!.Value);
+
+        var reports =
+            await _newsArticleService.GetReportsByCreatorAsync(accountId);
+
+        return View("~/Views/Staff/MyReports/Index.cshtml", reports);
+    }
+
+    [HttpPost]
+    [Route("Staff/MyReports/ToggleStatus/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleStatus(int id)
+    {
+        var accountId =
+            int.Parse(User.FindFirst("AccountID")!.Value);
+
+        var newStatus =
+            await _newsArticleService.ToggleStatusAsync(id, accountId);
+
+        return Ok(new
+        {
+            success = true,
+            newStatus
+        });
+    }
 }
