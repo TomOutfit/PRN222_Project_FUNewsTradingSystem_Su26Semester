@@ -77,21 +77,23 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
             }
         }
 
-        public async Task<bool> ToggleStatusAsync(int newsArticleId, int updatedByAccountId) {
-            var article = await _context.NewsArticles
-                .FirstOrDefaultAsync(x => x.NewsArticleID == newsArticleId);
+        public async Task<bool> ToggleStatusAsync(int newsId, int accountId)
+        {
+            var news = await _context.NewsArticles
+                .FirstOrDefaultAsync(x => x.NewsArticleID == newsId);
 
-            if (article == null)
-                throw new Exception("Report not found.");
+            if (news == null)
+                return false;
 
-            article.NewsStatus = !article.NewsStatus;
+            news.NewsStatus = !news.NewsStatus;
 
-            article.UpdatedByID = updatedByAccountId;
-            article.ModifiedDate = DateTime.UtcNow;
+            // Audit fields
+            news.UpdatedByID = accountId;
+            news.ModifiedDate = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
-            return article.NewsStatus;
+            return news.NewsStatus;
         }
 
         public async Task<List<NewsArticle>> GetActiveReportsAsync()
