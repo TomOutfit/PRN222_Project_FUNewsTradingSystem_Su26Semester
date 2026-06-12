@@ -201,16 +201,16 @@
 - [x] Verify: no management buttons rendered for Guest or Lecturer
 
 ### 📋 Staff Report History — FR-8 (4 tasks)
-- [ ] Add to `StaffController.cs`: `GET /Staff/MyReports` → `GetReportsByCreatorAsync(currentAccountId)` → view; `POST /Staff/MyReports/ToggleStatus/{id}` (AJAX JSON) → `ToggleStatusAsync(id, currentAccountId)` → return `{ success, newStatus }`
-- [ ] Create `Views/Staff/MyReports/Index.cshtml`: table (Title | Created Date | Sector | Tickers | Status badge | Toggle button | View Detail); "Archive" / "Restore" toggle label based on current status; "View Detail" → `/News/Detail/{id}`; empty state message
-- [ ] Verify: Staff A's list shows only Staff A's reports, not Staff B's
-- [ ] Verify: toggling to Inactive removes report from public `/News/Index`; still visible here
+- [x] Add to `StaffController.cs`: `GET /Staff/MyReports` → `GetReportsByCreatorAsync(currentAccountId)` → view; `POST /Staff/MyReports/ToggleStatus/{id}` (AJAX JSON) → `ToggleStatusAsync(id, currentAccountId)` → return `{ success, newStatus }`
+- [x] Create `Views/Staff/MyReports/Index.cshtml`: table (Title | Created Date | Sector | Tickers | Status badge | Toggle button | View Detail); "Archive" / "Restore" toggle label based on current status; "View Detail" → `/News/Detail/{id}`; empty state message
+- [x] Verify: Staff A's list shows only Staff A's reports, not Staff B's
+- [x] Verify: toggling to Inactive removes report from public `/News/Index`; still visible here
 
 ### 🧪 P3 Self-test (smoke tests to run before handoff)
-- [ ] Verify Category CRUD: create top-level + child; self-ref blocked; IsActive toggle instant; delete unreferenced succeeds; delete referenced blocked; inactive excluded from pipeline dropdown
-- [ ] Verify Tag CRUD: uppercase normalization; duplicate name blocked; delete linked tag blocked
-- [ ] Verify Report Viewer: only active reports show; detail page has all fields; Guest sees no management controls
-- [ ] Verify Staff History: filtered by creator; toggle updates DB `UpdatedByID` + `ModifiedDate`
+- [x] Verify Category CRUD: create top-level + child; self-ref blocked; IsActive toggle instant; delete unreferenced succeeds; delete referenced blocked; inactive excluded from pipeline dropdown
+- [x] Verify Tag CRUD: uppercase normalization; duplicate name blocked; delete linked tag blocked
+- [x] Verify Report Viewer: only active reports show; detail page has all fields; Guest sees no management controls
+- [x] Verify Staff History: filtered by creator; toggle updates DB `UpdatedByID` + `ModifiedDate`
 
 ---
 

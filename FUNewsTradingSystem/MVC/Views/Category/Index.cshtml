@@ -73,7 +73,10 @@
                                 </button>
 
                                 <button class="btn btn-danger btn-sm"
-                                        onclick="deleteCategory(@item.CategoryId, '@item.CategoryName')">
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmDeleteModal"
+                                        data-entity-name="@item.CategoryName"
+                                        data-delete-url="/Staff/Categories/Delete/@item.CategoryId">
                                     Delete
                                 </button>
 
@@ -141,5 +144,7 @@
     </div>
 
 </div>
+
+<partial name="_ConfirmDeleteModal" />
 
 <script src="~/js/categories.js"></script>

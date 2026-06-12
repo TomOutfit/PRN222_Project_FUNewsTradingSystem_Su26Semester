@@ -77,16 +77,23 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
             }
         }
 
-        public async Task ToggleStatusAsync(int newsArticleId, int updatedByAccountId)
+        public async Task<bool> ToggleStatusAsync(int newsId, int accountId)
         {
-            var article = await _context.NewsArticles.FindAsync(newsArticleId);
-            if (article != null)
-            {
-                article.NewsStatus = !article.NewsStatus;
-                article.UpdatedByID = updatedByAccountId;
-                article.ModifiedDate = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-            }
+            var news = await _context.NewsArticles
+                .FirstOrDefaultAsync(x => x.NewsArticleID == newsId);
+
+            if (news == null)
+                return false;
+
+            news.NewsStatus = !news.NewsStatus;
+
+            // Audit fields
+            news.UpdatedByID = accountId;
+            news.ModifiedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return news.NewsStatus;
         }
 
         public async Task<List<NewsArticle>> GetActiveReportsAsync()
@@ -109,6 +116,17 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
                 .FirstOrDefaultAsync(x =>
                     x.NewsArticleID == id &&
                     x.NewsStatus);
+        }
+
+        public async Task<List<NewsArticle>> GetReportsByCreatorAsync(int accountId)
+        {
+            return await _context.NewsArticles
+                .Include(x => x.Category)
+                .Include(x => x.NewsTagList)
+                    .ThenInclude(x => x.Tag)
+                .Where(x => x.CreatedByID == accountId)
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
         }
     }
 }
