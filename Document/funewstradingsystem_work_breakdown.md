@@ -89,11 +89,11 @@
 - [X] Create `RunAnalysisViewModel.cs`: `SelectedTagId` (Required), `SelectedCategoryId` (Required), `AvailableTags: SelectList`, `AvailableCategories: SelectList`
 
 ### 🧪 P1 Self-test (smoke tests to run before handoff)
-- [ ] Verify Login success for all 3 roles with correct redirects
-- [ ] Verify Login failure shows inline error with no email-existence hint
-- [ ] Verify unauthorized route access redirects to Login
-- [ ] Verify pipeline runs end-to-end: trigger from UI → new `NewsArticle` row in DB with correct `NewsTitle` format and `CreatedByID`
-- [ ] Verify pipeline error scenarios return descriptive messages without crashing the app
+- [x] Verify Login success for all 3 roles with correct redirects
+- [x] Verify Login failure shows inline error with no email-existence hint
+- [x] Verify unauthorized route access redirects to Login
+- [x] Verify pipeline runs end-to-end: trigger from UI → new `NewsArticle` row in DB with correct `NewsTitle` format and `CreatedByID`
+- [x] Verify pipeline error scenarios return descriptive messages without crashing the app
 
 ---
 
