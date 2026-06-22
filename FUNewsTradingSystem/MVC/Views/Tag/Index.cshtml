@@ -2,101 +2,130 @@
 
 @{
     ViewData["Title"] = "Tag Management";
+    var totalTags = Model.Count();
 }
 
-<div class="container-fluid">
+<style>
+    .table tbody tr td:first-child { padding-left: 1.25rem; }
+    .table tbody tr td:last-child  { padding-right: 1.25rem; }
+    .table thead tr th:first-child { padding-left: 1.25rem; }
+    .table thead tr th:last-child  { padding-right: 1.25rem; }
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Tag Management</h2>
+    .tag-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .3em .8em;
+        border-radius: 20px;
+        font-size: .8125rem;
+        font-weight: 600;
+        background: linear-gradient(135deg,rgba(109,40,217,.12),rgba(219,39,119,.12));
+        color: var(--accent);
+        border: 1px solid rgba(124,58,237,.2);
+    }
 
-        <button class="btn btn-success"
-                onclick="openCreateModal()">
-            Add Tag
+    .note-text { font-size: .82rem; color: var(--text-muted); }
+
+    .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-muted); }
+    .empty-state .empty-icon { font-size:3.5rem; margin-bottom:1rem; opacity:.35; }
+</style>
+
+<div class="page-header">
+    <div>
+        <h2>
+            <i class="bi bi-tags-fill me-2"
+               style="background:linear-gradient(135deg,#d97706,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>
+            Tag Management
+        </h2>
+        <p class="text-muted mb-0">Manage stock ticker symbols used to label and filter trading news.</p>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <span style="font-size:.85rem;color:var(--text-muted)">
+            <i class="bi bi-hash me-1"></i><strong style="color:var(--text-main)">@totalTags</strong> tags total
+        </span>
+        <button class="btn btn-warning" onclick="openCreateModal()">
+            <i class="bi bi-plus-circle me-1"></i>Add Tag
         </button>
     </div>
-
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Tag Name</th>
-                <th>Note</th>
-                <th width="180">Actions</th>
-            </tr>
-        </thead>
-
-        <tbody id="tagTableBody">
-
-            @foreach (var item in Model)
-            {
-                <tr>
-
-                    <td>@item.TagID</td>
-
-                    <td>@item.TagName</td>
-
-                    <td>@item.Note</td>
-
-                    <td>
-
-                        <button class="btn btn-primary btn-sm"
-                                onclick="openEditModal(@item.TagID)">
-                            Edit
-                        </button>
-
-                        <button class="btn btn-danger btn-sm"
-                                onclick="deleteTag(@item.TagID, '@item.TagName')">
-                            Delete
-                        </button>
-
-                    </td>
-
-                </tr>
-            }
-
-        </tbody>
-
-    </table>
-
 </div>
 
-<form id="ajax-antiforgery">
-    @Html.AntiForgeryToken()
-</form>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tagTableBody">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tag / Ticker</th>
+                        <th>Note</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state">
+                                    <div class="empty-icon">🏷️</div>
+                                    <h6 style="color:var(--text-muted)">No tags yet</h6>
+                                    <p style="font-size:.875rem">Click "Add Tag" to create the first ticker symbol.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td style="color:var(--text-muted);font-size:.82rem;width:50px">@item.TagID</td>
+
+                                <td>
+                                    <span class="tag-chip">
+                                        <i class="bi bi-hash"></i>@item.TagName
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="note-text">@(item.Note ?? "—")</span>
+                                </td>
+
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                            onclick="openEditModal(@item.TagID)">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            onclick="deleteTag(@item.TagID, '@item.TagName')">
+                                        <i class="bi bi-trash me-1"></i>Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<form id="ajax-antiforgery">@Html.AntiForgeryToken()</form>
 
 <div class="modal fade" id="tagCrudModal">
     <div class="modal-dialog">
         <div class="modal-content">
-
             <div class="modal-header">
                 <h5 id="modalTitle" class="modal-title"></h5>
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
-            <div id="modalBodyContainer"
-                 class="modal-body">
-            </div>
-
+            <div id="modalBodyContainer" class="modal-body"></div>
             <div class="modal-footer">
-
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-                    Close
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnSaveTag" class="btn btn-warning">
+                    <i class="bi bi-check-lg me-1"></i>Save
                 </button>
-
-                <button type="button"
-                        id="btnSaveTag"
-                        class="btn btn-success">
-                    Save
-                </button>
-
             </div>
-
         </div>
     </div>
 </div>
@@ -104,38 +133,21 @@
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    Confirm Delete
+            <div class="modal-header" style="background:linear-gradient(135deg,#dc2626,#ef4444);border:none">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
                 </h5>
-
-                <button type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal">
-                </button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-
             <div class="modal-body">
                 <p id="deleteMessage" class="mb-0"></p>
             </div>
-
             <div class="modal-footer">
-
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-                    Cancel
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>Delete
                 </button>
-
-                <button type="button"
-                        id="confirmDeleteBtn"
-                        class="btn btn-danger">
-                    Delete
-                </button>
-
             </div>
-
         </div>
     </div>
 </div>
