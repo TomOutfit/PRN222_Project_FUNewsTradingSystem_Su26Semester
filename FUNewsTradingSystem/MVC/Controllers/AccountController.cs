@@ -166,7 +166,7 @@ public class AccountController : Controller
         {
             1 => RedirectToAction("Dashboard", "Staff"),
             2 => RedirectToAction("Index",     "News"),
-            3 => RedirectToAction("Dashboard", "AdminAccount"),
+            3 => LocalRedirect("/Admin/Dashboard"),
             _ => RedirectToAction("Index",     "Home"),
         };
     }
