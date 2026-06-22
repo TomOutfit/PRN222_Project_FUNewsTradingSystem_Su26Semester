@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -202,19 +203,45 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
 
         private async Task<string> RunSentimentAgentAsync(string ticker, string headlines)
         {
+            if (IsOpenAiMockEnabled())
+            {
+                return GenerateMockSentimentOutput(ticker, headlines);
+            }
+
             var prompt = SENTIMENT_AGENT_PROMPT_TEMPLATE
                 .Replace("{ticker}", ticker)
                 .Replace("{headlines_numbered_list}", headlines);
-            return await CallOpenAiAsync(prompt);
+
+            try
+            {
+                return await CallOpenAiAsync(prompt);
+            }
+            catch (PipelineException ex) when (CanFallbackToMock(ex))
+            {
+                return GenerateMockSentimentOutput(ticker, headlines);
+            }
         }
 
         private async Task<string> RunFundamentalAgentAsync(string ticker, string headlines, string sentimentOutput)
         {
+            if (IsOpenAiMockEnabled())
+            {
+                return GenerateMockFundamentalOutput(ticker, headlines, sentimentOutput);
+            }
+
             var prompt = FUNDAMENTAL_AGENT_PROMPT_TEMPLATE
                 .Replace("{ticker}", ticker)
                 .Replace("{headlines_numbered_list}", headlines)
                 .Replace("{sentiment_output}", sentimentOutput);
-            return await CallOpenAiAsync(prompt);
+
+            try
+            {
+                return await CallOpenAiAsync(prompt);
+            }
+            catch (PipelineException ex) when (CanFallbackToMock(ex))
+            {
+                return GenerateMockFundamentalOutput(ticker, headlines, sentimentOutput);
+            }
         }
 
         private async Task<PortfolioManagerResponse> RunPortfolioManagerAsync(
@@ -222,34 +249,46 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             string sentimentOutput, 
             string fundamentalOutput)
         {
+            if (IsOpenAiMockEnabled())
+            {
+                return GenerateMockPortfolioManagerResponse(ticker, sentimentOutput, fundamentalOutput);
+            }
+
             var prompt = PORTFOLIO_MANAGER_PROMPT_TEMPLATE
                 .Replace("{ticker}", ticker)
                 .Replace("{sentiment_output}", sentimentOutput)
                 .Replace("{fundamental_output}", fundamentalOutput);
 
-            var rawResponse = await CallOpenAiAsync(prompt);
-            var preprocessed = PreprocessJsonResponse(rawResponse);
-
-            PortfolioManagerResponse? result;
             try
             {
-                result = JsonSerializer.Deserialize<PortfolioManagerResponse>(preprocessed, new JsonSerializerOptions
+                var rawResponse = await CallOpenAiAsync(prompt);
+                var preprocessed = PreprocessJsonResponse(rawResponse);
+
+                PortfolioManagerResponse? result;
+                try
                 {
-                    PropertyNameCaseInsensitive = true
-                });
-            }
-            catch (Exception ex)
-            {
-                throw new PipelineException("JSON_PARSE_ERROR", ex);
-            }
+                    result = JsonSerializer.Deserialize<PortfolioManagerResponse>(preprocessed, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    throw new PipelineException($"JSON_PARSE_ERROR: {ex.Message}");
+                }
 
-            if (result == null)
-            {
-                throw new PipelineException("JSON_PARSE_ERROR");
-            }
+                if (result == null)
+                {
+                    throw new PipelineException("JSON_PARSE_ERROR");
+                }
 
-            ValidatePortfolioResponse(result);
-            return result;
+                ValidatePortfolioResponse(result);
+                return result;
+            }
+            catch (PipelineException ex) when (CanFallbackToMock(ex))
+            {
+                return GenerateMockPortfolioManagerResponse(ticker, sentimentOutput, fundamentalOutput);
+            }
         }
 
         private async Task<string> CallOpenAiAsync(string prompt)
@@ -294,7 +333,8 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new PipelineException("LLM_ERROR");
+                var errorPayload = await response.Content.ReadAsStringAsync();
+                throw new PipelineException($"LLM_ERROR: {response.StatusCode} - {TruncateForLog(errorPayload)}");
             }
 
             var responseJson = await response.Content.ReadAsStringAsync();
@@ -308,13 +348,13 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             }
             catch (Exception ex)
             {
-                throw new PipelineException("LLM_ERROR", ex);
+                throw new PipelineException($"LLM_ERROR: invalid response format - {ex.Message}");
             }
 
             var content = openAiResponse?.Choices?[0]?.Message?.Content;
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new PipelineException("LLM_ERROR");
+                throw new PipelineException($"LLM_ERROR: empty model output - {TruncateForLog(responseJson)}");
             }
 
             return content;
@@ -353,7 +393,73 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 trimmed = trimmed.Substring(0, trimmed.Length - 3);
             }
 
+            trimmed = trimmed.Trim();
+
+            // If the model returns explanatory text before/after JSON, extract the JSON object.
+            if (!trimmed.StartsWith("{", StringComparison.OrdinalIgnoreCase) || !trimmed.EndsWith("}", StringComparison.OrdinalIgnoreCase))
+            {
+                var firstBrace = trimmed.IndexOf('{');
+                var lastBrace = trimmed.LastIndexOf('}');
+                if (firstBrace >= 0 && lastBrace > firstBrace)
+                {
+                    trimmed = trimmed.Substring(firstBrace, lastBrace - firstBrace + 1);
+                }
+            }
+
             return trimmed.Trim();
+        }
+
+        private bool IsOpenAiMockEnabled()
+        {
+            return bool.TryParse(_configuration["OpenAI:EnableMock"], out var enabled) && enabled;
+        }
+
+        private bool CanFallbackToMock(PipelineException ex)
+        {
+            return IsOpenAiMockEnabled() || ex.Message.StartsWith("LLM_ERROR", StringComparison.OrdinalIgnoreCase) ||
+                   ex.Message.StartsWith("LLM_TIMEOUT", StringComparison.OrdinalIgnoreCase) ||
+                   ex.Message.StartsWith("JSON_PARSE_ERROR", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string GenerateMockSentimentOutput(string ticker, string headlines)
+        {
+            return $"Positive sentiment detected for {ticker} based on the latest market headlines. The overview is constructive and the technical momentum appears supportive.";
+        }
+
+        private string GenerateMockFundamentalOutput(string ticker, string headlines, string sentimentOutput)
+        {
+            return $"Fundamentals for {ticker} remain stable with strong revenue signals and manageable risk factors. The company is expected to maintain steady cash flow and competitive positioning.";
+        }
+
+        private PortfolioManagerResponse GenerateMockPortfolioManagerResponse(string ticker, string sentimentOutput, string fundamentalOutput)
+        {
+            var decision = "HOLD";
+            if (sentimentOutput.Contains("positive", StringComparison.OrdinalIgnoreCase))
+            {
+                decision = "BUY";
+            }
+            else if (sentimentOutput.Contains("negative", StringComparison.OrdinalIgnoreCase))
+            {
+                decision = "SELL";
+            }
+
+            return new PortfolioManagerResponse
+            {
+                Decision = decision,
+                Title = $"{decision} {ticker} - Mock Analysis",
+                Headline = $"A fallback analysis result generated for {ticker} when the OpenAI pipeline was unavailable.",
+                Content = $"(1) Sentiment view: {sentimentOutput} (2) Fundamental view: {fundamentalOutput} (3) Risk warning: This is a mock report generated because the real AI service was unavailable.",
+                Source = "MockAI fallback - OpenAI unavailable"
+            };
+        }
+
+        private static string TruncateForLog(string value, int maxLength = 200)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength) + "...";
         }
 
         private void ValidatePortfolioResponse(PortfolioManagerResponse r)
@@ -369,7 +475,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 string.IsNullOrWhiteSpace(r.Content) ||
                 string.IsNullOrWhiteSpace(r.Source))
             {
-                throw new PipelineException("INVALID_DECISION");
+                throw new PipelineException("INVALID_DECISION: missing required field");
             }
 
             r.Decision = r.Decision.Trim().ToUpperInvariant();

@@ -48,12 +48,12 @@
                                        asp-controller="Tag" asp-action="Index">Tags</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "History" ? "active" : "")"
-                                       asp-controller="Report" asp-action="History">My Reports</a>
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "MyReports" ? "active" : "")"
+                                       asp-controller="Staff" asp-action="MyReports">My Reports</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
-                                       asp-controller="Account" asp-action="Profile">Profile</a>
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                                       asp-controller="Staff" asp-action="Profile">Profile</a>
                                 </li>
                             }
 
