@@ -2,149 +2,176 @@
 
 @{
     ViewData["Title"] = "Category Management";
+    var activeCount   = Model.Count(c => c.IsActive);
+    var inactiveCount = Model.Count(c => !c.IsActive);
 }
 
-<div class="container-fluid">
+<style>
+    .stat-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .45rem 1rem;
+        border-radius: 30px;
+        font-size: .8125rem;
+        font-weight: 600;
+    }
+    .toggle-switch { cursor: pointer; }
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Category Management</h2>
+    .table tbody tr td:first-child { padding-left: 1.25rem; }
+    .table tbody tr td:last-child  { padding-right: 1.25rem; }
+    .table thead tr th:first-child { padding-left: 1.25rem; }
+    .table thead tr th:last-child  { padding-right: 1.25rem; }
 
-        <button class="btn btn-success"
-                onclick="openCreateModal()">
-            Add Category
+    .cat-name { font-weight: 600; font-size: .9rem; }
+    .cat-desc { font-size: .82rem; color: var(--text-muted); }
+    .parent-tag {
+        font-size: .78rem;
+        background: rgba(124,58,237,.1);
+        color: var(--accent);
+        border-radius: 20px;
+        padding: .2em .65em;
+        font-weight: 500;
+    }
+    [data-bs-theme="dark"] .parent-tag { background: rgba(124,58,237,.2); }
+
+    .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-muted); }
+    .empty-state .empty-icon { font-size:3.5rem; margin-bottom:1rem; opacity:.35; }
+</style>
+
+<div class="page-header">
+    <div>
+        <h2>
+            <i class="bi bi-folder2-fill me-2"
+               style="background:linear-gradient(135deg,#059669,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>
+            Category Management
+        </h2>
+        <p class="text-muted mb-0">Manage market sector categories used to organise trading news.</p>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <span class="stat-chip" style="background:rgba(16,185,129,.1);color:#059669">
+            <i class="bi bi-check-circle-fill"></i>@activeCount Active
+        </span>
+        <span class="stat-chip" style="background:rgba(100,116,139,.1);color:var(--text-muted)">
+            <i class="bi bi-pause-circle-fill"></i>@inactiveCount Inactive
+        </span>
+        <button class="btn btn-success" onclick="openCreateModal()">
+            <i class="bi bi-plus-circle me-1"></i>Add Category
         </button>
     </div>
-
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Category Name</th>
-                    <th>Description</th>
-                    <th>Parent Category</th>
-                    <th>Status</th>
-                    <th width="220">Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                @if (!Model.Any())
-                {
-                    <tr>
-                        <td colspan="6" class="text-center">
-                            No categories found.
-                        </td>
-                    </tr>
-                }
-                else
-                {
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-
-                            <td>@item.CategoryId</td>
-
-                            <td>@item.CategoryName</td>
-
-                            <td>@item.CategoryDescription</td>
-
-                            <td>
-                                @(item.ParentCategoryName ?? "-")
-                            </td>
-
-                            <td>
-                                <div class="form-check form-switch">
-
-                                    <input class="form-check-input"
-                                           type="checkbox"
-                                    @(item.IsActive ? "checked" : null)
-                                           onchange="toggleActive(@item.CategoryId, this)" />
-
-                                </div>
-                            </td>
-
-                            <td>
-
-                                <button class="btn btn-primary btn-sm"
-                                        onclick="openEditModal(@item.CategoryId)">
-                                    Edit
-                                </button>
-
-                                <button class="btn btn-danger btn-sm"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#confirmDeleteModal"
-                                        data-entity-name="@item.CategoryName"
-                                        data-delete-url="/Staff/Categories/Delete/@item.CategoryId">
-                                    Delete
-                                </button>
-
-                            </td>
-
-                        </tr>
-                    }
-                }
-
-            </tbody>
-        </table>
-    </div>
-
 </div>
 
-<form id="ajax-antiforgery">
-    @Html.AntiForgeryToken()
-</form>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Category</th>
+                        <th>Parent</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <div class="empty-icon">📂</div>
+                                    <h6 style="color:var(--text-muted)">No categories yet</h6>
+                                    <p style="font-size:.875rem">Click "Add Category" to create the first one.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td style="color:var(--text-muted);font-size:.82rem;width:50px">@item.CategoryId</td>
 
-<div class="modal fade"
-     id="categoryCrudModal"
-     tabindex="-1">
+                                <td>
+                                    <div class="cat-name">@item.CategoryName</div>
+                                    @if (!string.IsNullOrWhiteSpace(item.CategoryDescription))
+                                    {
+                                        <div class="cat-desc">@item.CategoryDescription</div>
+                                    }
+                                </td>
 
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+                                <td>
+                                    @if (item.ParentCategoryName != null)
+                                    {
+                                        <span class="parent-tag">
+                                            <i class="bi bi-diagram-2 me-1"></i>@item.ParentCategoryName
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:var(--text-muted);font-size:.82rem">—</span>
+                                    }
+                                </td>
 
-            <div class="modal-header">
-                <h5 id="modalTitle" class="modal-title">
-                    Category
-                </h5>
+                                <td>
+                                    <div class="form-check form-switch mb-0 toggle-switch">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               role="switch"
+                                               id="toggle-@item.CategoryId"
+                                               @(item.IsActive ? "checked" : null)
+                                               onchange="toggleActive(@item.CategoryId, this)" />
+                                        <label class="form-check-label" for="toggle-@item.CategoryId"
+                                               style="font-size:.8rem;color:var(--text-muted)">
+                                            @(item.IsActive ? "Active" : "Inactive")
+                                        </label>
+                                    </div>
+                                </td>
 
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
-                </button>
-            </div>
-
-            <div id="modalBodyContainer"
-                 class="modal-body">
-            </div>
-
-            <div class="modal-footer">
-
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-                    Close
-                </button>
-
-                <button type="button"
-                        id="btnSaveCategory"
-                        class="btn btn-success">
-
-                    <span id="saveSpinner"
-                          class="spinner-border spinner-border-sm d-none me-1">
-                    </span>
-
-                    Save
-
-                </button>
-
-            </div>
-
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                            onclick="openEditModal(@item.CategoryId)">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeleteModal"
+                                            data-entity-name="@item.CategoryName"
+                                            data-delete-url="/Staff/Categories/Delete/@item.CategoryId">
+                                        <i class="bi bi-trash me-1"></i>Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 
+<form id="ajax-antiforgery">@Html.AntiForgeryToken()</form>
+
+<div class="modal fade" id="categoryCrudModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="modalTitle" class="modal-title">Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div id="modalBodyContainer" class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnSaveCategory" class="btn btn-success">
+                    <span id="saveSpinner" class="spinner-border spinner-border-sm d-none me-1"></span>
+                    <i class="bi bi-check-lg me-1"></i>Save
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <partial name="_ConfirmDeleteModal" />
-
 <script src="~/js/categories.js"></script>

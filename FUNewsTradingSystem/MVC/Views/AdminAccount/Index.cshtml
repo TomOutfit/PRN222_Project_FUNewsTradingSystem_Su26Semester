@@ -1,78 +1,162 @@
 @model IEnumerable<FUNewsTradingSystem_DataAccessLayer.Models.SystemAccount>
 @{
     ViewData["Title"] = "Account Management";
+    var totalAccounts = Model.Count();
+    var staffCount = Model.Count(a => a.AccountRole == 1);
+    var lecturerCount = Model.Count(a => a.AccountRole == 2);
 }
 
-<div class="container-fluid py-4">
-    @Html.AntiForgeryToken()
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Account Management</h2>
-        <button class="btn btn-primary" onclick="openCreateModal()">
-            <i class="bi bi-plus-circle me-1"></i> Add Account
-        </button>
+@Html.AntiForgeryToken()
+
+<style>
+    .stat-mini {
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.1rem 1.4rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: box-shadow 0.2s;
+    }
+    .stat-mini:hover { box-shadow: var(--shadow-md); }
+    .stat-mini-icon {
+        width: 46px; height: 46px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    .stat-mini-val { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--text-main); }
+    .stat-mini-lbl { font-size: .78rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+</style>
+
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-people-fill me-2" style="background:linear-gradient(135deg,#6d28d9,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>Account Management</h2>
+        <p class="text-muted mb-0">Manage all system user accounts, roles and credentials.</p>
     </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="bi bi-plus-circle me-1"></i> Add Account
+    </button>
+</div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var account in Model)
-                        {
-                            var roleLabel = account.AccountRole switch
-                            {
-                                1 => "Staff",
-                                2 => "Lecturer",
-                                3 => "Admin",
-                                _ => "Guest"
-                            };
-                            
-                            var roleBadge = account.AccountRole switch
-                            {
-                                1 => "bg-info",
-                                2 => "bg-primary",
-                                3 => "bg-danger",
-                                _ => "bg-secondary"
-                            };
-
-                            var currentUserIdClaim = User.FindFirst("AccountID")?.Value;
-                            var isSelf = currentUserIdClaim != null && currentUserIdClaim == account.AccountID.ToString();
-
-                            <tr>
-                                <td>@account.AccountID</td>
-                                <td>@account.AccountName</td>
-                                <td>@account.AccountEmail</td>
-                                <td><span class="badge @roleBadge">@roleLabel</span></td>
-                                <td class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary me-2" onclick="openEditModal(@account.AccountID)">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </button>
-                                    @if (!isSelf)
-                                    {
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAccount(@account.AccountID, '@account.AccountName')">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+@* Stat mini-cards *@
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="stat-mini">
+            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#6d28d9,#9333ea)">
+                <i class="bi bi-people-fill text-white"></i>
+            </div>
+            <div>
+                <div class="stat-mini-val">@totalAccounts</div>
+                <div class="stat-mini-lbl">Total Accounts</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-mini">
+            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#0284c7,#38bdf8)">
+                <i class="bi bi-person-badge-fill text-white"></i>
+            </div>
+            <div>
+                <div class="stat-mini-val">@staffCount</div>
+                <div class="stat-mini-lbl">Staff Members</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-mini">
+            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#059669,#10b981)">
+                <i class="bi bi-mortarboard-fill text-white"></i>
+            </div>
+            <div>
+                <div class="stat-mini-val">@lecturerCount</div>
+                <div class="stat-mini-lbl">Lecturers</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Containers -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="padding-left:1.25rem">#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th class="text-end" style="padding-right:1.25rem">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var account in Model)
+                    {
+                        var roleLabel = account.AccountRole switch
+                        {
+                            1 => "Staff",
+                            2 => "Lecturer",
+                            3 => "Admin",
+                            _ => "Guest"
+                        };
+
+                        var roleIcon = account.AccountRole switch
+                        {
+                            1 => "bi-person-badge-fill",
+                            2 => "bi-mortarboard-fill",
+                            3 => "bi-shield-fill",
+                            _ => "bi-person"
+                        };
+
+                        var roleBadge = account.AccountRole switch
+                        {
+                            1 => "bg-primary",
+                            2 => "bg-success",
+                            3 => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+
+                        var currentUserIdClaim = User.FindFirst("AccountID")?.Value;
+                        var isSelf = currentUserIdClaim != null && currentUserIdClaim == account.AccountID.ToString();
+
+                        <tr>
+                            <td style="padding-left:1.25rem;color:var(--text-muted);font-size:.85rem">@account.AccountID</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#db2777);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0">
+                                        @(account.AccountName?.Length > 0 ? account.AccountName[0].ToString().ToUpper() : "?")
+                                    </div>
+                                    <span class="fw-600">@account.AccountName</span>
+                                    @if (isSelf) { <span class="badge bg-warning" style="font-size:.65rem">You</span> }
+                                </div>
+                            </td>
+                            <td style="color:var(--text-muted);font-size:.875rem">@account.AccountEmail</td>
+                            <td>
+                                <span class="badge @roleBadge">
+                                    <i class="bi @roleIcon me-1"></i>@roleLabel
+                                </span>
+                            </td>
+                            <td class="text-end" style="padding-right:1.25rem">
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(@account.AccountID)">
+                                    <i class="bi bi-pencil me-1"></i>Edit
+                                </button>
+                                @if (!isSelf)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAccount(@account.AccountID, '@account.AccountName')">
+                                        <i class="bi bi-trash me-1"></i>Delete
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <div id="createModalContainer"></div>
 <div id="editModalContainer"></div>
 <partial name="_ConfirmDeleteModal" />

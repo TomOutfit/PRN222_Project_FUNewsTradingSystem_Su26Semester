@@ -3,96 +3,176 @@
     ViewData["Title"] = "Statistical Reports";
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Statistical Reports</h2>
-        <a href="/Admin/Dashboard" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
-        </a>
-    </div>
+<style>
+    .filter-card {
+        background: var(--surface-card);
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        margin-bottom: 1.75rem;
+        box-shadow: var(--shadow-sm);
+    }
+    .filter-card .form-label {
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: var(--text-muted);
+    }
 
-    <!-- Filter Form -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <form id="filterForm" asp-controller="AdminStatistics" asp-action="Index" method="post">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label asp-for="Filter.StartDate" class="form-label"></label>
-                        <input asp-for="Filter.StartDate" class="form-control" type="date" id="startDate" />
-                        <span asp-validation-for="Filter.StartDate" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="Filter.EndDate" class="form-label"></label>
-                        <input asp-for="Filter.EndDate" class="form-control" type="date" id="endDate" />
-                        <span asp-validation-for="Filter.EndDate" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-primary w-100" onclick="return validateDates()">
-                            <i class="bi bi-funnel me-1"></i> Generate Report
-                        </button>
-                    </div>
+    .results-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .results-header h6 {
+        font-weight: 700;
+        margin: 0;
+        color: var(--text-main);
+    }
+
+    .table tbody td { font-size: .875rem; }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.4;
+    }
+    .empty-state h6 { color: var(--text-muted); font-weight: 600; }
+</style>
+
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-bar-chart-line-fill me-2" style="background:linear-gradient(135deg,#6d28d9,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>Statistical Reports</h2>
+        <p class="text-muted mb-0">Filter and review AI-generated trading analysis across all staff members.</p>
+    </div>
+</div>
+
+<div class="filter-card">
+    <form id="filterForm" asp-controller="AdminStatistics" asp-action="Index" method="post">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label asp-for="Filter.StartDate" class="form-label"></label>
+                <div class="input-group">
+                    <span class="input-group-text" style="border-color:var(--border);background:var(--surface);color:var(--text-muted)">
+                        <i class="bi bi-calendar3"></i>
+                    </span>
+                    <input asp-for="Filter.StartDate" class="form-control" type="date" id="startDate" />
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Results Table -->
-    @if (Model.HasResults)
-    {
-        <div class="card shadow-sm">
-            <div class="card-body">
-                @if (Model.Results != null && Model.Results.Any())
-                {
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Headline</th>
-                                    <th>Created Date (UTC)</th>
-                                    <th>Sector</th>
-                                    <th>Created By</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.Results)
-                                {
-                                    <tr>
-                                        <td><strong>@item.NewsTitle</strong></td>
-                                        <td><small class="text-muted">@item.Headline</small></td>
-                                        <td>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
-                                        <td><span class="badge bg-secondary">@item.CategoryName</span></td>
-                                        <td>@item.CreatedByName</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-info mb-0">
-                        <i class="bi bi-info-circle me-2"></i> No reports found for the selected period.
-                    </div>
-                }
+                <span asp-validation-for="Filter.StartDate" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Filter.EndDate" class="form-label"></label>
+                <div class="input-group">
+                    <span class="input-group-text" style="border-color:var(--border);background:var(--surface);color:var(--text-muted)">
+                        <i class="bi bi-calendar3-range"></i>
+                    </span>
+                    <input asp-for="Filter.EndDate" class="form-control" type="date" id="endDate" />
+                </div>
+                <span asp-validation-for="Filter.EndDate" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100" onclick="return validateDates()">
+                    <i class="bi bi-funnel-fill me-2"></i>Generate Report
+                </button>
             </div>
         </div>
-    }
+    </form>
 </div>
+
+@if (Model.HasResults)
+{
+    <div class="card">
+        <div class="results-header">
+            <h6><i class="bi bi-table me-2" style="color:var(--accent)"></i>Results</h6>
+            @if (Model.Results != null && Model.Results.Any())
+            {
+                <span class="badge bg-primary">@Model.Results.Count() records</span>
+            }
+        </div>
+
+        <div class="card-body p-0">
+            @if (Model.Results != null && Model.Results.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="padding-left:1.25rem">Title</th>
+                                <th>Headline</th>
+                                <th>Date</th>
+                                <th>Sector</th>
+                                <th style="padding-right:1.25rem">Created By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Results)
+                            {
+                                <tr>
+                                    <td style="padding-left:1.25rem">
+                                        <strong style="font-size:.9rem">@item.NewsTitle</strong>
+                                    </td>
+                                    <td>
+                                        <span style="color:var(--text-muted);font-size:.82rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+                                            @item.Headline
+                                        </span>
+                                    </td>
+                                    <td style="white-space:nowrap;color:var(--text-muted);font-size:.82rem">
+                                        <i class="bi bi-clock me-1"></i>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@item.CategoryName</span>
+                                    </td>
+                                    <td style="padding-right:1.25rem">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#db2777);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.75rem;flex-shrink:0">
+                                                @(item.CreatedByName?.Length > 0 ? item.CreatedByName[0].ToString().ToUpper() : "?")
+                                            </div>
+                                            <span style="font-size:.875rem">@item.CreatedByName</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h6>No reports found</h6>
+                    <p style="font-size:.875rem">No trading analysis reports were found for the selected date range.</p>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5" style="color:var(--text-muted)">
+        <div style="font-size:4rem;opacity:.3;margin-bottom:1rem">📊</div>
+        <h6 style="color:var(--text-muted)">Select a date range above to generate a statistical report</h6>
+    </div>
+}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
         function validateDates() {
             var startDateStr = document.getElementById("startDate").value;
-            var endDateStr = document.getElementById("endDate").value;
-            
+            var endDateStr   = document.getElementById("endDate").value;
             if (startDateStr && endDateStr) {
-                var start = new Date(startDateStr);
-                var end = new Date(endDateStr);
-                if (start > end) {
+                if (new Date(startDateStr) > new Date(endDateStr)) {
                     alert("Start date must be before or equal to end date.");
-                    return false; // block submission
+                    return false;
                 }
             }
             return true;
