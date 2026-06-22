@@ -1,146 +1,117 @@
 @model FUNewsTradingSystem_MVC.ViewModels.ProfileViewModel
 @{
     ViewData["Title"] = "My Profile";
+    var initials = Model.AccountName?.Length > 0 ? Model.AccountName[0].ToString().ToUpper() : "?";
 }
 
-<div class="row mb-4">
-    <div class="col-12">
-        <h2><i class="bi bi-person-circle me-2"></i>My Profile</h2>
-        <p class="text-muted">Manage your account information and security settings.</p>
-    </div>
-</div>
+<style>
+    .section-card { background:var(--surface-card); border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:var(--shadow-sm); height:100%; }
+    .section-card-header { padding:1rem 1.35rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.6rem; font-weight:700; font-size:.9rem; }
+    .hdr-icon { width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff;flex-shrink:0; }
+    .section-card-body { padding:1.35rem; }
+    .info-row { display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border-light); }
+    .info-row:last-child { border-bottom:none; }
+    .info-lbl { font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em; }
+    .info-val { font-size:.875rem;font-weight:500;color:var(--text-main); }
+</style>
 
-@* Success/Error Messages *@
 @if (TempData["NameSuccess"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>@TempData["NameSuccess"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-3"><i class="bi bi-check-circle-fill"></i>@TempData["NameSuccess"]</div>
 }
-
+@if (TempData["NameError"] != null)
+{
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3"><i class="bi bi-x-circle-fill"></i>@TempData["NameError"]</div>
+}
 @if (TempData["PwdSuccess"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>@TempData["PwdSuccess"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-3"><i class="bi bi-check-circle-fill"></i>@TempData["PwdSuccess"]</div>
 }
 
-<div class="row g-4">
-    @* Account Information (Read-only) *@
-    <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Account Information</h5>
-            </div>
-            <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-4 text-muted">Email</dt>
-                    <dd class="col-sm-8">@Model.AccountEmail</dd>
-
-                    <dt class="col-sm-4 text-muted">Role</dt>
-                    <dd class="col-sm-8">@Model.AccountRoleLabel</dd>
-                </dl>
-            </div>
-        </div>
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-person-circle me-2" style="background:linear-gradient(135deg,#6d28d9,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>My Profile</h2>
+        <p class="text-muted mb-0">Manage your account information and security settings.</p>
     </div>
+    <a asp-controller="Staff" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
 
-    @* Update Display Name *@
-    <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0"><i class="bi bi-pencil-square me-2"></i>Update Display Name</h5>
-            </div>
-            <div class="card-body">
-                <form asp-action="UpdateName" method="post" data-val-password-match>
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="accountId" value="@Model.AccountId" />
-
-                    <div class="mb-3">
-                        <label for="accountName" class="form-label">Display Name</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="accountName" 
-                               name="accountName" 
-                               value="@Model.AccountName"
-                               required
-                               minlength="2"
-                               maxlength="100" />
-                        <div class="invalid-feedback">Name must be between 2 and 100 characters.</div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i>Save Name
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    @* Change Password (Full width) *@
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0"><i class="bi bi-key me-2"></i>Change Password</h5>
-            </div>
-            <div class="card-body">
-                <form asp-action="ChangePassword" method="post" data-val-password-match>
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="accountId" value="@Model.AccountId" />
-
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label for="currentPassword" class="form-label">Current Password</label>
-                            <input type="password" 
-                                   class="form-control" 
-                                   id="currentPassword" 
-                                   name="currentPassword" 
-                                   required />
-                        </div>
-
-                        <div class="col-md-4">
-                            <label for="newPassword" class="form-label">New Password</label>
-                            <input type="password" 
-                                   class="form-control" 
-                                   id="newPassword" 
-                                   name="newPassword" 
-                                   data-val-password-match-new
-                                   required 
-                                   minlength="8" />
-                            <div class="form-text">Minimum 8 characters.</div>
-                            <div class="invalid-feedback">Password must be at least 8 characters long.</div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
-                            <input type="password" 
-                                   class="form-control" 
-                                   id="confirmNewPassword" 
-                                   name="confirmNewPassword" 
-                                   data-val-password-match-confirm
-                                   required />
-                            <div class="invalid-feedback">Confirm password does not match new password.</div>
-                        </div>
-                    </div>
-
-                    <hr class="my-4" />
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i>Change Password
-                    </button>
-                </form>
-            </div>
-        </div>
+@* Profile banner *@
+<div class="mb-4" style="background:linear-gradient(135deg,#6d28d9,#9333ea 50%,#db2777);border-radius:18px;padding:2rem 2.25rem;display:flex;align-items:center;gap:1.5rem;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-30px;top:-30px;width:160px;height:160px;background:rgba(255,255,255,0.07);border-radius:50%"></div>
+    <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:#fff;flex-shrink:0">@initials</div>
+    <div>
+        <div style="font-size:1.3rem;font-weight:800;color:#fff">@Model.AccountName</div>
+        <div style="color:rgba(255,255,255,0.75);font-size:.875rem">@Model.AccountEmail</div>
+        <span class="badge mt-1" style="background:rgba(255,255,255,0.18);color:#fff;font-size:.72rem"><i class="bi bi-shield-fill me-1"></i>@Model.AccountRoleLabel</span>
     </div>
 </div>
 
-<div class="mt-4">
-    <a asp-controller="Staff" asp-action="Index" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-    </a>
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="hdr-icon" style="background:linear-gradient(135deg,#6d28d9,#9333ea)"><i class="bi bi-info-circle-fill"></i></div>
+                Account Information
+            </div>
+            <div class="section-card-body">
+                <div class="info-row"><span class="info-lbl">Email</span><span class="info-val" style="font-size:.82rem">@Model.AccountEmail</span></div>
+                <div class="info-row"><span class="info-lbl">Role</span><span class="badge bg-primary">@Model.AccountRoleLabel</span></div>
+                <div class="info-row"><span class="info-lbl">Account ID</span><span class="info-val" style="color:var(--text-muted)">#@Model.AccountId</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="hdr-icon" style="background:linear-gradient(135deg,#0284c7,#38bdf8)"><i class="bi bi-pencil-square"></i></div>
+                Update Display Name
+            </div>
+            <div class="section-card-body">
+                <form asp-action="UpdateName" asp-controller="Staff" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="accountId" value="@Model.AccountId" />
+                    <div class="mb-3">
+                        <label for="accountName" class="form-label">Display Name</label>
+                        <input type="text" class="form-control" id="accountName" name="accountName" value="@Model.AccountName" required minlength="2" maxlength="100" placeholder="Your display name" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save me-1"></i>Save Name</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="hdr-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b)"><i class="bi bi-key-fill"></i></div>
+                Change Password
+            </div>
+            <div class="section-card-body">
+                <form asp-action="ChangePassword" asp-controller="Staff" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="accountId" value="@Model.AccountId" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" style="font-size:.82rem"></div>
+                    <div class="mb-2">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" placeholder="••••••••" required />
+                    </div>
+                    <div class="mb-2">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Min. 8 chars" required minlength="8" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmNewPassword" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" placeholder="Repeat new password" required />
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100"><i class="bi bi-shield-lock me-1"></i>Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
