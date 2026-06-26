@@ -1,4 +1,6 @@
-@model IEnumerable<FUNewsTradingSystem_DataAccessLayer.Models.NewsArticle>
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@model IPagedList<FUNewsTradingSystem_DataAccessLayer.Models.NewsArticle>
 
 @{
     ViewData["Title"] = "My Reports";
@@ -105,6 +107,9 @@
         }
     </div>
 </div>
+
+<!-- Pagination Controls -->
+@await Html.PartialAsync("_Pagination", Model)
 
 <form id="ajax-antiforgery">@Html.AntiForgeryToken()</form>
 <script src="~/js/myreports.js"></script>

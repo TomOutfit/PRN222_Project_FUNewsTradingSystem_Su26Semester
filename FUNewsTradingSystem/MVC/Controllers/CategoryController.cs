@@ -1,5 +1,6 @@
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_DataAccessLayer.Models;
+using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +21,11 @@ namespace FUNewsTradingSystem_MVC.Controllers
 
         // GET /Staff/Categories
         [HttpGet("")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
+            var pageNumber = PaginationSettings.ValidatePageNumber(page);
+            var pageSize = PaginationSettings.DefaultPageSize;
+
             var categories = await _categoryService.GetAllCategoriesAsync();
 
             var model = categories.Select(c => new CategoryListItemViewModel
@@ -37,7 +41,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
             : null,
 
                 IsActive = c.IsActive
-            }).ToList();
+            }).OrderByDescending(c => c.CategoryId).ToPagedList(pageNumber, pageSize);
 
             return View(model);
         }

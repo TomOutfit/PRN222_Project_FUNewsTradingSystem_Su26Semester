@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using X.PagedList;
 
 namespace FUNewsTradingSystem_MVC.ViewModels.Statistics
 {
@@ -15,7 +17,7 @@ namespace FUNewsTradingSystem_MVC.ViewModels.Statistics
     public class StatisticsResultViewModel
     {
         public StatisticsFilterViewModel Filter { get; set; } = new StatisticsFilterViewModel();
-        public List<NewsArticleStatDto> Results { get; set; } = new List<NewsArticleStatDto>();
+        public StaticPagedList<NewsArticleStatDto> Results { get; set; } = new StaticPagedList<NewsArticleStatDto>(new List<NewsArticleStatDto>(), 1, 10, 0);
         public bool HasResults { get; set; }
     }
 }

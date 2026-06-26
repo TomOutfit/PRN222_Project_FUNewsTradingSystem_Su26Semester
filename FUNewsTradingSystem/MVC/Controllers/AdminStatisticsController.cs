@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
+using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels.Statistics;
 
 namespace FUNewsTradingSystem_MVC.Controllers
@@ -28,8 +29,11 @@ namespace FUNewsTradingSystem_MVC.Controllers
 
         [HttpPost("")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index([FromForm] StatisticsFilterViewModel filter)
+        public async Task<IActionResult> Index([FromForm] StatisticsFilterViewModel filter, int? page)
         {
+            var pageNumber = PaginationSettings.ValidatePageNumber(page);
+            var pageSize = PaginationSettings.DefaultPageSize;
+
             var vm = new StatisticsResultViewModel
             {
                 Filter = filter
@@ -52,7 +56,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
 
             var articles = await _newsArticleService.GetByDateRangeAsync(startUtc, endUtc);
 
-            vm.Results = articles.OrderByDescending(a => a.CreatedDate).Select(a => new NewsArticleStatDto
+            var results = articles.OrderByDescending(a => a.CreatedDate).Select(a => new NewsArticleStatDto
             {
                 NewsArticleID = a.NewsArticleID,
                 NewsTitle = a.NewsTitle,
@@ -60,8 +64,9 @@ namespace FUNewsTradingSystem_MVC.Controllers
                 CreatedDate = a.CreatedDate,
                 CategoryName = a.Category?.CategoryName ?? "Unknown",
                 CreatedByName = a.CreatedByAccount?.AccountName ?? "Deleted User"
-            }).ToList();
+            }).ToPagedList(pageNumber, pageSize);
 
+            vm.Results = results;
             vm.HasResults = true;
 
             return View("~/Views/AdminStatistics/Index.cshtml", vm);

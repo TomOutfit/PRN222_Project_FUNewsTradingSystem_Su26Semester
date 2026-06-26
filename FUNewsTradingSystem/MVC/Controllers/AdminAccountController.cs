@@ -1,6 +1,7 @@
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_DataAccessLayer.Models;
 using FUNewsTradingSystem_MVC.Extensions;
+using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels.Accounts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,17 @@ namespace FUNewsTradingSystem_MVC.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
+            var pageNumber = PaginationSettings.ValidatePageNumber(page);
+            var pageSize = PaginationSettings.DefaultPageSize;
+
             var accounts = await _accountService.GetAllAsync();
-            return View("~/Views/AdminAccount/Index.cshtml", accounts);
+            var pagedAccounts = accounts
+                .OrderByDescending(a => a.AccountID)
+                .ToPagedList(pageNumber, pageSize);
+            
+            return View("~/Views/AdminAccount/Index.cshtml", pagedAccounts);
         }
 
         [HttpGet("/Admin/Dashboard")]

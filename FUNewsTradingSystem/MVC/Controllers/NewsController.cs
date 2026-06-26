@@ -1,4 +1,5 @@
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
+using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels.Report;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +18,11 @@ public class NewsController : Controller
     }
 
     [HttpGet("Index")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? page)
     {
+        var pageNumber = PaginationSettings.ValidatePageNumber(page);
+        var pageSize = PaginationSettings.DefaultPageSize;
+
         var reports = await _newsService.GetActiveReportsAsync();
 
         var model = reports.Select(a => new ReportListItemViewModel
@@ -32,8 +36,7 @@ public class NewsController : Controller
             TagNames = a.NewsTagList
                 .Select(t => t.Tag.TagName)
                 .ToList()
-        });
-
+        }).OrderByDescending(r => r.CreatedDate).ToPagedList(pageNumber, pageSize);
         return View(model);
     }
 

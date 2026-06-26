@@ -1,5 +1,6 @@
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_DataAccessLayer.Models;
+using FUNewsTradingSystem_MVC.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,10 +18,17 @@ public class TagController : Controller
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? page)
     {
+        var pageNumber = PaginationSettings.ValidatePageNumber(page);
+        var pageSize = PaginationSettings.DefaultPageSize;
+
         var tags = await _tagService.GetAllTagsAsync();
-        return View(tags);
+        var pagedTags = tags
+            .OrderByDescending(t => t.TagID)
+            .ToPagedList(pageNumber, pageSize);
+        
+        return View(pagedTags);
     }
 
     [HttpGet("CreatePartial")]

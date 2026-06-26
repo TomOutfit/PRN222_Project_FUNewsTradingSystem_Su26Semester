@@ -1,0 +1,136 @@
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+
+@model IPagedList
+
+@{
+    var pageList = Model as IPagedList;
+    if (pageList == null || pageList.PageCount <= 1)
+    {
+        return;
+    }
+}
+
+<div class="pagination-wrapper">
+    <!-- Pagination Info -->
+    <div class="pagination-info">
+        <span>
+            Showing <span class="badge">@((pageList.FirstItemOnPage).ToString())</span>
+            to <span class="badge">@(pageList.LastItemOnPage)</span>
+            of <span class="badge">@(pageList.TotalItemCount)</span> items
+        </span>
+        @if (pageList.PageCount > 1)
+        {
+            <span>• Page <span class="badge">@(pageList.PageNumber)</span> of <span class="badge">@(pageList.PageCount)</span></span>
+        }
+    </div>
+
+    <!-- Pagination Controls -->
+    <nav aria-label="Pagination Navigation">
+        <ul class="pagination">
+            @if (pageList.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-route-page="1" title="First Page">
+                        <i class="bi bi-chevron-bar-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" asp-route-page="@(pageList.PageNumber - 1)" title="Previous Page">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="bi bi-chevron-bar-left"></i>
+                    </span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="bi bi-chevron-left"></i>
+                    </span>
+                </li>
+            }
+
+            @{
+                int startPage = Math.Max(1, pageList.PageNumber - 2);
+                int endPage = Math.Min(pageList.PageCount, pageList.PageNumber + 2);
+
+                if (startPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-route-page="1">1</a>
+                    </li>
+                    if (startPage > 2)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                }
+
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    if (i == pageList.PageNumber)
+                    {
+                        <li class="page-item active">
+                            <span class="page-link">
+                                @i
+                                <span class="visually-hidden">(current)</span>
+                            </span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-route-page="@i">@i</a>
+                        </li>
+                    }
+                }
+
+                if (endPage < pageList.PageCount)
+                {
+                    if (endPage < pageList.PageCount - 1)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link" asp-route-page="@pageList.PageCount">@pageList.PageCount</a>
+                    </li>
+                }
+            }
+
+            @if (pageList.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-route-page="@(pageList.PageNumber + 1)" title="Next Page">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" asp-route-page="@pageList.PageCount" title="Last Page">
+                        <i class="bi bi-chevron-bar-right"></i>
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="bi bi-chevron-right"></i>
+                    </span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="bi bi-chevron-bar-right"></i>
+                    </span>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>

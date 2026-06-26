@@ -1,73 +1,89 @@
-@model IEnumerable<FUNewsTradingSystem_MVC.ViewModels.Report.ReportListItemViewModel>
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@model IPagedList<FUNewsTradingSystem_MVC.ViewModels.Report.ReportListItemViewModel>
 
 @{
     ViewData["Title"] = "Trading Analysis Reports";
 }
 
-<h2 class="mb-4">Trading Analysis Reports</h2>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info">
-        No reports available.
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Trading Analysis Reports</h2>
+            <p class="text-muted mb-0">Latest investment analysis and trading recommendations</p>
+        </div>
     </div>
-}
-else
-{
-    @foreach (var item in Model)
+
+    @if (!Model.Any())
     {
-        string badgeClass = item.Decision switch
-        {
-            "BUY" => "bg-success",
-            "SELL" => "bg-danger",
-            _ => "bg-secondary"
-        };
-
-        <div class="card shadow-sm mb-3">
-
-            <div class="card-body">
-
-                <span class="badge @badgeClass mb-2">
-                    @item.Decision
-                </span>
-
-                <h4>
-                    @item.NewsTitle
-                </h4>
-
-                <p class="text-muted">
-                    @item.Headline
-                </p>
-
-                <div class="small text-secondary mb-2">
-
-                    @item.CreatedDate.ToString("yyyy-MM-dd HH:mm") UTC
-
-                    |
-
-                    @item.CategoryName
-
-                </div>
-
-                <div class="mb-3">
-
-                    @foreach (var tag in item.TagNames)
-                    {
-                        <span class="badge bg-light text-dark border me-1">
-                            @tag
-                        </span>
-                    }
-
-                </div>
-
-                <a asp-action="Detail"
-                   asp-route-id="@item.NewsArticleId"
-                   class="btn btn-primary">
-                    Read Analysis
-                </a>
-
-            </div>
-
+        <div class="alert alert-info d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle"></i>
+            <span>No reports available at the moment. Check back soon for trading analysis!</span>
         </div>
     }
-}
+    else
+    {
+        <div class="pagination-content">
+            @foreach (var item in Model)
+            {
+                string badgeClass = item.Decision switch
+                {
+                    "BUY" => "bg-success",
+                    "SELL" => "bg-danger",
+                    _ => "bg-secondary"
+                };
+
+                <div class="card shadow-sm mb-3 border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge @badgeClass">
+                                <i class="bi bi-arrow-up-circle"></i>
+                                @item.Decision
+                            </span>
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-event"></i>
+                                @item.CreatedDate.ToString("MMM dd, yyyy")
+                            </small>
+                        </div>
+
+                        <h5 class="card-title">@item.NewsTitle</h5>
+
+                        <p class="card-text text-muted mb-3">
+                            @item.Headline
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-secondary">
+                                    <i class="bi bi-tag"></i>
+                                    @item.CategoryName
+                                </small>
+                                @if (item.TagNames.Any())
+                                {
+                                    <div class="mt-2">
+                                        @foreach (var tag in item.TagNames)
+                                        {
+                                            <span class="badge bg-light text-dark border me-1">
+                                                <i class="bi bi-hash"></i>
+                                                @tag
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <a asp-action="Detail"
+                               asp-route-id="@item.NewsArticleId"
+                               class="btn btn-primary btn-sm">
+                                <i class="bi bi-arrow-right"></i>
+                                Read More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination Controls -->
+        @await Html.PartialAsync("_Pagination", Model)
+    }
+</div>

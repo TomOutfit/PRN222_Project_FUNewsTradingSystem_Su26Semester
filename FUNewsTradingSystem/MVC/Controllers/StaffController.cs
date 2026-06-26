@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FUNewsTradingSystem_MVC.Extensions;
+using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 
@@ -145,15 +146,22 @@ public class StaffController : Controller
 
     [HttpGet]
     [Route("Staff/MyReports")]
-    public async Task<IActionResult> MyReports()
+    public async Task<IActionResult> MyReports(int? page)
     {
+        var pageNumber = PaginationSettings.ValidatePageNumber(page);
+        var pageSize = PaginationSettings.DefaultPageSize;
+
         var accountId =
             int.Parse(User.FindFirst("AccountID")!.Value);
 
         var reports =
             await _newsArticleService.GetReportsByCreatorAsync(accountId);
 
-        return View("~/Views/Staff/MyReports/Index.cshtml", reports);
+        var pagedReports = reports
+            .OrderByDescending(r => r.CreatedDate)
+            .ToPagedList(pageNumber, pageSize);
+
+        return View("~/Views/Staff/MyReports/Index.cshtml", pagedReports);
     }
 
     [HttpPost]

@@ -1,0 +1,97 @@
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@model IPagedList<FUNewsTradingSystem_MVC.ViewModels.Category.CategoryListItemViewModel>
+
+@{
+    ViewData["Title"] = "Category Management";
+}
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h2><i class="bi bi-folder2-open me-2" style="background:linear-gradient(135deg,#059669,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>Category Management</h2>
+            <p class="text-muted mb-0">Create and manage market sector categories for news organization.</p>
+        </div>
+        <button class="btn btn-success" onclick="openCreateModal()">
+            <i class="bi bi-plus-circle me-1"></i> Add Category
+        </button>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle"></i>
+            <span>No categories found. Create your first category to organize news articles.</span>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="padding-left:1.25rem">Category Name</th>
+                                <th>Description</th>
+                                <th>Parent Category</th>
+                                <th>Status</th>
+                                <th class="text-end" style="padding-right:1.25rem">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in Model)
+                            {
+                                <tr>
+                                    <td style="padding-left:1.25rem;font-weight:600;">
+                                        <i class="bi bi-folder-fill me-2" style="color:var(--accent)"></i>
+                                        @category.CategoryName
+                                    </td>
+                                    <td class="text-muted">
+                                        @(string.IsNullOrEmpty(category.CategoryDescription) ? "—" : category.CategoryDescription)
+                                    </td>
+                                    <td class="text-muted">
+                                        @(string.IsNullOrEmpty(category.ParentCategoryName) ? "—" : category.ParentCategoryName)
+                                    </td>
+                                    <td>
+                                        @if (category.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-x-circle me-1"></i>Inactive
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-end" style="padding-right:1.25rem">
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(@category.CategoryId)">
+                                            <i class="bi bi-pencil me-1"></i>Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(@category.CategoryId, '@category.CategoryName')">
+                                            <i class="bi bi-trash me-1"></i>Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        @await Html.PartialAsync("_Pagination", Model)
+    }
+
+    <div id="createModalContainer"></div>
+    <div id="editModalContainer"></div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+        <script src="~/js/category.js"></script>
+    }
+</div>

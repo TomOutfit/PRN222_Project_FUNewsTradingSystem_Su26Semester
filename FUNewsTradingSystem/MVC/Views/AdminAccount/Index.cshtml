@@ -1,7 +1,9 @@
-@model IEnumerable<FUNewsTradingSystem_DataAccessLayer.Models.SystemAccount>
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@model IPagedList<FUNewsTradingSystem_DataAccessLayer.Models.SystemAccount>
 @{
     ViewData["Title"] = "Account Management";
-    var totalAccounts = Model.Count();
+    var totalAccounts = Model.TotalItemCount;
     var staffCount = Model.Count(a => a.AccountRole == 1);
     var lecturerCount = Model.Count(a => a.AccountRole == 2);
 }
@@ -156,6 +158,9 @@
         </div>
     </div>
 </div>
+
+<!-- Pagination Controls -->
+@await Html.PartialAsync("_Pagination", Model)
 
 <div id="createModalContainer"></div>
 <div id="editModalContainer"></div>
