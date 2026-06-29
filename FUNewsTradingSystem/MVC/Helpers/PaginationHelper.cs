@@ -1,5 +1,5 @@
 using System.Linq;
-
+using X.PagedList;
 namespace FUNewsTradingSystem_MVC.Helpers;
 
 public static class PaginationSettings
