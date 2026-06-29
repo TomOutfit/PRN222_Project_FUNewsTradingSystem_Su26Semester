@@ -1,4 +1,160 @@
-@model IEnumerable<FUNewsTradingSystem_MVC.ViewModels.Report.ReportListItemViewModel>
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using FUNewsTradingSystem_DataAccessLayer.Models;
+@model IPagedList<FUNewsTradingSystem_MVC.ViewModels.Report.ReportListItemViewModel>
+
 @{
     ViewData["Title"] = "Trading Analysis Reports";
+    var categories = ViewBag.Categories as IEnumerable<Category> ?? new List<Category>();
+    var tags = ViewBag.Tags as IEnumerable<Tag> ?? new List<Tag>();
+    int? selectedCategory = ViewBag.SelectedCategory as int?;
+    int? selectedTag = ViewBag.SelectedTag as int?;
+    string selectedDecision = ViewBag.SelectedDecision as string ?? "";
 }
+
+<style>
+    .filter-card {
+        background: var(--surface-card);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+    .filter-card .form-label {
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: var(--text-muted);
+    }
+</style>
+
+<div class="container px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-newspaper me-2" style="background:linear-gradient(135deg,#0284c7,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>Trading Analysis Reports</h2>
+            <p class="text-muted mb-0">Latest AI-generated market analysis and investment recommendations</p>
+        </div>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="filter-card">
+        <form method="get" asp-controller="Report" asp-action="Index">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label"><i class="bi bi-folder2 me-1"></i>Sector (Category)</label>
+                    <select name="categoryId" class="form-select form-select-sm">
+                        <option value="">All Sectors</option>
+                        @foreach (var cat in categories)
+                        {
+                            <option value="@cat.CategoryID" selected="@(selectedCategory == cat.CategoryID ? "selected" : null)">
+                                @cat.CategoryName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="bi bi-hash me-1"></i>Ticker (Tag)</label>
+                    <select name="tagId" class="form-select form-select-sm">
+                        <option value="">All Tickers</option>
+                        @foreach (var tag in tags)
+                        {
+                            <option value="@tag.TagID" selected="@(selectedTag == tag.TagID ? "selected" : null)">
+                                @tag.TagName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="bi bi-compass me-1"></i>Decision Type</label>
+                    <select name="decision" class="form-select form-select-sm">
+                        <option value="">All Decisions</option>
+                        <option value="BUY" selected="@(selectedDecision == "BUY" ? "selected" : null)">BUY 🚀</option>
+                        <option value="SELL" selected="@(selectedDecision == "SELL" ? "selected" : null)">SELL 📉</option>
+                        <option value="HOLD" selected="@(selectedDecision == "HOLD" ? "selected" : null)">HOLD ⚖️</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="bi bi-funnel-fill me-1"></i>Filter
+                    </button>
+                    <a asp-controller="Report" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card p-5 text-center my-4">
+            <div style="font-size:3.5rem;opacity:.3" class="mb-3">📭</div>
+            <h5 class="text-muted">No reports matching your criteria</h5>
+            <p class="text-muted small mb-0">Try adjusting your filters or search terms.</p>
+        </div>
+    }
+    else
+    {
+        <div class="pagination-content">
+            @foreach (var item in Model)
+            {
+                string badgeClass = item.Decision switch
+                {
+                    "BUY" => "bg-success",
+                    "SELL" => "bg-danger",
+                    _ => "bg-secondary"
+                };
+
+                <div class="card shadow-sm mb-3 border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge @badgeClass" style="font-size:.85rem;padding:.4em .8em">
+                                <i class="bi bi-lightning-charge-fill me-1"></i>
+                                @item.Decision
+                            </span>
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                @item.CreatedDate.ToString("MMM dd, yyyy HH:mm")
+                            </small>
+                        </div>
+
+                        <h5 class="card-title fw-bold mt-2">@item.NewsTitle</h5>
+
+                        <p class="card-text text-muted mb-3">
+                            @item.Headline
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-secondary me-2">
+                                    <i class="bi bi-folder2 me-1"></i>
+                                    @item.CategoryName
+                                </span>
+                                @if (item.TagNames.Any())
+                                {
+                                    @foreach (var tag in item.TagNames)
+                                    {
+                                        <span class="badge bg-light text-dark border me-1">
+                                            <i class="bi bi-hash"></i>
+                                            @tag
+                                        </span>
+                                    }
+                                }
+                            </div>
+                            <a asp-controller="Report" asp-action="Detail"
+                               asp-route-id="@item.NewsArticleId"
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-arrow-right me-1"></i>Read Analysis
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination Controls -->
+        @await Html.PartialAsync("_Pagination", Model)
+    }
+</div>

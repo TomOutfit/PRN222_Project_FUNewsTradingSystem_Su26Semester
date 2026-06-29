@@ -162,8 +162,24 @@
 <!-- Pagination Controls -->
 @await Html.PartialAsync("_Pagination", Model)
 
-<div id="createModalContainer"></div>
-<div id="editModalContainer"></div>
+<form id="ajax-antiforgery">@Html.AntiForgeryToken()</form>
+
+<div class="modal fade" id="accountCrudModal" tabindex="-1" aria-labelledby="accountModalTitle" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalTitle">Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="accountModalBodyContainer" class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnSaveAccount" class="btn btn-primary">Save Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <partial name="_ConfirmDeleteModal" />
 
 @section Scripts {
