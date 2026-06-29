@@ -96,15 +96,31 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
             return news.NewsStatus;
         }
 
-        public async Task<List<NewsArticle>> GetActiveReportsAsync()
+        public async Task<List<NewsArticle>> GetActiveReportsAsync(int? categoryId = null, int? tagId = null, string? decision = null)
         {
-            return await _context.NewsArticles
+            var query = _context.NewsArticles
                 .Include(x => x.Category)
                 .Include(x => x.NewsTagList)
                     .ThenInclude(x => x.Tag)
-                .Where(x => x.NewsStatus)
-                .OrderByDescending(x => x.CreatedDate)
-                .ToListAsync();
+                .Where(x => x.NewsStatus);
+
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                query = query.Where(x => x.CategoryID == categoryId.Value);
+            }
+
+            if (tagId.HasValue && tagId.Value > 0)
+            {
+                query = query.Where(x => x.NewsTagList.Any(t => t.TagID == tagId.Value));
+            }
+
+            if (!string.IsNullOrWhiteSpace(decision))
+            {
+                var prefix = $"[{decision.Trim().ToUpper()}]";
+                query = query.Where(x => x.NewsTitle.StartsWith(prefix));
+            }
+
+            return await query.OrderByDescending(x => x.CreatedDate).ToListAsync();
         }
 
         public async Task<NewsArticle?> GetReportDetailAsync(int id)
@@ -118,15 +134,31 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
                     x.NewsStatus);
         }
 
-        public async Task<List<NewsArticle>> GetReportsByCreatorAsync(int accountId)
+        public async Task<List<NewsArticle>> GetReportsByCreatorAsync(int accountId, int? categoryId = null, int? tagId = null, string? decision = null)
         {
-            return await _context.NewsArticles
+            var query = _context.NewsArticles
                 .Include(x => x.Category)
                 .Include(x => x.NewsTagList)
                     .ThenInclude(x => x.Tag)
-                .Where(x => x.CreatedByID == accountId)
-                .OrderByDescending(x => x.CreatedDate)
-                .ToListAsync();
+                .Where(x => x.CreatedByID == accountId);
+
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                query = query.Where(x => x.CategoryID == categoryId.Value);
+            }
+
+            if (tagId.HasValue && tagId.Value > 0)
+            {
+                query = query.Where(x => x.NewsTagList.Any(t => t.TagID == tagId.Value));
+            }
+
+            if (!string.IsNullOrWhiteSpace(decision))
+            {
+                var prefix = $"[{decision.Trim().ToUpper()}]";
+                query = query.Where(x => x.NewsTitle.StartsWith(prefix));
+            }
+
+            return await query.OrderByDescending(x => x.CreatedDate).ToListAsync();
         }
     }
 }

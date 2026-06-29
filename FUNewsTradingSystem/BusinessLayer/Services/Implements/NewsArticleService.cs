@@ -54,9 +54,9 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
             return new ServiceResult { Success = true, EntityId = newId };
         }
 
-        public async Task<List<NewsArticle>> GetActiveReportsAsync()
+        public async Task<List<NewsArticle>> GetActiveReportsAsync(int? categoryId = null, int? tagId = null, string? decision = null)
         {
-            return await _repository.GetActiveReportsAsync();
+            return await _repository.GetActiveReportsAsync(categoryId, tagId, decision);
         }
 
         public async Task<NewsArticle?> GetReportDetailAsync(int id)
@@ -64,9 +64,9 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
             return await _repository.GetReportDetailAsync(id);
         }
 
-        public async Task<List<NewsArticle>> GetReportsByCreatorAsync(int accountId)
+        public async Task<List<NewsArticle>> GetReportsByCreatorAsync(int accountId, int? categoryId = null, int? tagId = null, string? decision = null)
         {
-            return await _repository.GetReportsByCreatorAsync(accountId);
+            return await _repository.GetReportsByCreatorAsync(accountId, categoryId, tagId, decision);
         }
 
         public async Task<bool> ToggleStatusAsync(int newsId, int accountId) {
