@@ -9,6 +9,24 @@
     {
         return;
     }
+
+    Func<int, Dictionary<string, string>> getRouteValues = p =>
+    {
+        var dict = new Dictionary<string, string>();
+        foreach (var key in Context.Request.Query.Keys)
+        {
+            if (!string.IsNullOrEmpty(key) && key.ToLower() != "page")
+            {
+                var val = Context.Request.Query[key].ToString();
+                if (!string.IsNullOrEmpty(val))
+                {
+                    dict[key] = val;
+                }
+            }
+        }
+        dict["page"] = p.ToString();
+        return dict;
+    };
 }
 
 <div class="pagination-wrapper">
@@ -31,12 +49,12 @@
             @if (pageList.HasPreviousPage)
             {
                 <li class="page-item">
-                    <a class="page-link" asp-route-page="1" title="First Page">
+                    <a class="page-link" asp-all-route-data="getRouteValues(1)" title="First Page">
                         <i class="bi bi-chevron-bar-left"></i>
                     </a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" asp-route-page="@(pageList.PageNumber - 1)" title="Previous Page">
+                    <a class="page-link" asp-all-route-data="getRouteValues(pageList.PageNumber - 1)" title="Previous Page">
                         <i class="bi bi-chevron-left"></i>
                     </a>
                 </li>
@@ -62,7 +80,7 @@
                 if (startPage > 1)
                 {
                     <li class="page-item">
-                        <a class="page-link" asp-route-page="1">1</a>
+                        <a class="page-link" asp-all-route-data="getRouteValues(1)">1</a>
                     </li>
                     if (startPage > 2)
                     {
@@ -86,7 +104,7 @@
                     else
                     {
                         <li class="page-item">
-                            <a class="page-link" asp-route-page="@i">@i</a>
+                            <a class="page-link" asp-all-route-data="getRouteValues(i)">@i</a>
                         </li>
                     }
                 }
@@ -100,7 +118,7 @@
                         </li>
                     }
                     <li class="page-item">
-                        <a class="page-link" asp-route-page="@pageList.PageCount">@pageList.PageCount</a>
+                        <a class="page-link" asp-all-route-data="getRouteValues(pageList.PageCount)">@pageList.PageCount</a>
                     </li>
                 }
             }
@@ -108,12 +126,12 @@
             @if (pageList.HasNextPage)
             {
                 <li class="page-item">
-                    <a class="page-link" asp-route-page="@(pageList.PageNumber + 1)" title="Next Page">
+                    <a class="page-link" asp-all-route-data="getRouteValues(pageList.PageNumber + 1)" title="Next Page">
                         <i class="bi bi-chevron-right"></i>
                     </a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" asp-route-page="@pageList.PageCount" title="Last Page">
+                    <a class="page-link" asp-all-route-data="getRouteValues(pageList.PageCount)" title="Last Page">
                         <i class="bi bi-chevron-bar-right"></i>
                     </a>
                 </li>

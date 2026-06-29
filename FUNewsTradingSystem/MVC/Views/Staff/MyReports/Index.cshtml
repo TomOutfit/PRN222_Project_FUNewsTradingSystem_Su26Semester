@@ -1,11 +1,18 @@
 @using X.PagedList;
 @using X.PagedList.Mvc.Core;
+@using FUNewsTradingSystem_DataAccessLayer.Models;
 @model IPagedList<FUNewsTradingSystem_DataAccessLayer.Models.NewsArticle>
 
 @{
     ViewData["Title"] = "My Reports";
     var activeCount   = Model.Count(r => r.NewsStatus);
     var archivedCount = Model.Count(r => !r.NewsStatus);
+
+    var categories = ViewBag.Categories as IEnumerable<Category> ?? new List<Category>();
+    var tags = ViewBag.Tags as IEnumerable<Tag> ?? new List<Tag>();
+    int? selectedCategory = ViewBag.SelectedCategory as int?;
+    int? selectedTag = ViewBag.SelectedTag as int?;
+    string selectedDecision = ViewBag.SelectedDecision as string ?? "";
 }
 
 <style>
@@ -20,6 +27,21 @@
     [data-bs-theme="dark"] .ticker-tag { background:rgba(124,58,237,.2); }
     .empty-state { text-align:center;padding:4rem 2rem;color:var(--text-muted); }
     .empty-state .empty-icon { font-size:3.5rem;margin-bottom:1rem;opacity:.35; }
+    .filter-card {
+        background: var(--surface-card);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+    .filter-card .form-label {
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: var(--text-muted);
+    }
 </style>
 
 <div class="page-header">
@@ -37,14 +59,63 @@
     </div>
 </div>
 
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="get" asp-controller="Report" asp-action="MyReports">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label"><i class="bi bi-folder2 me-1"></i>Sector (Category)</label>
+                <select name="categoryId" class="form-select form-select-sm">
+                    <option value="">All Sectors</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat.CategoryID" selected="@(selectedCategory == cat.CategoryID ? "selected" : null)">
+                            @cat.CategoryName
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label"><i class="bi bi-hash me-1"></i>Ticker (Tag)</label>
+                <select name="tagId" class="form-select form-select-sm">
+                    <option value="">All Tickers</option>
+                    @foreach (var tag in tags)
+                    {
+                        <option value="@tag.TagID" selected="@(selectedTag == tag.TagID ? "selected" : null)">
+                            @tag.TagName
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label"><i class="bi bi-compass me-1"></i>Decision Type</label>
+                <select name="decision" class="form-select form-select-sm">
+                    <option value="">All Decisions</option>
+                    <option value="BUY" selected="@(selectedDecision == "BUY" ? "selected" : null)">BUY 🚀</option>
+                    <option value="SELL" selected="@(selectedDecision == "SELL" ? "selected" : null)">SELL 📉</option>
+                    <option value="HOLD" selected="@(selectedDecision == "HOLD" ? "selected" : null)">HOLD ⚖️</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel-fill me-1"></i>Filter
+                </button>
+                <a href="/Staff/MyReports" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
 <div class="card">
     <div class="card-body p-0">
         @if (!Model.Any())
         {
             <div class="empty-state">
                 <div class="empty-icon">📭</div>
-                <h6 style="color:var(--text-muted)">No reports yet</h6>
-                <p style="font-size:.875rem">Run your first AI analysis to see results here.</p>
+                <h6 style="color:var(--text-muted)">No reports found</h6>
+                <p style="font-size:.875rem">No matching reports found or you haven't run analysis yet.</p>
                 <a asp-controller="RunAnalysis" asp-action="Index" class="btn btn-primary btn-sm mt-1">
                     <i class="bi bi-play-fill me-1"></i>Run Analysis
                 </a>
@@ -95,7 +166,7 @@
                                 </td>
                                 <td class="text-end">
                                     <a class="btn btn-sm btn-outline-primary"
-                                       href="/News/Detail/@item.NewsArticleID">
+                                       href="/Report/Detail/@item.NewsArticleID">
                                         <i class="bi bi-eye me-1"></i>View
                                     </a>
                                 </td>

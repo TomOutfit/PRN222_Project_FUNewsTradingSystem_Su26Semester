@@ -1,4 +1,6 @@
-@model IEnumerable<FUNewsTradingSystem_MVC.ViewModels.Category.CategoryListItemViewModel>
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@model IPagedList<FUNewsTradingSystem_MVC.ViewModels.Category.CategoryListItemViewModel>
 
 @{
     ViewData["Title"] = "Category Management";
@@ -151,6 +153,9 @@
         </div>
     </div>
 </div>
+
+<!-- Pagination Controls -->
+@await Html.PartialAsync("_Pagination", Model)
 
 <form id="ajax-antiforgery">@Html.AntiForgeryToken()</form>
 

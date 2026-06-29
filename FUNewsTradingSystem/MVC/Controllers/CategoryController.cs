@@ -41,7 +41,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
             : null,
 
                 IsActive = c.IsActive
-            }).OrderByDescending(c => c.CategoryId).ToPagedList(pageNumber, pageSize);
+            }).OrderBy(c => c.CategoryId).ToPagedList(pageNumber, pageSize);
 
             return View(model);
         }
