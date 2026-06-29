@@ -16,10 +16,20 @@ namespace FUNewsTradingSystem_MVC.Controllers
             return View();
         }
 
+        [Route("Home/Error/{statusCode?}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error(int? statusCode)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var model = new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier };
+            if (statusCode.HasValue)
+            {
+                ViewData["StatusCode"] = statusCode.Value;
+                if (statusCode.Value == 404)
+                {
+                    ViewData["Message"] = "The requested trading analysis report or page could not be found.";
+                }
+            }
+            return View(model);
         }
     }
 }
