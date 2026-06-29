@@ -144,41 +144,4 @@ public class StaffController : Controller
         return RedirectToAction(nameof(Profile));
     }
 
-    [HttpGet]
-    [Route("Staff/MyReports")]
-    public async Task<IActionResult> MyReports(int? page)
-    {
-        var pageNumber = PaginationSettings.ValidatePageNumber(page);
-        var pageSize = PaginationSettings.DefaultPageSize;
-
-        var accountId =
-            int.Parse(User.FindFirst("AccountID")!.Value);
-
-        var reports =
-            await _newsArticleService.GetReportsByCreatorAsync(accountId);
-
-        var pagedReports = reports
-            .OrderByDescending(r => r.CreatedDate)
-            .ToPagedList(pageNumber, pageSize);
-
-        return View("~/Views/Staff/MyReports/Index.cshtml", pagedReports);
-    }
-
-    [HttpPost]
-    [Route("Staff/MyReports/ToggleStatus/{id}")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ToggleStatus(int id)
-    {
-        var accountId =
-            int.Parse(User.FindFirst("AccountID")!.Value);
-
-        var newStatus =
-            await _newsArticleService.ToggleStatusAsync(id, accountId);
-
-        return Ok(new
-        {
-            success = true,
-            newStatus
-        });
-    }
 }

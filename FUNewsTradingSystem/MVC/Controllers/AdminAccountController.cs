@@ -27,7 +27,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
 
             var accounts = await _accountService.GetAllAsync();
             var pagedAccounts = accounts
-                .OrderByDescending(a => a.AccountID)
+                .OrderBy(a => a.AccountID)
                 .ToPagedList(pageNumber, pageSize);
             
             return View("~/Views/AdminAccount/Index.cshtml", pagedAccounts);

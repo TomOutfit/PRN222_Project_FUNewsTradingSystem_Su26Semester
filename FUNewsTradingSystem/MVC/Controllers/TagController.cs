@@ -25,7 +25,7 @@ public class TagController : Controller
 
         var tags = await _tagService.GetAllTagsAsync();
         var pagedTags = tags
-            .OrderByDescending(t => t.TagID)
+            .OrderBy(t => t.TagID)
             .ToPagedList(pageNumber, pageSize);
         
         return View(pagedTags);
