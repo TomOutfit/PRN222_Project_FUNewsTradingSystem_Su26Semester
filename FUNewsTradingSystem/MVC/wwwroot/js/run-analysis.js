@@ -15,11 +15,43 @@
         var btnRunAnalysis = document.getElementById('btnRunAnalysis');
         var loadingSpinner = document.getElementById('loadingSpinner');
         var resultArea = document.getElementById('resultArea');
+        var progressArea = document.getElementById('progressArea');
+        var progressBar = document.getElementById('progressBar');
+        var progressPercent = document.getElementById('progressPercent');
+        var progressLogs = document.getElementById('progressLogs');
         var form = document.getElementById('runAnalysisForm');
 
         if (!btnRunAnalysis || !loadingSpinner || !resultArea || !form) {
             return;
         }
+
+        // Initialize SignalR Connection
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/analysisProgress")
+            .configureLogging(signalR.LogLevel.Warning)
+            .build();
+
+        var connectionId = null;
+
+        connection.on("ReceiveProgress", function (message, progress) {
+            if (progressArea && progressBar && progressPercent && progressLogs) {
+                progressArea.classList.remove('d-none');
+                progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressPercent.textContent = progress + '%';
+
+                var logLine = document.createElement('div');
+                logLine.innerHTML = '<span class="text-white-50">[' + new Date().toLocaleTimeString() + ']</span> ' + escapeHtml(message);
+                progressLogs.appendChild(logLine);
+                progressLogs.scrollTop = progressLogs.scrollHeight;
+            }
+        });
+
+        connection.start().then(function () {
+            connectionId = connection.connectionId;
+        }).catch(function (err) {
+            console.error("SignalR failed to start: ", err);
+        });
 
         btnRunAnalysis.addEventListener('click', function (e) {
             e.preventDefault();
@@ -36,6 +68,15 @@
             loadingSpinner.classList.remove('d-none');
             resultArea.classList.add('d-none');
             resultArea.innerHTML = '';
+
+            // Reset and Show Progress bar
+            if (progressArea && progressBar && progressPercent && progressLogs) {
+                progressArea.classList.remove('d-none');
+                progressBar.style.width = '0%';
+                progressBar.setAttribute('aria-valuenow', 0);
+                progressPercent.textContent = '0%';
+                progressLogs.innerHTML = '<div class="text-info">// Triggering analysis execution pipeline...</div>';
+            }
 
             // Prepare form data
             var formData = new FormData(form);
@@ -54,8 +95,9 @@
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
-                    SelectedTagId: formData.get('SelectedTagId'),
-                    SelectedCategoryId: formData.get('SelectedCategoryId')
+                    SelectedTagId: parseInt(formData.get('SelectedTagId')),
+                    SelectedCategoryId: parseInt(formData.get('SelectedCategoryId')),
+                    ConnectionId: connectionId
                 })
             })
             .then(function (response) {
@@ -74,11 +116,11 @@
                     // Success case - green alert with link to new report
                     resultArea.classList.remove('d-none');
                     resultArea.innerHTML = 
-                        '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-                            '<strong><i class="bi bi-check-circle-fill me-2"></i>Analysis report generated successfully!</strong>' +
-                            '<p class="mb-0 mt-2">Click the link below to view your new report.</p>' +
-                            '<a href="/News/Detail/' + result.newsArticleId + '" class="btn btn-success mt-3">' +
-                                '<i class="bi bi-file-text me-1"></i>View Report <i class="bi bi-arrow-right ms-1"></i>' +
+                        '<div class="alert alert-success alert-dismissible fade show p-4 shadow-sm" role="alert" style="border-left: 4px solid #10b981; border-radius: var(--radius-md);">' +
+                            '<h6 class="fw-bold text-success mb-2"><i class="bi bi-check-circle-fill me-2"></i>Analysis Completed Successfully!</strong>' +
+                            '<p class="mb-0 small text-secondary">The multi-agent system has generated the sentiment & fundamental recommendation report. You can view it now.</p>' +
+                            '<a href="/Report/Detail/' + result.newsArticleId + '" class="btn btn-success btn-sm mt-3 px-4 rounded-pill">' +
+                                '<i class="bi bi-file-text me-1"></i>Open Synthesized Report <i class="bi bi-arrow-right ms-1"></i>' +
                             '</a>' +
                             '<button type="button" class="btn-close position-absolute top-0 end-0" data-bs-dismiss="alert" aria-label="Close"></button>' +
                         '</div>';
@@ -87,9 +129,9 @@
                     resultArea.classList.remove('d-none');
                     var errorMsg = result.errorMessage || 'An unexpected error occurred.';
                     resultArea.innerHTML = 
-                        '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                            '<strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Analysis Failed</strong>' +
-                            '<p class="mb-0 mt-2">' + escapeHtml(errorMsg) + '</p>' +
+                        '<div class="alert alert-danger alert-dismissible fade show p-4 shadow-sm" role="alert" style="border-left: 4px solid #ef4444; border-radius: var(--radius-md);">' +
+                            '<h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Analysis Pipeline Failed</strong>' +
+                            '<p class="mb-0 small text-secondary">' + escapeHtml(errorMsg) + '</p>' +
                             '<button type="button" class="btn-close position-absolute top-0 end-0" data-bs-dismiss="alert" aria-label="Close"></button>' +
                         '</div>';
                 }
@@ -102,9 +144,9 @@
 
                 resultArea.classList.remove('d-none');
                 resultArea.innerHTML = 
-                    '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                        '<strong><i class="bi bi-wifi-off me-2"></i>Network Error</strong>' +
-                        '<p class="mb-0 mt-2">Unexpected network error. Please try again.</p>' +
+                    '<div class="alert alert-danger alert-dismissible fade show p-4 shadow-sm" role="alert" style="border-left: 4px solid #ef4444; border-radius: var(--radius-md);">' +
+                        '<h6 class="fw-bold text-danger mb-2"><i class="bi bi-wifi-off me-2"></i>Network Communication Error</strong>' +
+                        '<p class="mb-0 small text-secondary">Unexpected error communicating with the agent server. Please check connection and try again.</p>' +
                         '<button type="button" class="btn-close position-absolute top-0 end-0" data-bs-dismiss="alert" aria-label="Close"></button>' +
                     '</div>';
             });
