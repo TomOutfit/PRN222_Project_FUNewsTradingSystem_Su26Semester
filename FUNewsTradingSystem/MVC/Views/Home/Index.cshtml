@@ -1,8 +1,362 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "AI Trading Insights Portal";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .home-hero {
+        background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 15, 26, 0.98) 100%), 
+                    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.15) 0%, transparent 50%);
+        border-radius: var(--radius-xl);
+        padding: 4rem 3rem;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+        margin-bottom: 3rem;
+    }
+
+    .home-hero::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+        opacity: 0.05;
+        pointer-events: none;
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-md);
+        background: var(--brand-gradient);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1.25rem;
+        box-shadow: var(--shadow-brand);
+    }
+
+    .quick-action-card {
+        transition: transform var(--transition), box-shadow var(--transition);
+        border: 1px solid var(--border-light);
+    }
+
+    .quick-action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--accent);
+    }
+
+    .metric-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--brand-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.1;
+    }
+</style>
+
+<div class="report-detail-container">
+    <!-- Hero Section -->
+    <div class="home-hero text-white text-center text-md-start">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-8">
+                <span class="badge bg-primary px-3 py-2 mb-3 text-uppercase tracking-wider">
+                    <i class="bi bi-cpu-fill me-1"></i> Powered by AI Synthesis
+                </span>
+                <h1 class="display-4 fw-extrabold mb-3 text-white" style="letter-spacing: -1.5px; line-height: 1.1;">
+                    FUNews Trading <span class="gradient-text">Analysis Portal</span>
+                </h1>
+                <p class="lead text-white-50 mb-4 fs-5" style="max-width: 650px;">
+                    Access real-time synthesized financial reports, automated sentiment assessments, and structured BUY/SELL/HOLD recommendations to navigate target equity and crypto assets.
+                </p>
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
+                    <a asp-controller="Report" asp-action="Index" class="btn btn-primary btn-lg px-4 shadow-sm">
+                        <i class="bi bi-newspaper me-2"></i> Explore Analysis Reports
+                    </a>
+                    @if (!User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg px-4">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Account Sign In
+                        </a>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="p-4 bg-white bg-opacity-5 rounded-4 border border-white border-opacity-10 backdrop-blur h-100" style="box-shadow: 0 20px 40px rgba(0,0,0,0.3); min-height: 230px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold m-0 text-white" style="font-size: 0.95rem;">FNTS Index Trend</h5>
+                        <span id="fntsPercentage" class="badge bg-success text-white small">+0.0%</span>
+                    </div>
+                    <div style="flex-grow: 1; height: 110px; position: relative;">
+                        <canvas id="homeMiniChart"></canvas>
+                    </div>
+                    <div class="d-flex justify-content-between small text-white-50 mt-3" style="font-size: 0.75rem;">
+                        <span>Status: Live Sentiment</span>
+                        <span class="text-success"><i class="bi bi-circle-fill me-1 small"></i> Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Dashboard Section (If Logged In) -->
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="mb-5">
+            <div class="page-header">
+                <div>
+                    <h2><i class="bi bi-speedometer2 me-2 text-primary"></i>Your Control Panel</h2>
+                    <p>Quick access links tailored for your account role.</p>
+                </div>
+                <span class="badge @(User.IsInRole("3") ? "bg-danger" : User.IsInRole("1") ? "bg-primary" : "bg-secondary") fs-6 px-3 py-2 rounded-pill shadow-sm">
+                    Logged in as: @(User.IsInRole("3") ? "System Admin" : User.IsInRole("1") ? "Staff Author" : "Lecturer / Member")
+                </span>
+            </div>
+
+            <div class="row g-3">
+                @if (User.IsInRole("1"))
+                {
+                    <!-- Staff Actions -->
+                    <div class="col-md-3">
+                        <div class="card quick-action-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="fs-2 text-primary mb-2"><i class="bi bi-cpu"></i></div>
+                                <h5 class="fw-bold mb-2">Run Analysis</h5>
+                                <p class="text-muted small mb-3">Generate new reports from third-party APIs.</p>
+                                <a asp-controller="RunAnalysis" asp-action="Index" class="btn btn-outline-primary btn-sm px-3 rounded-pill">Launch Engine</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card quick-action-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="fs-2 text-primary mb-2"><i class="bi bi-journal-text"></i></div>
+                                <h5 class="fw-bold mb-2">My Reports</h5>
+                                <p class="text-muted small mb-3">View and edit your created reports.</p>
+                                <a asp-controller="Staff" asp-action="MyReports" class="btn btn-outline-primary btn-sm px-3 rounded-pill">Manage Reports</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card quick-action-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="fs-2 text-primary mb-2"><i class="bi bi-folder2"></i></div>
+                                <h5 class="fw-bold mb-2">Categories</h5>
+                                <p class="text-muted small mb-3">Organize financial sectors and categories.</p>
+                                <a asp-controller="Category" asp-action="Index" class="btn btn-outline-primary btn-sm px-3 rounded-pill">Manage Sectors</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card quick-action-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="fs-2 text-primary mb-2"><i class="bi bi-tags"></i></div>
+                                <h5 class="fw-bold mb-2">Tags</h5>
+                                <p class="text-muted small mb-3">Manage asset tag names and tickers.</p>
+                                <a asp-controller="Tag" asp-action="Index" class="btn btn-outline-primary btn-sm px-3 rounded-pill">Manage Tickers</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (User.IsInRole("3"))
+                {
+                    <!-- Admin Actions -->
+                    <div class="col-md-6">
+                        <div class="card quick-action-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="fs-1 text-danger mb-2"><i class="bi bi-people-fill"></i></div>
+                                <h5 class="fw-bold">Account Management</h5>
+                                <p class="text-muted mb-3">Create, edit, or toggle status of staff and lecturer accounts.</p>
+                                <a asp-controller="AdminAccount" asp-action="Index" class="btn btn-danger btn-sm px-4 rounded-pill">Manage Accounts</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card quick-action-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="fs-1 text-danger mb-2"><i class="bi bi-bar-chart-line-fill"></i></div>
+                                <h5 class="fw-bold">System Statistics</h5>
+                                <p class="text-muted mb-3">Check system activity metrics and review reports created within custom date ranges.</p>
+                                <a asp-controller="AdminStatistics" asp-action="Index" class="btn btn-danger btn-sm px-4 rounded-pill">View Statistics</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Lecturer Actions -->
+                    <div class="col-md-6">
+                        <div class="card quick-action-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="fs-2 text-success mb-2"><i class="bi bi-newspaper"></i></div>
+                                <h5 class="fw-bold">Public Reports</h5>
+                                <p class="text-muted mb-3">Browse standard or custom reports sorted by latest date.</p>
+                                <a asp-controller="Report" asp-action="Index" class="btn btn-success btn-sm px-4 rounded-pill">Explore Analysis</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card quick-action-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="fs-2 text-success mb-2"><i class="bi bi-bookmark-star-fill"></i></div>
+                                <h5 class="fw-bold">Platform Status</h5>
+                                <p class="text-muted mb-3">Access advanced filters for categories and tickers.</p>
+                                <a asp-controller="Report" asp-action="Index" class="btn btn-outline-success btn-sm px-4 rounded-pill">View Filters</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Core Features Grid -->
+    <div class="mb-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-main">Engine Capabilities</h2>
+            <p class="text-muted">How our automated trading system synthesizes data.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    <h4 class="fw-bold text-main mb-2">Automated Signals</h4>
+                    <p class="text-muted mb-0">
+                        Generates explicit BUY, SELL, or HOLD triggers for each analyzed report based on multi-source sentiment evaluation.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <div class="feature-icon"><i class="bi bi-bar-chart-steps"></i></div>
+                    <h4 class="fw-bold text-main mb-2">Fundamental Synthesizer</h4>
+                    <p class="text-muted mb-0">
+                        Aggregates core revenue metrics, balance sheet positions, and debt-to-equity levels into clean, human-readable insights.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <div class="feature-icon"><i class="bi bi-shield-fill-exclamation"></i></div>
+                    <h4 class="fw-bold text-main mb-2">Risk Alerts</h4>
+                    <p class="text-muted mb-0">
+                        Tracks sector-wide headwinds, currency fluctuations, and regulatory changes to alert investors of downstream risks.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metrics Stats Grid -->
+    <div class="card border-0 shadow-sm p-4 text-center">
+        <div class="row g-4">
+            <div class="col-6 col-md-3 border-end">
+                <div class="metric-number">5k+</div>
+                <div class="text-muted small text-uppercase fw-bold tracking-wider mt-1">Generated Reports</div>
+            </div>
+            <div class="col-6 col-md-3 col-md-3 border-end">
+                <div class="metric-number">120+</div>
+                <div class="text-muted small text-uppercase fw-bold tracking-wider mt-1">Active Accounts</div>
+            </div>
+            <div class="col-6 col-md-3 col-md-3 border-end">
+                <div class="metric-number">28+</div>
+                <div class="text-muted small text-uppercase fw-bold tracking-wider mt-1">Sectors Tracked</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="metric-number">90+</div>
+                <div class="text-muted small text-uppercase fw-bold tracking-wider mt-1">Analyzed Assets</div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            const ctx = document.getElementById('homeMiniChart');
+            if (!ctx) return;
+
+            // Generate initial mock data for sentiment trend (20 points)
+            const labels = [];
+            const data = [];
+            let val = 1520.00;
+            for (let i = 0; i < 20; i++) {
+                labels.push('');
+                data.push(val);
+            }
+
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'FNTS Index',
+                        data: data,
+                        borderColor: '#a78bfa',
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+
+            // Connect to MarketTickerHub to get live index ticking data
+            var tickerConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/marketTicker")
+                .configureLogging(signalR.LogLevel.Warning)
+                .build();
+
+            tickerConnection.on("ReceiveMarketTicks", function (ticks) {
+                var fntsTick = ticks.find(function (t) { return t.symbol === "FNTS"; });
+                if (fntsTick) {
+                    chart.data.labels.push('');
+                    chart.data.datasets[0].data.push(fntsTick.price);
+
+                    if (chart.data.datasets[0].data.length > 25) {
+                        chart.data.labels.shift();
+                        chart.data.datasets[0].data.shift();
+                    }
+
+                    // Update live indicator badge
+                    var pctBadge = document.getElementById("fntsPercentage");
+                    if (pctBadge) {
+                        var sign = fntsTick.changePercent >= 0 ? "+" : "";
+                        pctBadge.textContent = sign + fntsTick.changePercent.toFixed(2) + "%";
+                        if (fntsTick.changePercent >= 0) {
+                            pctBadge.className = "badge bg-success text-white small";
+                        } else {
+                            pctBadge.className = "badge bg-danger text-white small";
+                        }
+                    }
+
+                    chart.update();
+                }
+            });
+
+            tickerConnection.start().catch(function (err) {
+                console.error("MarketTickerHub connection failed: ", err);
+            });
+        })();
+    </script>
+}
