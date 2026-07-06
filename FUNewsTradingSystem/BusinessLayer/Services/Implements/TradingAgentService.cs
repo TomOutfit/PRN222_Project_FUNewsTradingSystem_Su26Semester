@@ -83,11 +83,12 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
     /// <param name="createdByAccountId">AccountID of the Staff member triggering the pipeline.</param>
     /// <returns>A result object where <c>Success</c> is true and <c>NewsArticleID</c> is populated
     /// on success, or <c>Success</c> is false with an <c>ErrorMessage</c> on any failure.</returns>
-    public async Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId)
+    public async Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId, Func<string, int, Task> onProgress = null)
         {
             try
             {
                 // 1. Resolve Tag and Ticker symbol
+                if (onProgress != null) await onProgress("Resolving asset and ticker symbols...", 10);
                 string ticker;
                 string companyName = "";
                 using (var scope = _serviceProvider.CreateScope())
@@ -103,19 +104,26 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 }
 
                 // 2. Fetch News headlines
+                if (onProgress != null) await onProgress($"Fetching latest news headlines for {ticker}...", 30);
                 var headlines = await FetchNewsAsync(ticker, companyName);
                 
                 // 3. Run Sentiment Agent
+                if (onProgress != null) await onProgress("Processing sentiment evaluation via AI...", 55);
                 var sentimentOutput = await RunSentimentAgentAsync(ticker, headlines);
 
                 // 4. Run Fundamental Agent
+                if (onProgress != null) await onProgress("Synthesizing core fundamental analysis...", 75);
                 var fundamentalOutput = await RunFundamentalAgentAsync(ticker, headlines, sentimentOutput);
 
                 // 5. Run Portfolio Manager Agent
+                if (onProgress != null) await onProgress("Generating final portfolio recommendation and report layout...", 90);
                 var portfolioResponse = await RunPortfolioManagerAsync(ticker, sentimentOutput, fundamentalOutput);
 
                 // 6. Save Report to Database
+                if (onProgress != null) await onProgress("Storing completed report in the database...", 95);
                 var newsArticleId = await SaveReportAsync(portfolioResponse, tagId, categoryId, createdByAccountId);
+
+                if (onProgress != null) await onProgress("Analysis pipeline completed successfully!", 100);
 
                 return new TradingAgentResult
                 {
