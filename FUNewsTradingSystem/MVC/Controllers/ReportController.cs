@@ -89,6 +89,8 @@ public class ReportController : Controller
             NewsSource = article.NewsSource,
             CreatedDate = article.CreatedDate,
             CategoryName = article.Category?.CategoryName ?? "General",
+            CreatedById = article.CreatedByID ?? 0,
+            CreatedByName = article.CreatedByAccount?.AccountName ?? "Deleted User",
             Tags = article.NewsTagList
                 .Select(t => t.Tag.TagName)
                 .ToList()
