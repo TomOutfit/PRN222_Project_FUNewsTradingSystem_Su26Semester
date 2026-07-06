@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_MVC.Extensions;
 using FUNewsTradingSystem_MVC.ViewModels.Report;
@@ -13,15 +14,21 @@ public class RunAnalysisController : Controller
     private readonly ITradingAgentService _tradingAgentService;
     private readonly ITagService _tagService;
     private readonly ICategoryService _categoryService;
+    private readonly Microsoft.AspNetCore.SignalR.IHubContext<FUNewsTradingSystem_MVC.Hubs.AnalysisProgressHub> _progressHub;
+    private readonly Microsoft.AspNetCore.SignalR.IHubContext<FUNewsTradingSystem_MVC.Hubs.ReportHub> _reportHub;
 
     public RunAnalysisController(
         ITradingAgentService tradingAgentService,
         ITagService tagService,
-        ICategoryService categoryService)
+        ICategoryService categoryService,
+        Microsoft.AspNetCore.SignalR.IHubContext<FUNewsTradingSystem_MVC.Hubs.AnalysisProgressHub> progressHub,
+        Microsoft.AspNetCore.SignalR.IHubContext<FUNewsTradingSystem_MVC.Hubs.ReportHub> reportHub)
     {
         _tradingAgentService = tradingAgentService;
         _tagService = tagService;
         _categoryService = categoryService;
+        _progressHub = progressHub;
+        _reportHub = reportHub;
     }
 
     /// <summary>
@@ -68,7 +75,39 @@ public class RunAnalysisController : Controller
             var result = await _tradingAgentService.RunAnalysisAsync(
                 request.SelectedTagId,
                 request.SelectedCategoryId,
-                accountId.Value);
+                accountId.Value,
+                async (message, progress) =>
+                {
+                    if (!string.IsNullOrEmpty(request.ConnectionId))
+                    {
+                        await _progressHub.Clients.Client(request.ConnectionId)
+                            .SendAsync("ReceiveProgress", message, progress);
+                    }
+                });
+
+            if (result.Success && result.NewsArticleID.HasValue)
+            {
+                // Retrieve the newly created report category name/ticker to broadcast to public visitors
+                var tags = await _tagService.GetAllTagsAsync();
+                var selectedTag = tags.Find(t => t.TagID == request.SelectedTagId);
+                var categoryName = "Sector Analysis";
+                try
+                {
+                    var cat = await _categoryService.GetActiveAsync();
+                    var selectedCat = cat.Find(c => c.CategoryID == request.SelectedCategoryId);
+                    if (selectedCat != null) categoryName = selectedCat.CategoryName;
+                }
+                catch {}
+
+                await _reportHub.Clients.All.SendAsync("ReceiveNewReport", new
+                {
+                    newsArticleId = result.NewsArticleID.Value,
+                    newsTitle = $"[{selectedTag?.Note ?? "New Asset"}] Automated Analysis",
+                    categoryName = categoryName,
+                    createdDate = System.DateTime.UtcNow.ToString("MMM dd, yyyy HH:mm"),
+                    tagName = selectedTag?.TagName ?? "Asset"
+                });
+            }
 
             return Json(new
             {
@@ -91,4 +130,5 @@ public class RunAnalysisRequest
 {
     public int SelectedTagId { get; set; }
     public int SelectedCategoryId { get; set; }
+    public string ConnectionId { get; set; }
 }

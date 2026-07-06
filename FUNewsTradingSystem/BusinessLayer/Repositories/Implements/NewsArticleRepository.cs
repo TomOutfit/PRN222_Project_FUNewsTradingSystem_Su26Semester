@@ -127,6 +127,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
         {
             return await _context.NewsArticles
                 .Include(x => x.Category)
+                .Include(x => x.CreatedByAccount)
                 .Include(x => x.NewsTagList)
                     .ThenInclude(x => x.Tag)
                 .FirstOrDefaultAsync(x =>

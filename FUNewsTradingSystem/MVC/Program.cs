@@ -68,6 +68,8 @@ builder.Services.AddSingleton<FUNewsTradingSystem_BusinessLayer.Services.Interfa
 // ─────────────────────────────────────────────
 // 4. MVC + Views
 // ─────────────────────────────────────────────
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<FUNewsTradingSystem_MVC.Services.MarketDataBackgroundService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
@@ -93,6 +95,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+// Map Hub Endpoints
+app.MapHub<FUNewsTradingSystem_MVC.Hubs.AnalysisProgressHub>("/hubs/analysisProgress");
+app.MapHub<FUNewsTradingSystem_MVC.Hubs.ReportHub>("/hubs/reports");
+app.MapHub<FUNewsTradingSystem_MVC.Hubs.MarketTickerHub>("/hubs/marketTicker");
+app.MapHub<FUNewsTradingSystem_MVC.Hubs.PresenceHub>("/hubs/presence");
+app.MapHub<FUNewsTradingSystem_MVC.Hubs.NotificationHub>("/hubs/notifications");
 
 app.MapControllerRoute(
     name: "default",
