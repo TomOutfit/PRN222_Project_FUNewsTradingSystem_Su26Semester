@@ -3,98 +3,529 @@
 @{
     ViewData["Title"] = Model.NewsTitle ?? "Report Detail";
 
-    string badgeClass = Model.Decision switch
+    // Style variables depending on recommendation
+    string recGradient = Model.Decision switch
     {
-        "BUY" => "bg-success",
-        "SELL" => "bg-danger",
-        _ => "bg-secondary"
+        "BUY" => "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+        "SELL" => "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+        _ => "linear-gradient(135deg, #64748b 0%, #475569 100%)"
     };
+
+    string recShadow = Model.Decision switch
+    {
+        "BUY" => "rgba(16, 185, 129, 0.3)",
+        "SELL" => "rgba(239, 68, 68, 0.3)",
+        _ => "rgba(100, 116, 139, 0.3)"
+    };
+
+    string recShadowPulse = Model.Decision switch
+    {
+        "BUY" => "rgba(16, 185, 129, 0.4)",
+        "SELL" => "rgba(239, 68, 68, 0.4)",
+        _ => "rgba(100, 116, 139, 0.4)"
+    };
+
+    string sectionColor = Model.Decision switch
+    {
+        "BUY" => "#10b981",
+        "SELL" => "#ef4444",
+        _ => "#64748b"
+    };
+
     string decisionIcon = Model.Decision switch
     {
         "BUY" => "bi-graph-up-arrow",
         "SELL" => "bi-graph-down-arrow",
-        _ => "bi-dash-circle"
+        _ => "bi-dash-circle-fill"
     };
+
+    // Parsing structured AI trading reports if matching pattern
+    string sentimentContent = "";
+    string fundamentalContent = "";
+    string riskContent = "";
+    bool isParsed = false;
+
+    if (!string.IsNullOrWhiteSpace(Model.NewsContent))
+    {
+        var content = Model.NewsContent;
+        int sIndex = content.IndexOf("(1) ");
+        int fIndex = content.IndexOf("(2) ");
+        int rIndex = content.IndexOf("(3) ");
+
+        if (sIndex >= 0 && fIndex > sIndex && rIndex > fIndex)
+        {
+            sentimentContent = content.Substring(sIndex + 4, fIndex - (sIndex + 4)).Trim();
+            fundamentalContent = content.Substring(fIndex + 4, rIndex - (fIndex + 4)).Trim();
+            riskContent = content.Substring(rIndex + 4).Trim();
+            isParsed = true;
+        }
+    }
 }
 
-<div class="container px-0" style="max-width: 900px;">
+<style>
+    :root {
+        --rec-gradient: @recGradient;
+        --rec-shadow: @recShadow;
+        --rec-shadow-pulse: @recShadowPulse;
+        --section-color: @sectionColor;
+    }
+
+    .report-detail-container {
+        animation: pageEnter 0.40s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .recommendation-card {
+        background: var(--rec-gradient);
+        color: #fff;
+        border: none;
+        box-shadow: 0 10px 30px var(--rec-shadow);
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+        transition: transform var(--transition);
+    }
+    .recommendation-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .recommendation-card::before {
+        content: "";
+        position: absolute;
+        top: -40%;
+        right: -20%;
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+    }
+
+    .recommendation-card::after {
+        content: "";
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 120px;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+    }
+
+    .analysis-section-card {
+        border-left: 5px solid var(--section-color);
+        background: var(--surface-card);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        transition: transform var(--transition), box-shadow var(--transition);
+        border-top: 1px solid var(--border-light);
+        border-right: 1px solid var(--border-light);
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .analysis-section-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .ticker-pill {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 30px;
+        color: var(--text-main);
+        padding: 0.35rem 0.85rem;
+        font-weight: 600;
+        font-size: 0.825rem;
+        transition: all var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .ticker-pill:hover {
+        border-color: var(--accent);
+        background: rgba(124, 58, 237, 0.08);
+        color: var(--accent);
+        transform: translateY(-1px);
+    }
+
+    .author-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 30px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .deleted-author {
+        background: rgba(239, 68, 68, 0.08);
+        border-color: rgba(239, 68, 68, 0.2);
+        color: #ef4444 !important;
+    }
+
+    .pulse-badge {
+        position: relative;
+    }
+    .pulse-badge::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 30px;
+        box-shadow: 0 0 0 0 var(--rec-shadow-pulse);
+        animation: badgePulse 2s infinite;
+    }
+    @@keyframes badgePulse {
+        0% {
+            box-shadow: 0 0 0 0 var(--rec-shadow-pulse);
+        }
+        70% {
+            box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        }
+    }
+
+    .back-btn {
+        transition: all var(--transition);
+    }
+    .back-btn:hover {
+        transform: translateX(-4px);
+    }
+</style>
+
+<div class="container px-0 report-detail-container">
     <!-- Navigation Back Button -->
     <div class="mb-4">
-        <a asp-controller="Report" asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+        <a asp-controller="Report" asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3 back-btn">
             <i class="bi bi-arrow-left me-1"></i> Back to Analysis Reports
         </a>
     </div>
 
-    <!-- Header Section -->
-    <div class="card shadow-sm border-0 mb-4 overflow-hidden">
-        <div class="card-body p-4 p-md-5">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <span class="badge @badgeClass fs-6 px-3 py-2 rounded-pill shadow-sm">
-                    <i class="bi @decisionIcon me-1"></i> RECOMMENDATION: @Model.Decision
-                </span>
-                <div class="text-muted small">
-                    <i class="bi bi-calendar-event me-1"></i> Published: @Model.CreatedDate.ToString("MMM dd, yyyy HH:mm") UTC
+    <!-- Main Grid Layout -->
+    <div class="row g-4">
+        <!-- LEFT: Main Article details -->
+        <div class="col-lg-8">
+            <article class="card border-0 shadow-sm p-4 p-md-5 mb-4">
+                <!-- Title Header -->
+                <header class="mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-primary px-3 py-1.5"><i class="bi bi-folder2 me-1"></i>@Model.CategoryName</span>
+                        <time class="text-muted small" datetime="@Model.CreatedDate.ToString("o")">
+                            <i class="bi bi-calendar-event me-1"></i>@Model.CreatedDate.ToString("MMM dd, yyyy HH:mm") UTC
+                        </time>
+                    </div>
+                    <h1 class="fw-bold mb-3 text-main" style="font-size: 2.25rem; line-height: 1.25; letter-spacing: -0.5px;">
+                        @Model.NewsTitle
+                    </h1>
+                </header>
+
+                <!-- Headline blockquote -->
+                @if (!string.IsNullOrWhiteSpace(Model.Headline))
+                {
+                    <div class="p-3 bg-light bg-opacity-50 rounded-3 border-start border-4 border-primary mb-4">
+                        <p class="mb-0 text-muted fst-italic lead" style="font-size: 1.05rem;">
+                            <i class="bi bi-quote me-2 fs-3 text-primary align-middle opacity-50"></i>@Model.Headline
+                        </p>
+                    </div>
+                }
+
+                <hr class="my-4 opacity-50">
+
+                <!-- Content Area -->
+                <section class="content-body">
+                    @if (isParsed)
+                    {
+                        <!-- Dynamic Beautiful Sections for Automated Trading Reports -->
+                        <div class="d-flex flex-column gap-4">
+                            <!-- 1. Sentiment View -->
+                            <div class="analysis-section-card p-4">
+                                <h4 class="fw-bold text-main d-flex align-items-center gap-2 mb-3" style="font-size: 1.15rem;">
+                                    <span class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle" style="width: 32px; height: 32px;">
+                                        <i class="bi bi-chat-left-heart-fill"></i>
+                                    </span>
+                                    Market Sentiment View
+                                </h4>
+                                <p class="mb-0 text-secondary" style="text-align: justify; line-height: 1.6;">
+                                    @sentimentContent
+                                </p>
+                            </div>
+
+                            <!-- 2. Fundamental View -->
+                            <div class="analysis-section-card p-4" style="--section-color: var(--accent);">
+                                <h4 class="fw-bold text-main d-flex align-items-center gap-2 mb-3" style="font-size: 1.15rem;">
+                                    <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 32px; height: 32px;">
+                                        <i class="bi bi-bar-chart-steps"></i>
+                                    </span>
+                                    Fundamental Indicators
+                                </h4>
+                                <p class="mb-0 text-secondary" style="text-align: justify; line-height: 1.6;">
+                                    @fundamentalContent
+                                </p>
+                            </div>
+
+                            <!-- 3. Risk Warning View -->
+                            <div class="analysis-section-card p-4" style="--section-color: #ef4444;">
+                                <h4 class="fw-bold text-main d-flex align-items-center gap-2 mb-3" style="font-size: 1.15rem;">
+                                    <span class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle" style="width: 32px; height: 32px;">
+                                        <i class="bi bi-shield-exclamation"></i>
+                                    </span>
+                                    Key Risk Warnings
+                                </h4>
+                                <p class="mb-0 text-secondary" style="text-align: justify; line-height: 1.6;">
+                                    @riskContent
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Fallback normal paragraph rendering -->
+                        @if (!string.IsNullOrWhiteSpace(Model.NewsContent))
+                        {
+                            var paragraphs = Model.NewsContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var para in paragraphs)
+                            {
+                                <p class="text-secondary lh-lg mb-3" style="text-align: justify; font-size: 1rem;">@para</p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted fst-italic">No detailed content available for this report.</p>
+                        }
+                    }
+                </section>
+
+                <!-- Data Source / Footer -->
+                @if (!string.IsNullOrWhiteSpace(Model.NewsSource))
+                {
+                    <footer class="mt-5 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <span class="small text-muted"><i class="bi bi-cpu me-1"></i> Synthesis Engine & Source:</span>
+                        <span class="badge bg-light text-dark border px-3 py-2">@Model.NewsSource</span>
+                    </footer>
+                }
+            </article>
+
+            <!-- Simulated Price Chart Card -->
+            <div class="card border-0 shadow-sm p-4 p-md-5 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <h4 class="fw-bold m-0 text-main" style="font-size: 1.25rem;">
+                        <i class="bi bi-activity text-primary me-2"></i>
+                        @(Model.Tags.Any() ? $"{Model.Tags.First()} Price Trend (Simulated)" : "FNTS Index Composite Trend")
+                    </h4>
+                    <span class="badge @(Model.Decision == "BUY" ? "bg-success" : Model.Decision == "SELL" ? "bg-danger" : "bg-secondary") text-white px-3 py-1">
+                        Signal: @Model.Decision
+                    </span>
+                </div>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="tradingChart"></canvas>
+                </div>
+                <div class="text-muted small mt-3">
+                    <i class="bi bi-info-circle me-1"></i> Modeled dynamically according to recommendation type: <strong>@Model.Decision</strong>.
                 </div>
             </div>
+        </div>
 
-            <h1 class="fw-bold mb-3" style="font-size: 2rem; line-height: 1.3;">@Model.NewsTitle</h1>
-
-            @if (!string.IsNullOrWhiteSpace(Model.Headline))
-            {
-                <div class="p-3 bg-light rounded-3 border-start border-4 border-primary mb-4">
-                    <p class="mb-0 text-secondary lead" style="font-size: 1.1rem;">
-                        <i class="bi bi-quote me-2 fs-4 text-primary align-middle"></i>@Model.Headline
-                    </p>
+        <!-- RIGHT: Recommendation & Metadata Sidebar -->
+        <div class="col-lg-4">
+            <aside class="d-flex flex-column gap-4">
+                <!-- Action Recommendation Card -->
+                <div class="card recommendation-card p-4 shadow">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-uppercase fw-bold tracking-wider small opacity-75">Analysis Signal</span>
+                        <span class="pulse-badge"></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 my-2">
+                        <i class="bi @decisionIcon display-4"></i>
+                        <div>
+                            <h2 class="m-0 fw-extrabold display-6 text-white">@Model.Decision</h2>
+                            <p class="m-0 small opacity-75">Recommended Action</p>
+                        </div>
+                    </div>
                 </div>
-            }
 
-            <div class="d-flex flex-wrap gap-2 align-items-center border-top pt-3 mt-4">
-                <div class="me-3">
-                    <span class="text-muted small d-block">Sector / Category:</span>
-                    <span class="badge bg-secondary px-2 py-1"><i class="bi bi-folder2 me-1"></i>@Model.CategoryName</span>
+                <!-- Metadata / Author info Card -->
+                <div class="card border-0 shadow-sm p-4">
+                    <h5 class="fw-bold mb-3 text-main"><i class="bi bi-info-circle-fill me-2 text-primary"></i>Report Information</h5>
+
+                    <!-- Author -->
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Author / Publisher:</span>
+                        @if (string.IsNullOrEmpty(Model.CreatedByName) || Model.CreatedByName == "Deleted User")
+                        {
+                            <span class="author-badge deleted-author">
+                                <i class="bi bi-trash-fill"></i> Deleted Staff
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="author-badge">
+                                <i class="bi bi-person-badge-fill text-primary"></i> @Model.CreatedByName
+                            </span>
+                        }
+                    </div>
+
+                    <!-- Category -->
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Category Sector:</span>
+                        <span class="badge bg-secondary px-3 py-2"><i class="bi bi-folder2 me-1"></i>@Model.CategoryName</span>
+                    </div>
+
+                    <!-- Timestamps -->
+                    @if (Model.ModifiedDate.HasValue)
+                    {
+                        <div class="mb-3">
+                            <span class="text-muted small d-block mb-1">Last Updated:</span>
+                            <span class="text-secondary small"><i class="bi bi-clock-history me-1"></i>@Model.ModifiedDate.Value.ToString("MMM dd, yyyy HH:mm") UTC</span>
+                        </div>
+                    }
                 </div>
 
+                <!-- Related Tickers / Tags -->
                 @if (Model.Tags != null && Model.Tags.Any())
                 {
-                    <div>
-                        <span class="text-muted small d-block">Related Tickers:</span>
-                        <div class="d-flex gap-1 flex-wrap">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="fw-bold mb-3 text-main"><i class="bi bi-tags-fill me-2 text-primary"></i>Analyzed Assets</h5>
+                        <div class="d-flex flex-wrap gap-2">
                             @foreach (var tag in Model.Tags)
                             {
-                                <span class="badge bg-light text-dark border px-2 py-1"><i class="bi bi-hash"></i>@tag</span>
+                                <span class="ticker-pill">
+                                    <i class="bi bi-hash text-muted"></i>@tag
+                                </span>
                             }
                         </div>
                     </div>
                 }
-            </div>
+            </aside>
         </div>
-    </div>
-
-    <!-- Main Content Breakdown -->
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-transparent border-0 pt-4 px-4 px-md-5 pb-0">
-            <h4 class="fw-bold m-0"><i class="bi bi-file-text me-2 text-primary"></i>Detailed Analysis Breakdown</h4>
-        </div>
-        <div class="card-body p-4 p-md-5">
-            @if (!string.IsNullOrWhiteSpace(Model.NewsContent))
-            {
-                var paragraphs = Model.NewsContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var para in paragraphs)
-                {
-                    <p class="fs-6 text-dark lh-base mb-3" style="text-align: justify;">@para</p>
-                }
-            }
-            else
-            {
-                <p class="text-muted fst-italic">No detailed content available for this report.</p>
-            }
-        </div>
-        @if (!string.IsNullOrWhiteSpace(Model.NewsSource))
-        {
-            <div class="card-footer bg-light border-0 px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
-                <span class="small text-muted"><i class="bi bi-info-circle me-1"></i> Data Source & Engine:</span>
-                <span class="badge bg-white text-dark border small">@Model.NewsSource</span>
-            </div>
-        }
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            const ctx = document.getElementById('tradingChart');
+            if (!ctx) return;
+
+            // Generate mock stock price series based on Recommendation
+            const decision = "@Model.Decision";
+            const ticker = "@(Model.Tags.Any() ? Model.Tags.First() : "FNTS")";
+
+            const labels = [];
+            const data = [];
+            const daysCount = 30;
+
+            // Seed initial values
+            let currentPrice = Math.random() * 200 + 80; // random start price between 80 and 280
+            
+            // Generate historical dates
+            const today = new Date();
+            for (let i = daysCount - 1; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                labels.push(date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+            }
+
+            // Generate trend logic
+            let trendFactor = 0;
+            if (decision === "BUY") {
+                trendFactor = 1.8; // strong positive drift
+            } else if (decision === "SELL") {
+                trendFactor = -1.8; // negative drift
+            } else {
+                trendFactor = 0.1; // flat/consolidating
+            }
+
+            for (let i = 0; i < daysCount; i++) {
+                // random walk with drift
+                const dailyChange = (Math.random() - 0.5) * 6 + trendFactor;
+                currentPrice = Math.max(10, currentPrice + dailyChange); // keep price above 10
+                data.push(currentPrice.toFixed(2));
+            }
+
+            // Dynamic Chart.js colors matching recommendation
+            let strokeColor = '#64748b'; // HOLD
+            let fillColor = 'rgba(100, 116, 139, 0.08)';
+
+            if (decision === "BUY") {
+                strokeColor = '#10b981';
+                fillColor = 'rgba(16, 185, 129, 0.08)';
+            } else if (decision === "SELL") {
+                strokeColor = '#ef4444';
+                fillColor = 'rgba(239, 68, 68, 0.08)';
+            }
+
+            // Detect theme
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
+            const config = {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: ticker + ' (USD)',
+                        data: data,
+                        borderColor: strokeColor,
+                        borderWidth: 2.5,
+                        fill: true,
+                        backgroundColor: fillColor,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: isDark ? '#1e1b4b' : '#ffffff',
+                            titleColor: isDark ? '#ffffff' : '#1e1b4b',
+                            bodyColor: isDark ? '#e2e8f0' : '#1e1b4b',
+                            borderColor: strokeColor,
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: 'Inter', size: 10 } }
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: 'Inter', size: 10 } }
+                        }
+                    }
+                }
+            };
+
+            let chart = new Chart(ctx, config);
+
+            // Re-render chart colors when theme toggles
+            const themeObserver = new MutationObserver(() => {
+                const currentDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                const updatedGrid = currentDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+                const updatedText = currentDark ? '#94a3b8' : '#64748b';
+                
+                chart.options.scales.x.grid.color = updatedGrid;
+                chart.options.scales.y.grid.color = updatedGrid;
+                chart.options.scales.x.ticks.color = updatedText;
+                chart.options.scales.y.ticks.color = updatedText;
+                chart.options.plugins.tooltip.backgroundColor = currentDark ? '#1e1b4b' : '#ffffff';
+                chart.options.plugins.tooltip.titleColor = currentDark ? '#ffffff' : '#1e1b4b';
+                chart.options.plugins.tooltip.bodyColor = currentDark ? '#e2e8f0' : '#1e1b4b';
+                chart.update();
+            });
+
+            themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
+        })();
+    </script>
+}

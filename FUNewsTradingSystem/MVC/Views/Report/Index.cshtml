@@ -87,6 +87,22 @@
         </form>
     </div>
 
+    <!-- Real-time Notification Banner -->
+    <div id="realtimeNotify" class="alert alert-info alert-dismissible fade show d-none mb-3 shadow-sm" role="alert" style="border-left: 4px solid var(--accent); border-radius: 12px; background: rgba(56, 189, 248, 0.08);">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-bell-fill text-primary me-2 animate-bounce"></i>
+                <span id="realtimeNotifyTitle" class="text-main">New report generated!</span>
+            </div>
+            <div>
+                <a href="" id="realtimeNotifyLink" class="btn btn-primary btn-sm rounded-pill px-3 py-1">
+                    <i class="bi bi-file-text me-1"></i>View Report
+                </a>
+                <button type="button" class="btn-close position-relative ms-2" style="top: auto; right: auto; padding: 0.5rem;" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     @if (!Model.Any())
     {
         <div class="card p-5 text-center my-4">
@@ -110,7 +126,7 @@
                 <div class="card shadow-sm mb-3 border-0">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="badge @badgeClass" style="font-size:.85rem;padding:.4em .8em">
+                            <span class="badge @badgeClass text-white" style="font-size:.85rem;padding:.4em .8em">
                                 <i class="bi bi-lightning-charge-fill me-1"></i>
                                 @item.Decision
                             </span>
@@ -158,3 +174,32 @@
         @await Html.PartialAsync("_Pagination", Model)
     }
 </div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        (function() {
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/reports")
+                .configureLogging(signalR.LogLevel.Warning)
+                .build();
+
+            connection.on("ReceiveNewReport", function (report) {
+                var notifyBanner = document.getElementById('realtimeNotify');
+                var notifyTitle = document.getElementById('realtimeNotifyTitle');
+                var notifyLink = document.getElementById('realtimeNotifyLink');
+                
+                if (notifyBanner && notifyTitle && notifyLink) {
+                    notifyTitle.innerHTML = 'New automated analysis for <strong>' + report.tagName + '</strong> is now available!';
+                    notifyLink.href = '/Report/Detail/' + report.newsArticleId;
+                    notifyLink.innerHTML = '<i class="bi bi-file-text me-1"></i>View Report';
+                    notifyBanner.classList.remove('d-none');
+                }
+            });
+
+            connection.start().catch(function (err) {
+                console.error("SignalR failed to start: ", err);
+            });
+        })();
+    </script>
+}

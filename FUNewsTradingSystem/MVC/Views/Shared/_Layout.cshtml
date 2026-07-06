@@ -10,143 +10,427 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        @@keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .pulse-dot {
+            width: 8px; height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-green 2s infinite;
+        }
+        
+        /* ── Header Animations ── */
+        @@keyframes slideHeaderDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        header {
+            animation: slideHeaderDown 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+            will-change: transform;
+        }
+        .header-hidden {
+            transform: translateY(-100%);
+        }
+        
+        /* ── Glowing gradient line below header ── */
+        .header-glow-line {
+            height: 2px;
+            background: linear-gradient(90deg, #6d28d9, #10b981, #db2777, #6d28d9);
+            background-size: 300% 100%;
+            animation: gradientShift 8s linear infinite;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            opacity: 0.8;
+        }
+        
+        @@keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        
+        /* Interactive clock icon hover effect */
+        .clock-widget:hover i {
+            transform: rotate(15deg) scale(1.1);
+        }
+        .clock-widget i {
+            transition: transform 0.3s ease;
+        }
+
+        /* ── CẤU TRÚC KỊCH BẢN CHUYỂN TRANG MỚI (CYBER SLIDE WIPE) ── */
+        body {
+            overflow-x: hidden;
+        }
+        
+        /* Wrapper bao bọc toàn bộ nội dung để tạo hiệu ứng thu nhỏ (Scale) */
+        #page-wrapper {
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+            will-change: transform, opacity;
+            opacity: 1;
+        }
+        .page-scale-down {
+            transform: scale(0.96);
+            opacity: 0.4;
+        }
+
+        /* Thanh quét dữ liệu khi chuyển trang */
+        #cyber-wipe-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Lớp nền quét chính */
+        .wipe-block {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            transform: translateX(-100%);
+            will-change: transform;
+        }
+
+        /* Hiệu ứng quét khi RỜI TRANG (Animate Out) */
+        .wipe-out .wipe-block {
+            animation: wipeToRight 0.55s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+        }
+
+        /* Hiệu ứng quét khi VÀO TRANG MỚI (Animate In) */
+        .wipe-in .wipe-block {
+            transform: translateX(0);
+            animation: wipeLeaveRight 0.55s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+        }
+
+        /* Container cho logo và status */
+        .wipe-content {
+            position: relative;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .wipe-out .wipe-content {
+            opacity: 1;
+            transform: scale(1);
+            transition-delay: 0.15s;
+        }
+
+        .wipe-in .wipe-content {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .transition-logo {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3), 0 0 50px rgba(109, 40, 217, 0.2);
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            background: #0d0b1e;
+            padding: 6px;
+        }
+
+        /* Khối text Terminal nhỏ chạy theo dải quét */
+        .wipe-status {
+            color: #10b981;
+            font-family: 'Inter', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 8px 16px;
+            border-left: 3px solid #6d28d9;
+            background: rgba(0,0,0,0.3);
+        }
+
+        @@keyframes wipeToRight {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(0); }
+        }
+
+        @@keyframes wipeLeaveRight {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
+        }
+
+        .spin {
+            animation: spinIcon 1.5s linear infinite;
+            display: inline-block;
+        }
+        @@keyframes spinIcon {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Đường Loading Bar tối giản siêu mảnh ở top */
+        .page-loading-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            z-index: 100000;
+            width: 0;
+            transition: width 0.4s ease, opacity 0.3s ease;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <div id="page-loading-bar" class="page-loading-bar"></div>
 
-    <header>
-        <nav class="navbar navbar-expand-sm">
-            <div class="container-fluid px-4">
+    <div id="cyber-wipe-overlay" class="wipe-in">
+        <div class="wipe-block"></div>
+        <div class="wipe-content">
+            <img src="/images/fnts_transition_logo.png" alt="FNTS" class="transition-logo animate-pulse mb-3" />
+            <div class="wipe-status text-uppercase">
+                <i class="bi bi-cpu-fill me-2 spin"></i>Waiting for Loading...
+            </div>
+        </div>
+    </div>
 
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    📈 FNTS
-                </a>
+    <div id="page-wrapper" class="d-flex flex-column min-vh-100 w-100">
+        <header class="sticky-top position-relative">
+            <nav class="navbar navbar-expand-sm">
+                <div class="container-fluid px-4">
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse" aria-controls="navbarContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <i class="bi bi-list text-white fs-4"></i>
-                </button>
+                    <a class="navbar-brand d-flex align-items-center gap-1.5" asp-area="" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-graph-up-arrow-fill me-1"></i>
+                        <span>FNTS</span>
+                    </a>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1 gap-1">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target=".navbar-collapse" aria-controls="navbarContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="bi bi-list text-secondary-emphasis fs-4"></i>
+                    </button>
 
-                        @* GUEST / LECTURER (ROLE 2) → only Reports *@
-                        @if (!User.Identity?.IsAuthenticated == true || User.IsInRole("2"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
-                                   asp-controller="Report" asp-action="Index">
-                                    <i class="bi bi-newspaper me-1"></i>Reports
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        <ul class="navbar-nav flex-grow-1 gap-1">
+                            @* GUEST / LECTURER (ROLE 2) *@
+                            @if (!User.Identity?.IsAuthenticated == true || User.IsInRole("2"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
+                                       asp-controller="Report" asp-action="Index">
+                                        <i class="bi bi-newspaper me-1"></i>Reports
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                @* STAFF (ROLE 1) *@
+                                @if (User.IsInRole("1"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "RunAnalysis" ? "active" : "")"
+                                           asp-controller="RunAnalysis" asp-action="Index">
+                                            <i class="bi bi-cpu me-1"></i>Run Analysis
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")"
+                                           asp-controller="Category" asp-action="Index">
+                                            <i class="bi bi-folder2 me-1"></i>Categories
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Tag" ? "active" : "")"
+                                           asp-controller="Tag" asp-action="Index">
+                                            <i class="bi bi-tags me-1"></i>Tags
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "MyReports" ? "active" : "")"
+                                           asp-controller="Staff" asp-action="MyReports">
+                                            <i class="bi bi-journal-text me-1"></i>My Reports
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                                           asp-controller="Staff" asp-action="Profile">
+                                            <i class="bi bi-person-circle me-1"></i>Profile
+                                        </a>
+                                    </li>
+                                }
+
+                                @* ADMIN (ROLE 3) *@
+                                @if (User.IsInRole("3"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminAccount" ? "active" : "")"
+                                           asp-controller="AdminAccount" asp-action="Index">
+                                            <i class="bi bi-people me-1"></i>Accounts
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminStatistics" ? "active" : "")"
+                                           asp-controller="AdminStatistics" asp-action="Index">
+                                            <i class="bi bi-bar-chart-line me-1"></i>Statistics
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-1 px-2.5 py-1 rounded bg-body-tertiary border border-secondary border-opacity-10 text-secondary-emphasis small clock-widget" style="font-size: .8rem; font-weight: 600;" title="Current local time">
+                                <i class="bi bi-clock me-1 text-primary"></i>
+                                <span id="headerClock" style="font-family: monospace;">00:00:00 AM</span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-1 me-2 px-2 py-1 rounded bg-body-tertiary border border-secondary border-opacity-10 text-success small" style="font-size: .8rem; font-weight: 600;">
+                                <span class="pulse-dot me-1"></span>
+                                <span id="presenceCount">1</span> Active
+                            </div>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <span class="navbar-text d-none d-md-inline">
+                                    Hello, <strong>@User.Identity.Name</strong>
+                                    <span class="badge @(User.IsInRole("3") ? "bg-danger" : User.IsInRole("1") ? "bg-primary" : "bg-secondary") ms-1">
+                                        @(User.IsInRole("3") ? "Admin" : User.IsInRole("1") ? "Staff" : "Lecturer")
+                                    </span>
+                                </span>
+
+                                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="mb-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-box-arrow-right me-1"></i>Logout
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <a class="btn btn-primary btn-sm px-3" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                                </a>
+                            }
+
+                            <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                                    id="themeToggle" type="button" aria-label="Toggle theme">
+                                <span id="themeIcon">🌙</span>
+                                <span class="d-none d-sm-inline" style="font-size:.75rem">Theme</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <div class="header-glow-line"></div>
+        </header>
+
+        <div class="container flex-grow-1">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="footer mt-auto py-5">
+            <div class="container">
+                <div class="row g-4 text-start">
+                    <div class="col-md-5">
+                        <h5 class="fw-bold mb-3"><span class="gradient-text"><i class="bi bi-graph-up-arrow-fill me-1"></i>FNTS</span></h5>
+                        <p class="text-white-50 mb-3" style="max-width: 380px; font-size: 0.85rem; line-height: 1.6;">
+                            FUNews Trading System (FNTS) synthesizes global stock and cryptocurrency news to output real-time sentiment triggers and alerts. Powered by advanced AI model analysis.
+                        </p>
+                        <p class="small text-muted mb-0" style="font-size: 0.75rem;">
+                            &copy; @DateTime.Now.Year FNTS Inc. All rights reserved.
+                        </p>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <h6 class="text-uppercase fw-bold text-white small mb-3 tracking-wider">Quick Links</h6>
+                        <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                            <li>
+                                <a asp-controller="Report" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
+                                    <i class="bi bi-chevron-right small me-1"></i> Analysis Reports
                                 </a>
                             </li>
-                        }
-
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            @* STAFF (ROLE 1) *@
-                            @if (User.IsInRole("1"))
+                            @if (User.Identity?.IsAuthenticated == true)
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "RunAnalysis" ? "active" : "")"
-                                       asp-controller="RunAnalysis" asp-action="Index">
-                                        <i class="bi bi-cpu me-1"></i>Run Analysis
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")"
-                                       asp-controller="Category" asp-action="Index">
-                                        <i class="bi bi-folder2 me-1"></i>Categories
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Tag" ? "active" : "")"
-                                       asp-controller="Tag" asp-action="Index">
-                                        <i class="bi bi-tags me-1"></i>Tags
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "MyReports" ? "active" : "")"
-                                       asp-controller="Staff" asp-action="MyReports">
-                                        <i class="bi bi-journal-text me-1"></i>My Reports
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
-                                       asp-controller="Staff" asp-action="Profile">
-                                        <i class="bi bi-person-circle me-1"></i>Profile
+                                @if (User.IsInRole("1"))
+                                {
+                                    <li>
+                                        <a asp-controller="RunAnalysis" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
+                                            <i class="bi bi-chevron-right small me-1"></i> Run Analysis
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Staff" asp-action="MyReports" class="text-white-50 text-decoration-none footer-link">
+                                            <i class="bi bi-chevron-right small me-1"></i> My Reports
+                                        </a>
+                                    </li>
+                                }
+                                else if (User.IsInRole("3"))
+                                {
+                                    <li>
+                                        <a asp-controller="AdminAccount" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
+                                            <i class="bi bi-chevron-right small me-1"></i> Manage Accounts
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="AdminStatistics" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
+                                            <i class="bi bi-chevron-right small me-1"></i> View Statistics
+                                        </a>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                <li>
+                                    <a asp-controller="Account" asp-action="Login" class="text-white-50 text-decoration-none footer-link">
+                                        <i class="bi bi-chevron-right small me-1"></i> Login to Portal
                                     </a>
                                 </li>
                             }
-
-                            @* ADMIN (ROLE 3) *@
-                            @if (User.IsInRole("3"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminAccount" ? "active" : "")"
-                                       asp-controller="AdminAccount" asp-action="Index">
-                                        <i class="bi bi-people me-1"></i>Accounts
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminStatistics" ? "active" : "")"
-                                       asp-controller="AdminStatistics" asp-action="Index">
-                                        <i class="bi bi-bar-chart-line me-1"></i>Statistics
-                                    </a>
-                                </li>
-                            }
-                        }
-                    </ul>
-
-                    <div class="d-flex align-items-center gap-2">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <span class="navbar-text d-none d-md-inline">
-                                Hello, <strong>@User.Identity.Name</strong>
-                                <span class="badge @(User.IsInRole("3") ? "bg-danger" : User.IsInRole("1") ? "bg-primary" : "bg-secondary") ms-1">
-                                    @(User.IsInRole("3") ? "Admin" : User.IsInRole("1") ? "Staff" : "Lecturer")
-                                </span>
-                            </span>
-
-                            <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="mb-0">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-outline-danger btn-sm">
-                                    <i class="bi bi-box-arrow-right me-1"></i>Logout
-                                </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <a class="btn btn-primary btn-sm px-3" asp-controller="Account" asp-action="Login">
-                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
-                            </a>
-                        }
-
-                        <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
-                                id="themeToggle" type="button" aria-label="Toggle theme">
-                            <span id="themeIcon">🌙</span>
-                            <span class="d-none d-sm-inline" style="font-size:.75rem">Theme</span>
-                        </button>
+                        </ul>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <h6 class="text-uppercase fw-bold text-white small mb-3 tracking-wider">Disclaimer</h6>
+                        <p class="text-muted mb-0" style="font-size: 0.78rem; line-height: 1.5; text-align: justify;">
+                            Trading assets involves substantial risk. Synthesized news reports, sentiment triggers, and decision signals generated by this system are for educational and informational purposes only. Do not treat any signals as financial advice.
+                        </p>
                     </div>
                 </div>
             </div>
-        </nav>
-    </header>
-
-    <div class="container flex-grow-1">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="footer">
-        <div class="container text-center" style="font-size:.8125rem">
-            &copy; @DateTime.Now.Year — <span class="gradient-text fw-semibold">FUNewsTradingSystem</span> · AI Trading Analysis
-        </div>
-    </footer>
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        </footer>
+    </div> <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            // Append all modals to body to prevent Bootstrap stacking context/backdrop bugs
+            $('.modal').appendTo('body');
+        });
+    </script>
 
     <script>
         (function () {
@@ -167,6 +451,108 @@
                 const next = cur === 'dark' ? 'light' : 'dark';
                 setStored(next);
                 apply(next);
+            });
+
+            // Sticky & shrink transitions for header on scroll
+            window.addEventListener('scroll', () => {
+                const currentScrollY = window.scrollY;
+                const nav = document.querySelector('.navbar');
+
+                if (currentScrollY > 30) {
+                    nav.classList.add('navbar-scrolled');
+                } else {
+                    nav.classList.remove('navbar-scrolled');
+                }
+            });
+
+            // Real-time ticking Clock
+            function updateClock() {
+                const clockEl = document.getElementById("headerClock");
+                if (clockEl) {
+                    const now = new Date();
+                    clockEl.textContent = now.toLocaleTimeString();
+                }
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // ── ĐỔI MỚI: Javascript điều khiển hiệu ứng Cyber Wipe
+            const overlay = document.getElementById('cyber-wipe-overlay');
+            const loadBar = document.getElementById('page-loading-bar');
+            const wrapper = document.getElementById('page-wrapper');
+
+            // Khi vừa tải trang: Dải quét chạy lướt qua để lộ trang mới (wipe-in)
+            if (loadBar) loadBar.style.width = '60%';
+
+            window.addEventListener('load', () => {
+                if (loadBar) {
+                    loadBar.style.width = '100%';
+                    setTimeout(() => { loadBar.style.opacity = '0'; }, 200);
+                }
+                
+                // Sau khi dải quét lướt qua bên phải, dọn dẹp class để không chặn tương tác
+                setTimeout(() => {
+                    if (overlay) overlay.className = ''; 
+                }, 550);
+            });
+
+            // Bắt sự kiện click chuyển link để thực hiện hiệu ứng Outbound độc đáo
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (!link) return;
+
+                const href = link.getAttribute('href');
+                const target = link.getAttribute('target');
+
+                if (!href || href.startsWith('#') || href.startsWith('javascript:') || target === '_blank') {
+                    return;
+                }
+
+                if (link.hostname !== window.location.hostname) {
+                    return;
+                }
+
+                if (link.closest('form') || link.classList.contains('no-transition')) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                // Kích hoạt thanh quét sang phải che màn hình + thu nhỏ nhẹ trang cũ
+                if (loadBar) {
+                    loadBar.style.opacity = '1';
+                    loadBar.style.width = '100%';
+                }
+                if (wrapper) {
+                    wrapper.classList.add('page-scale-down');
+                }
+                if (overlay) {
+                    overlay.className = 'wipe-out';
+                }
+
+                // Chuyển hướng sau khi hiệu ứng quét phủ toàn bộ màn hình hoàn tất
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 500); 
+            });
+        })();
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        (function() {
+            var presenceConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/presence")
+                .configureLogging(signalR.LogLevel.Warning)
+                .build();
+
+            presenceConnection.on("UpdateOnlineCount", function (count) {
+                var el = document.getElementById("presenceCount");
+                if (el) el.textContent = count;
+            });
+
+            presenceConnection.start().catch(function (err) {
+                console.error("PresenceHub connection failed: ", err);
             });
         })();
     </script>
