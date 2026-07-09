@@ -5,6 +5,8 @@ using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels.Accounts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using FUNewsTradingSystem_MVC.Hubs;
 
 namespace FUNewsTradingSystem_MVC.Controllers
 {
@@ -13,10 +15,12 @@ namespace FUNewsTradingSystem_MVC.Controllers
     public class AdminAccountController : Controller
     {
         private readonly ISystemAccountService _accountService;
+        private readonly IHubContext<NotificationHub> _notificationHub;
 
-        public AdminAccountController(ISystemAccountService accountService)
+        public AdminAccountController(ISystemAccountService accountService, IHubContext<NotificationHub> notificationHub)
         {
             _accountService = accountService;
+            _notificationHub = notificationHub;
         }
 
         [HttpGet("")]
@@ -70,6 +74,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
                 return Json(new { success = false, errors = new[] { result.ErrorMessage } });
             }
 
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "create", "Tạo Mới Thành Công", $"Tài khoản '{account.AccountName}' đã được tạo thành công trên hệ thống.");
             return Json(new { success = true });
         }
 
@@ -118,6 +123,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
                 return Json(new { success = false, errors = new[] { result.ErrorMessage } });
             }
 
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "update", "Cập Nhật Thành Công", $"Tài khoản '{account.AccountName}' đã được cập nhật thành công.");
             return Json(new { success = true });
         }
 
@@ -137,6 +143,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
                 return Json(new { success = false, message = result.ErrorMessage ?? "Failed to delete account." });
             }
 
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "delete", "Xóa Thành Công", $"Tài khoản ID {id} đã bị xóa khỏi hệ thống.");
             return Json(new { success = true });
         }
     }
