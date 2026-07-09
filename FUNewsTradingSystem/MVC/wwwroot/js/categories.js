@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FUNewsTradingSystem - Category Management AJAX Script
  * Xử lý toàn bộ các tác vụ CRUD Danh mục không cần tải lại trang
  */
@@ -28,7 +28,7 @@ function openCreateModal() {
         })
         .then(html => {
             document.getElementById('modalBodyContainer').innerHTML = html;
-            const crudModal = new bootstrap.Modal(document.getElementById('categoryCrudModal'));
+            const crudModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('categoryCrudModal'));
             crudModal.show();
         })
         .catch(err => showToastError(err.message));
@@ -53,7 +53,7 @@ function openEditModal(id) {
         })
         .then(html => {
             document.getElementById('modalBodyContainer').innerHTML = html;
-            const crudModal = new bootstrap.Modal(document.getElementById('categoryCrudModal'));
+            const crudModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('categoryCrudModal'));
             crudModal.show();
         })
         .catch(err => showToastError(err.message));
@@ -235,30 +235,17 @@ function deleteCategory(id, name) {
     }
 
     // 3. Hiển thị Confirm Delete Modal lên màn hình
-    const modal = new bootstrap.Modal(deleteModalEl);
+    const modal = bootstrap.Modal.getOrCreateInstance(deleteModalEl);
     modal.show();
 }
 
 // VII. LÀM MỚI BẢNG DỮ LIỆU SAU KHI THAY ĐỔI THÀNH CÔNG
 function refreshCategoryTable(successMessage) {
-    // Cách 1: Tải lại toàn bộ trang (Đơn giản, cập nhật lại tất cả dữ liệu sạch sẽ nhất)
-    if (successMessage) {
-        // Lưu thông điệp vào sessionStorage để hiển thị sau khi reload trang kết thúc
-        sessionStorage.setItem('Category_Toast_Success', successMessage);
+    if (typeof window.refreshPageContentRealtime === 'function') {
+        window.refreshPageContentRealtime();
+    } else {
+        location.reload();
     }
-    location.reload();
-
-    /* // Cách 2: Nếu đồ án yêu cầu làm mới ngầm bảng dữ liệu bằng AJAX (Không reload trang):
-    fetch('/Staff/Categories')
-        .then(res => res.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newTable = doc.querySelector('.table-responsive');
-            document.querySelector('.table-responsive').innerHTML = newTable.innerHTML;
-            if (successMessage) showToastSuccess(successMessage);
-        });
-    */
 }
 
 // ──────────────────────────────────────────────────────────────────────────

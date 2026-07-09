@@ -1,4 +1,4 @@
-﻿async function toggleStatus(newsId) {
+async function toggleStatus(newsId) {
     const token = document.querySelector(
         '#ajax-antiforgery input[name="__RequestVerificationToken"]'
     ).value;
@@ -45,7 +45,11 @@ function updateRowStatus(newsId, isActive) {
         );
 
     if (!badge || !button) {
-        location.reload();
+        if (typeof window.refreshPageContentRealtime === 'function') {
+            window.refreshPageContentRealtime();
+        } else {
+            location.reload();
+        }
         return;
     }
 

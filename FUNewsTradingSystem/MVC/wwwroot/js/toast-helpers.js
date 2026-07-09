@@ -69,15 +69,20 @@
         });
     }
 
-    /* ─────────────────────────────────────────
-       Public API
-       ───────────────────────────────────────── */
     function showSuccess(message) {
-        showToast(message || 'Operation completed successfully.', 'bg-success', 3000);
+        if (typeof window.showCustomToast === 'function') {
+            window.showCustomToast('create', 'Thành Công', message);
+        } else {
+            showToast(message || 'Operation completed successfully.', 'bg-success', 3000);
+        }
     }
 
     function showError(message) {
-        showToast(message || 'An error occurred. Please try again.', 'bg-danger', 5000);
+        if (typeof window.showCustomToast === 'function') {
+            window.showCustomToast('error', 'Lỗi', message);
+        } else {
+            showToast(message || 'An error occurred. Please try again.', 'bg-danger', 5000);
+        }
     }
 
     /* ─────────────────────────────────────────
