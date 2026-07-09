@@ -6,19 +6,19 @@
 
 | Person | Role | Tasks |
 |--------|------|-------|
-| P1 — Tech Lead | Solution skeleton, Auth/AuthZ, AI Pipeline, shared backend infrastructure | 48 |
+| P1 — Tech Lead | Solution skeleton, Auth/AuthZ, AI Pipeline, Real-time Hubs, shared backend infrastructure | 50 |
 | P2 — Backend Dev | DB migrations, all Repositories + Services, Account Management, Admin Statistics | 44 |
 | P3 — Full-stack Dev | Category/Tag CRUD (full stack), Report Viewer, Staff History | 38 |
-| P4 — UI Dev | All shared JS/CSS, Run Analysis UI, Profile Management, Staff Dashboard, Documentation | 45 |
+| P4 — UI Dev | All shared JS/CSS, Run Analysis UI, Profile Management, Staff Dashboard, Real-time UI Sync, Documentation | 52 |
 
 > **Testing policy:** each person writes and runs smoke tests for their own features before merging.
 > A shared smoke test checklist lives in `TESTING.md` — P4 maintains the file, everyone fills it in.
 
-| **Total** | | **175 tasks** |
+| **Total** | | **184 tasks** |
 
 ---
 
-## PERSON 1 — Tech Lead | 48 tasks
+## PERSON 1 — Tech Lead | 50 tasks
 
 > Owns the entire skeleton, auth system, and AI pipeline. If P1's work breaks, nothing else runs.
 
@@ -87,6 +87,10 @@
 - [x] Register in `Program.cs`: `AddSingleton<HttpClient>` with `Timeout=TimeSpan.FromSeconds(10)`; `AddSingleton<ITradingAgentService, TradingAgentService>()`
 - [X] Create `RunAnalysisController.cs` with `[Authorize(Policy = "StaffOnly")]`: `GET /Staff/RunAnalysis` (populate Ticker + active Sector dropdowns, return view); `POST /Staff/RunAnalysis` async (call `RunAnalysisAsync()`, return JSON `{ success, newsArticleId, errorMessage }`)
 - [X] Create `RunAnalysisViewModel.cs`: `SelectedTagId` (Required), `SelectedCategoryId` (Required), `AvailableTags: SelectList`, `AvailableCategories: SelectList`
+
+### 📡 Real-time SignalR Hubs Configuration (2 tasks)
+- [x] Configure SignalR services and map hubs (`/hubs/notifications`, `/hubs/presence`) in `Program.cs`
+- [x] Implement backend notifications triggers inside Services (e.g., CategoryService, TagService) using `IHubContext` to broadcast CRUD actions to connected clients
 
 ### 🧪 P1 Self-test (smoke tests to run before handoff)
 - [x] Verify Login success for all 3 roles with correct redirects
@@ -214,7 +218,7 @@
 
 ---
 
-## PERSON 4 — UI Developer | 45 tasks
+## PERSON 4 — UI Developer | 52 tasks
 
 > Owns all shared JS/CSS infrastructure, the Run Analysis UI, Profile Management, Staff Dashboard, documentation, and the shared smoke test tracker.
 
@@ -263,6 +267,15 @@
 - [x] Create `Views/Staff/Dashboard/Index.cshtml`: welcome heading with AccountName; Bootstrap card grid with: "Run Analysis" (link + icon + description), "Manage Categories" (link + icon), "Manage Tags" (link + icon), "My Reports" (link + icon + badge showing report count), "My Profile" (link + icon)
 - [x] Verify: report count badge on "My Reports" card matches actual row count in DB
 - [x] Verify: all 5 card links navigate to correct pages
+
+### ⚡ Real-time UI Sync & Modal Optimization (7 tasks)
+- [x] Build central Toast Notification system (`window.showCustomToast`) in `_Layout.cshtml` with CSS transitions, alert icons, and status-based classes (`type-create`, `type-update`, `type-delete`)
+- [x] Configure SignalR client-side hub connections (`presenceConnection`, `notificationConnection`) in `_Layout.cshtml` and synchronize the URL endpoint path `/hubs/notifications`
+- [x] Set Toast container `.custom-toast-container` `z-index` to `99999` to overlay correctly on all UI components including active modals
+- [x] Implement non-disruptive SPA-like real-time data sync via `window.refreshPageContentRealtime()` using Fetch API and DOMParser to update `<main>` without full page reloads
+- [x] Refactor all client scripts (`ajax-crud.js`, `myreports.js`, `categories.js`, `_ConfirmDeleteModal.cshtml`) to replace destructive `location.reload()` with real-time UI refresh
+- [x] Solve modal backdrop overlay multiplication bugs ("Đang hơi tối nha") by implementing `syncModalsToBody()` to clean up duplicate modal elements in the DOM
+- [x] Refactor JS controllers (`categories.js`, `tags.js`) to use `bootstrap.Modal.getOrCreateInstance` for correct modal instance lifecycle management
 
 ### 📝 Documentation & Demo Prep (14 tasks)
 - [x] Write `README.md`: prerequisites (.NET 8 SDK, SQL Server LocalDB, Visual Studio 2022); setup steps (clone → fill `appsettings.json` → `dotnet ef database update` → Run); default credentials table; folder structure explanation; known limitations
