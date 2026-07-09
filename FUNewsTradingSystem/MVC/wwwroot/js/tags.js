@@ -1,22 +1,14 @@
-﻿let tagModal;
-let deleteModal;
 let deleteTagId = null;
 
-document.addEventListener("DOMContentLoaded", function () {
-
+function getTagModal() {
     const modalElement = document.getElementById("tagCrudModal");
+    return bootstrap.Modal.getOrCreateInstance(modalElement);
+}
 
-    if (modalElement) {
-        tagModal = new bootstrap.Modal(modalElement);
-    }
-
-    const deleteElement =
-        document.getElementById("deleteConfirmModal");
-
-    if (deleteElement) {
-        deleteModal = new bootstrap.Modal(deleteElement);
-    }
-});
+function getDeleteModal() {
+    const deleteElement = document.getElementById("deleteConfirmModal") || document.getElementById("confirmDeleteModal");
+    return bootstrap.Modal.getOrCreateInstance(deleteElement);
+}
 
 // =========================
 // CREATE
@@ -39,7 +31,7 @@ async function openCreateModal() {
         const saveBtn = document.getElementById('btnSaveTag');
         saveBtn.onclick = submitCreateForm;
 
-        tagModal.show();
+        getTagModal().show();
     }
     catch (error) {
         console.error(error);
@@ -83,13 +75,13 @@ async function submitCreateForm() {
             return;
         }
 
-        tagModal.hide();
+        getTagModal().hide();
 
         refreshTagTable();
     }
     catch (error) {
         console.error(error);
-        tagModal.hide();
+        getTagModal().hide();
         alertError('Unexpected error.');
     }
 }
@@ -116,7 +108,7 @@ async function openEditModal(id) {
         const saveBtn = document.getElementById('btnSaveTag');
         saveBtn.onclick = submitEditForm;
 
-        tagModal.show();
+        getTagModal().show();
     }
     catch (error) {
         console.error(error);
@@ -163,7 +155,7 @@ async function submitEditForm() {
             return;
         }
 
-        tagModal.hide();
+        getTagModal().hide();
 
         refreshTagTable();
     }
@@ -186,7 +178,7 @@ function deleteTag(id, name) {
     document.getElementById("confirmDeleteBtn").onclick =
         confirmDeleteTag;
 
-    deleteModal.show();
+    getDeleteModal().show();
 }
 
 async function confirmDeleteTag() {
@@ -213,7 +205,7 @@ async function confirmDeleteTag() {
             return;
         }
 
-        deleteModal.hide();
+        getDeleteModal().hide();
 
         refreshTagTable();
     }
@@ -228,6 +220,10 @@ async function confirmDeleteTag() {
 // =========================
 
 function refreshTagTable() {
-    location.reload();
+    if (typeof window.refreshPageContentRealtime === 'function') {
+        window.refreshPageContentRealtime();
+    } else {
+        location.reload();
+    }
 }
 

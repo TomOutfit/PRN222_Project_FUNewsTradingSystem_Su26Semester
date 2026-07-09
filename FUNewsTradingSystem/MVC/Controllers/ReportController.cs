@@ -5,6 +5,8 @@ using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels.Report;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using FUNewsTradingSystem_MVC.Hubs;
 
 namespace FUNewsTradingSystem_MVC.Controllers;
 
@@ -13,15 +15,18 @@ public class ReportController : Controller
     private readonly INewsArticleService _newsService;
     private readonly ICategoryService _categoryService;
     private readonly ITagService _tagService;
+    private readonly IHubContext<NotificationHub> _notificationHub;
 
     public ReportController(
         INewsArticleService newsService,
         ICategoryService categoryService,
-        ITagService tagService)
+        ITagService tagService,
+        IHubContext<NotificationHub> notificationHub)
     {
         _newsService = newsService;
         _categoryService = categoryService;
         _tagService = tagService;
+        _notificationHub = notificationHub;
     }
 
     /// <summary>
@@ -143,6 +148,8 @@ public class ReportController : Controller
         var accountId = User.GetAccountId() ?? int.Parse(User.FindFirst("AccountID")?.Value ?? "0");
 
         var newStatus = await _newsService.ToggleStatusAsync(id, accountId);
+        
+        await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "update", "Cập Nhật Thành Công", $"Report ID {id} đã được thay đổi trạng thái thành {(newStatus ? "Active" : "Archived")}.");
 
         return Ok(new
         {

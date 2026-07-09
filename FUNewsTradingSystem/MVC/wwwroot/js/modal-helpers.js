@@ -34,41 +34,49 @@
        showSuccess / showError  (toast wrappers)
        ───────────────────────────────────────── */
     function showSuccess(message) {
-        var container = getOrCreateToastContainer();
-        var t = document.createElement('div');
-        t.className = 'toast align-items-center text-white bg-success border-0';
-        t.setAttribute('role', 'alert');
-        t.setAttribute('aria-live', 'assertive');
-        t.setAttribute('aria-atomic', 'true');
-        t.innerHTML =
-            '<div class="d-flex">' +
-                '<div class="toast-body">' + escapeHtml(message) + '</div>' +
-                '<button type="button" class="btn-close btn-close-white me-2 m-auto" ' +
-                        'data-bs-dismiss="toast" aria-label="Close"></button>' +
-            '</div>';
-        container.appendChild(t);
-        var toast = bootstrap.Toast.getOrCreateInstance(t, { delay: 3000 });
-        toast.show();
-        t.addEventListener('hidden.bs.toast', function () { t.remove(); });
+        if (typeof window.showCustomToast === 'function') {
+            window.showCustomToast('create', 'Thành Công', message);
+        } else {
+            var container = getOrCreateToastContainer();
+            var t = document.createElement('div');
+            t.className = 'toast align-items-center text-white bg-success border-0';
+            t.setAttribute('role', 'alert');
+            t.setAttribute('aria-live', 'assertive');
+            t.setAttribute('aria-atomic', 'true');
+            t.innerHTML =
+                '<div class="d-flex">' +
+                    '<div class="toast-body">' + escapeHtml(message) + '</div>' +
+                    '<button type="button" class="btn-close btn-close-white me-2 m-auto" ' +
+                            'data-bs-dismiss="toast" aria-label="Close"></button>' +
+                '</div>';
+            container.appendChild(t);
+            var toast = bootstrap.Toast.getOrCreateInstance(t, { delay: 3000 });
+            toast.show();
+            t.addEventListener('hidden.bs.toast', function () { t.remove(); });
+        }
     }
 
     function showError(message) {
-        var container = getOrCreateToastContainer();
-        var t = document.createElement('div');
-        t.className = 'toast align-items-center text-white bg-danger border-0';
-        t.setAttribute('role', 'alert');
-        t.setAttribute('aria-live', 'assertive');
-        t.setAttribute('aria-atomic', 'true');
-        t.innerHTML =
-            '<div class="d-flex">' +
-                '<div class="toast-body">' + escapeHtml(message) + '</div>' +
-                '<button type="button" class="btn-close btn-close-white me-2 m-auto" ' +
-                        'data-bs-dismiss="toast" aria-label="Close"></button>' +
-            '</div>';
-        container.appendChild(t);
-        var toast = bootstrap.Toast.getOrCreateInstance(t, { delay: 5000 });
-        toast.show();
-        t.addEventListener('hidden.bs.toast', function () { t.remove(); });
+        if (typeof window.showCustomToast === 'function') {
+            window.showCustomToast('error', 'Lỗi', message);
+        } else {
+            var container = getOrCreateToastContainer();
+            var t = document.createElement('div');
+            t.className = 'toast align-items-center text-white bg-danger border-0';
+            t.setAttribute('role', 'alert');
+            t.setAttribute('aria-live', 'assertive');
+            t.setAttribute('aria-atomic', 'true');
+            t.innerHTML =
+                '<div class="d-flex">' +
+                    '<div class="toast-body">' + escapeHtml(message) + '</div>' +
+                    '<button type="button" class="btn-close btn-close-white me-2 m-auto" ' +
+                            'data-bs-dismiss="toast" aria-label="Close"></button>' +
+                '</div>';
+            container.appendChild(t);
+            var toast = bootstrap.Toast.getOrCreateInstance(t, { delay: 5000 });
+            toast.show();
+            t.addEventListener('hidden.bs.toast', function () { t.remove(); });
+        }
     }
 
     /* ─────────────────────────────────────────

@@ -5,6 +5,8 @@ using FUNewsTradingSystem_MVC.Extensions;
 using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
+using FUNewsTradingSystem_MVC.Hubs;
 
 namespace FUNewsTradingSystem_MVC.Controllers;
 
@@ -13,13 +15,16 @@ public class StaffController : Controller
 {
     private readonly ISystemAccountService _accountService;
     private readonly INewsArticleService _newsArticleService;
+    private readonly IHubContext<NotificationHub> _notificationHub;
 
     public StaffController(
         ISystemAccountService accountService,
-        INewsArticleService newsArticleService)
+        INewsArticleService newsArticleService,
+        IHubContext<NotificationHub> notificationHub)
     {
         _accountService = accountService;
         _newsArticleService = newsArticleService;
+        _notificationHub = notificationHub;
     }
 
     /// <summary>
@@ -98,6 +103,7 @@ public class StaffController : Controller
         if (result.Success)
         {
             TempData["NameSuccess"] = "Profile updated successfully.";
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "update", "Cập Nhật Thành Công", $"Tài khoản nhân viên đã cập nhật tên thành công.");
         }
         else
         {

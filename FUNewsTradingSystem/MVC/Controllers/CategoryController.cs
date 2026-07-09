@@ -5,6 +5,8 @@ using FUNewsTradingSystem_MVC.ViewModels.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
+using FUNewsTradingSystem_MVC.Hubs;
 
 namespace FUNewsTradingSystem_MVC.Controllers
 {
@@ -13,10 +15,12 @@ namespace FUNewsTradingSystem_MVC.Controllers
     public class CategoryController : Controller
     {
         private readonly ICategoryService _categoryService;
+        private readonly IHubContext<NotificationHub> _notificationHub;
 
-        public CategoryController(ICategoryService categoryService)
+        public CategoryController(ICategoryService categoryService, IHubContext<NotificationHub> notificationHub)
         {
             _categoryService = categoryService;
+            _notificationHub = notificationHub;
         }
 
         // GET /Staff/Categories
@@ -72,7 +76,11 @@ namespace FUNewsTradingSystem_MVC.Controllers
             }
 
             var result = await _categoryService.CreateCategoryAsync(category);
-            if (result) return Ok(new { success = true, message = "Created successfully!" });
+            if (result)
+            {
+                await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "create", "Tạo Mới Thành Công", $"Danh mục '{category.CategoryName}' đã được tạo thành công trên hệ thống.");
+                return Ok(new { success = true, message = "Created successfully!" });
+            }
             return BadRequest(new { success = false, message = "Failed to create category." });
         }
 
@@ -108,7 +116,11 @@ namespace FUNewsTradingSystem_MVC.Controllers
             }
 
             var result = await _categoryService.UpdateCategoryAsync(category);
-            if (result) return Ok(new { success = true, message = "Updated successfully!" });
+            if (result)
+            {
+                await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "update", "Cập Nhật Thành Công", $"Danh mục '{category.CategoryName}' đã được cập nhật thành công.");
+                return Ok(new { success = true, message = "Updated successfully!" });
+            }
             return BadRequest(new { success = false, message = "Failed to update category." });
         }
 
@@ -118,6 +130,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
         public async Task<IActionResult> ToggleActive(int id)
         {
             var newStatus = await _categoryService.ToggleActiveAsync(id);
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "update", "Cập Nhật Thành Công", $"Danh mục ID {id} đã thay đổi trạng thái.");
             return Ok(new { success = true, newIsActive = newStatus });
         }
 
@@ -127,7 +140,11 @@ namespace FUNewsTradingSystem_MVC.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _categoryService.DeleteCategoryAsync(id);
-            if (result) return Ok(new { success = true, message = "Deleted successfully!" });
+            if (result)
+            {
+                await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "delete", "Xóa Thành Công", $"Danh mục ID {id} đã bị xóa khỏi hệ thống.");
+                return Ok(new { success = true, message = "Deleted successfully!" });
+            }
             return BadRequest(new { success = false, message = "Cannot delete: category has linked articles." });
         }
     }

@@ -3,6 +3,8 @@ using FUNewsTradingSystem_DataAccessLayer.Models;
 using FUNewsTradingSystem_MVC.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using FUNewsTradingSystem_MVC.Hubs;
 
 namespace FUNewsTradingSystem_MVC.Controllers;
 
@@ -11,10 +13,12 @@ namespace FUNewsTradingSystem_MVC.Controllers;
 public class TagController : Controller
 {
     private readonly ITagService _tagService;
+    private readonly IHubContext<NotificationHub> _notificationHub;
 
-    public TagController(ITagService tagService)
+    public TagController(ITagService tagService, IHubContext<NotificationHub> notificationHub)
     {
         _tagService = tagService;
+        _notificationHub = notificationHub;
     }
 
     [HttpGet("")]
@@ -43,6 +47,7 @@ public class TagController : Controller
         try
         {
             await _tagService.CreateTagAsync(tag);
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "create", "Tạo Mới Thành Công", $"Tag '{tag.TagName}' đã được tạo thành công trên hệ thống.");
 
             return Ok(new
             {
@@ -77,6 +82,7 @@ public class TagController : Controller
         try
         {
             await _tagService.UpdateTagAsync(tag);
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "update", "Cập Nhật Thành Công", $"Tag '{tag.TagName}' đã được cập nhật thành công.");
 
             return Ok(new
             {
@@ -101,6 +107,7 @@ public class TagController : Controller
         try
         {
             await _tagService.DeleteTagAsync(id);
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "delete", "Xóa Thành Công", $"Tag ID {id} đã bị xóa khỏi hệ thống.");
 
             return Ok(new
             {

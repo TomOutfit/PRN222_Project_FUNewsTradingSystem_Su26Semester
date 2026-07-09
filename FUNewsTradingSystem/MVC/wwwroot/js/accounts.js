@@ -50,7 +50,8 @@ function submitCreateForm() {
         headers: { "RequestVerificationToken": getAntiforgeryToken() },
         success: function (res) {
             if (res.success) {
-                location.reload();
+                getAccountModal().hide();
+                refreshAccountTable();
             } else {
                 var errHtml = res.errors ? res.errors.join('<br/>') : (res.message || 'Error creating account.');
                 $('#createErrors').html(errHtml).removeClass('d-none');
@@ -101,7 +102,8 @@ function submitEditForm() {
         headers: { "RequestVerificationToken": getAntiforgeryToken() },
         success: function (res) {
             if (res.success) {
-                location.reload();
+                getAccountModal().hide();
+                refreshAccountTable();
             } else {
                 var errHtml = res.errors ? res.errors.join('<br/>') : (res.message || 'Error updating account.');
                 $('#editErrors').html(errHtml).removeClass('d-none');
@@ -133,7 +135,8 @@ function executeDelete() {
         headers: { "RequestVerificationToken": token },
         success: function (res) {
             if (res.success) {
-                location.reload();
+                deleteModal.hide();
+                refreshAccountTable();
             } else {
                 $('#deleteErrors').text(res.message || 'Failed to delete account.').removeClass('d-none');
             }
@@ -142,4 +145,12 @@ function executeDelete() {
             $('#deleteErrors').text('An unexpected error occurred during deletion.').removeClass('d-none');
         }
     });
+}
+
+function refreshAccountTable() {
+    if (typeof window.refreshPageContentRealtime === 'function') {
+        window.refreshPageContentRealtime();
+    } else {
+        location.reload();
+    }
 }

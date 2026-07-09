@@ -37,7 +37,13 @@
                     hideActiveModal();
                     showToast(successMessage || 'Operation successful.', false);
                     if (reloadOnSuccess !== false) {
-                        setTimeout(function () { location.reload(); }, 500);
+                        setTimeout(function () {
+                            if (typeof window.refreshPageContentRealtime === 'function') {
+                                window.refreshPageContentRealtime();
+                            } else {
+                                location.reload();
+                            }
+                        }, 500);
                     }
                 } else {
                     showInlineError(form, data.errorMessage || 'An error occurred.');

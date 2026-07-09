@@ -89,8 +89,15 @@
         })
         .then(response => {
             if (response.ok) {
-                // Nếu xóa thành công, tiến hành reload lại trang để cập nhật danh sách
-                window.location.reload();
+                var modalElement = document.getElementById('confirmDeleteModal');
+                var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) modalInstance.hide();
+
+                if (typeof window.refreshPageContentRealtime === 'function') {
+                    window.refreshPageContentRealtime();
+                } else {
+                    window.location.reload();
+                }
             } else {
                 return response.json().then(data => {
                     throw new Error(data.message || "An error occurred while trying to delete this item.");
