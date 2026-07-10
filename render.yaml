@@ -1,0 +1,48 @@
+# OnRender deployment configuration for FUNewsTradingSystem
+# https://render.com/docs/deploys
+
+services:
+  - type: web
+    name: fnts
+    env: docker
+    region: singapore
+    plan: free
+
+    # Force ASP.NET Core to run in Production mode so it loads appsettings.Production.json
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_HTTP_PORTS
+        value: "8080"
+
+      # ── PostgreSQL (OnRender Free Tier) ────────────────────────────────────
+      # Paste your Internal Database URL from the PostgreSQL Overview page
+      # (format: postgres://user:password@host:port/dbname)
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+
+      # ── Admin Account ───────────────────────────────────────────────────
+      - key: AdminAccount__Email
+        value: admin@FUNewsTradingSystem.org
+      - key: AdminAccount__Password
+        value: "@@abc123@@"
+      - key: AdminAccount__Name
+        value: "System Admin"
+
+      # ── News API ────────────────────────────────────────────────────────
+      - key: NewsApi__ApiKey
+        sync: false
+      - key: NewsApi__BaseUrl
+        value: "https://newsapi.org/v2/everything"
+
+      # ── OpenAI (EnableMock=false → real AI pipeline) ────────────────────
+      - key: OpenAI__ApiKey
+        sync: false
+      - key: OpenAI__BaseUrl
+        value: "https://api.openai.com/v1/chat/completions"
+      - key: OpenAI__Model
+        value: "gpt-4o"
+      - key: OpenAI__EnableMock
+        value: "false"
+
+

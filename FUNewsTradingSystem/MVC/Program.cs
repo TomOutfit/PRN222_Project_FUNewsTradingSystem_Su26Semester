@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using FUNewsTradingSystem_DataAccessLayer.Models;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
 // ─────────────────────────────────────────────
@@ -27,8 +28,51 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // ─────────────────────────────────────────────
 // 1.5 Database Configuration
 // ─────────────────────────────────────────────
+string MaskConnectionString(string? connStr)
+{
+    if (string.IsNullOrEmpty(connStr)) return "";
+    var masked = System.Text.RegularExpressions.Regex.Replace(connStr, @"(postgres(?:ql)?://[^:]+:)([^@]+)(@)", "$1******$3");
+    masked = System.Text.RegularExpressions.Regex.Replace(masked, @"Password=[^;]+", "Password=******", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    masked = System.Text.RegularExpressions.Regex.Replace(masked, @"pwd=[^;]+", "pwd=******", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    return masked;
+}
+
+string ConvertPostgresUrlToConnectionString(string? url)
+{
+    if (string.IsNullOrEmpty(url)) return "";
+    if (!url.StartsWith("postgres://") && !url.StartsWith("postgresql://"))
+    {
+        return url;
+    }
+    var uri = new Uri(url);
+    var userInfo = uri.UserInfo.Split(':');
+    var username = userInfo[0];
+    var password = userInfo.Length > 1 ? userInfo[1] : "";
+    var host = uri.Host;
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    var database = uri.AbsolutePath.TrimStart('/');
+    return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+}
+
 builder.Services.AddDbContext<FUNewsManagementContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var env = builder.Environment.EnvironmentName;
+    
+    Console.WriteLine($"[DIAGNOSTIC] Environment: '{env}'");
+    Console.WriteLine($"[DIAGNOSTIC] Loaded Connection String (Masked): '{MaskConnectionString(connectionString)}'");
+    
+    if (env == "Production")
+    {
+        connectionString = ConvertPostgresUrlToConnectionString(connectionString);
+        Console.WriteLine($"[DIAGNOSTIC] Converted Connection String (Masked): '{MaskConnectionString(connectionString)}'");
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
 
 // ─────────────────────────────────────────────
 // 2. Authorization — Role-based policies

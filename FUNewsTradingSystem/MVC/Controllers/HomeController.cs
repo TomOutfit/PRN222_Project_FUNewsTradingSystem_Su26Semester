@@ -21,7 +21,14 @@ namespace FUNewsTradingSystem_MVC.Controllers
         public IActionResult Error(int? statusCode)
         {
             var model = new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier };
-            if (statusCode.HasValue)
+            
+            var exceptionHandlerPathFeature = HttpContext.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+            if (exceptionHandlerPathFeature?.Error != null)
+            {
+                var ex = exceptionHandlerPathFeature.Error;
+                ViewData["Message"] = $"[Exception] {ex.Message}{(ex.InnerException != null ? " -> " + ex.InnerException.Message : "")}";
+            }
+            else if (statusCode.HasValue)
             {
                 ViewData["StatusCode"] = statusCode.Value;
                 if (statusCode.Value == 404)
