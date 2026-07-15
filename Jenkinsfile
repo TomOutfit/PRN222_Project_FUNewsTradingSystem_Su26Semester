@@ -69,14 +69,23 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    echo 'Scanning for test projects...'
-                    // Currently no test projects in this solution.
-                    // If you add a test project in the future, you can uncomment the lines below:
-                    // if (isUnix()) {
-                    //     sh "dotnet test ${env.SLN_FILE} --configuration ${env.BUILD_CONFIGURATION} --no-build --verbosity normal"
-                    // } else {
-                    //     bat "dotnet test ${env.SLN_FILE} --configuration ${env.BUILD_CONFIGURATION} --no-build --verbosity normal"
-                    // }
+                    echo 'Scanning and running test projects...'
+                    if (isUnix()) {
+                        sh "dotnet test ${env.SLN_FILE} --configuration ${env.BUILD_CONFIGURATION} --no-build --verbosity normal --logger \"trx;LogFileName=test-results.trx\" --results-directory TestResults"
+                    } else {
+                        bat "dotnet test ${env.SLN_FILE} --configuration ${env.BUILD_CONFIGURATION} --no-build --verbosity normal --logger \"trx;LogFileName=test-results.trx\" --results-directory TestResults"
+                    }
+                }
+            }
+            post {
+                always {
+                    script {
+                        try {
+                            mstest testResultsFile: '**/TestResults/*.trx', keepLongStdio: true
+                        } catch (Exception e) {
+                            echo "No test results (.trx) found or MSTest plugin is not installed: ${e.getMessage()}"
+                        }
+                    }
                 }
             }
         }
@@ -111,7 +120,6 @@ pipeline {
 
     post {
         always {
-            cleanWs()
             echo 'Pipeline execution completed.'
         }
         success {
@@ -119,6 +127,12 @@ pipeline {
         }
         failure {
             echo 'Build failed. Please check the logs above.'
+        }
+        unstable {
+            echo 'Pipeline completed with test failures (unstable).'
+        }
+        cleanup {
+            cleanWs()
         }
     }
 }

@@ -62,6 +62,7 @@ public class ReportController : Controller
             Headline = a.Headline,
             CreatedDate = a.CreatedDate,
             CategoryName = a.Category?.CategoryName ?? "General",
+            ConfidenceScore = a.ConfidenceScore ?? 0,
             TagNames = a.NewsTagList
                 .Select(t => t.Tag.TagName)
                 .ToList()
@@ -96,6 +97,7 @@ public class ReportController : Controller
             CategoryName = article.Category?.CategoryName ?? "General",
             CreatedById = article.CreatedByID ?? 0,
             CreatedByName = article.CreatedByAccount?.AccountName ?? "Deleted User",
+            ConfidenceScore = article.ConfidenceScore ?? 0,
             Tags = article.NewsTagList
                 .Select(t => t.Tag.TagName)
                 .ToList()

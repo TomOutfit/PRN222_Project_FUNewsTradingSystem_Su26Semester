@@ -65,6 +65,7 @@ CREATE TABLE "NewsArticle" (
     "CreatedByID" INTEGER,
     "UpdatedByID" INTEGER,
     "ModifiedDate" TIMESTAMP,
+    "ConfidenceScore" INTEGER,
     CONSTRAINT "FK_NewsArticle_Category" FOREIGN KEY ("CategoryID")
         REFERENCES "Category"("CategoryID")
         ON DELETE NO ACTION,
@@ -492,7 +493,7 @@ BEGIN
 
         INSERT INTO "NewsArticle"
             ("NewsTitle", "Headline", "CreatedDate", "NewsContent", "NewsSource",
-             "CategoryID", "NewsStatus", "CreatedByID", "UpdatedByID", "ModifiedDate")
+             "CategoryID", "NewsStatus", "CreatedByID", "UpdatedByID", "ModifiedDate", "ConfidenceScore")
         VALUES (
             '[' || v_decision || '] ' || v_tag_name || ' Automated Analysis',
             v_decision || ' signal generated for ' || v_tag_name || ' based on synthesized sentiment and fundamental review.',
@@ -503,7 +504,8 @@ BEGIN
             v_is_active,
             v_creator_id,
             CASE WHEN v_creator_id IS NOT NULL AND RANDOM() < 0.20 THEN v_creator_id ELSE NULL END,
-            CASE WHEN v_creator_id IS NOT NULL AND RANDOM() < 0.20 THEN v_created_date + INTERVAL '30 minutes' ELSE NULL END
+            CASE WHEN v_creator_id IS NOT NULL AND RANDOM() < 0.20 THEN v_created_date + INTERVAL '30 minutes' ELSE NULL END,
+            70 + FLOOR(RANDOM() * 31)::INTEGER
         );
 
         v_news_article_id := LASTVAL();
