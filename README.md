@@ -2,8 +2,8 @@
 
 An automated, AI-powered trading analysis web application built with **ASP.NET Core MVC** (.NET 10). The system fetches real-time market news via NewsAPI and uses OpenAI LLMs to perform sentiment and fundamental analysis, ultimately producing actionable portfolio decisions — **BUY**, **SELL**, or **HOLD**.
 
-**Live Application:** [https://prn222-project-funewstradingsystem.onrender.com/](https://prn222-project-funewstradingsystem.onrender.com/)
-
+**Live Application:** 
+https://funewstradingsystem.onrender.com
 ---
 
 ## Table of Contents
