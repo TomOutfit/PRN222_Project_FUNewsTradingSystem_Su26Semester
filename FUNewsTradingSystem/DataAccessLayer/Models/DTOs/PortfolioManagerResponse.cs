@@ -7,5 +7,6 @@ namespace FUNewsTradingSystem_DataAccessLayer.Models.DTOs
         public string Headline { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public string Source { get; set; } = string.Empty;
+        public int ConfidenceScore { get; set; }
     }
 }

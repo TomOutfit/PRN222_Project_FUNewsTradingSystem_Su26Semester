@@ -1,4 +1,4 @@
-﻿namespace FUNewsTradingSystem_DataAccessLayer.Models;
+namespace FUNewsTradingSystem_DataAccessLayer.Models;
 
 public class NewsArticle
 {
@@ -13,6 +13,7 @@ public class NewsArticle
     public int? CreatedByID { get; set; }
     public int? UpdatedByID { get; set; }
     public DateTime? ModifiedDate { get; set; }
+    public int? ConfidenceScore { get; set; }
 
     public Category Category { get; set; } = null!;
     public SystemAccount? CreatedByAccount { get; set; }
