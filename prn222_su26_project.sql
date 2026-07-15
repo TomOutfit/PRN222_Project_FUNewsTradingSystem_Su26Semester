@@ -74,6 +74,7 @@ CREATE TABLE NewsArticle (
     CreatedByID INT NULL,
     UpdatedByID INT NULL,
     ModifiedDate DATETIME NULL,
+    ConfidenceScore INT NULL,
     CONSTRAINT PK_NewsArticle PRIMARY KEY (NewsArticleID),
     CONSTRAINT FK_NewsArticle_Category FOREIGN KEY (CategoryID) 
         REFERENCES Category(CategoryID) 
@@ -549,7 +550,7 @@ BEGIN
 
     INSERT INTO NewsArticle
         (NewsTitle, Headline, CreatedDate, NewsContent, NewsSource,
-         CategoryID, NewsStatus, CreatedByID, UpdatedByID, ModifiedDate)
+         CategoryID, NewsStatus, CreatedByID, UpdatedByID, ModifiedDate, ConfidenceScore)
     VALUES
         (
             '[' + @Decision + '] ' + @TagName + ' Automated Analysis',
@@ -565,7 +566,8 @@ BEGIN
             CASE WHEN @CreatorId IS NOT NULL AND ABS(CHECKSUM(NEWID())) % 100 < 20
                  THEN @CreatorId ELSE NULL END,
             CASE WHEN @CreatorId IS NOT NULL AND ABS(CHECKSUM(NEWID())) % 100 < 20
-                 THEN DATEADD(MINUTE, 30, @CreatedDate) ELSE NULL END
+                 THEN DATEADD(MINUTE, 30, @CreatedDate) ELSE NULL END,
+            ABS(CHECKSUM(NEWID())) % 31 + 70 -- random confidence score between 70 and 100
         );
 
     SET @NewsArticleID = SCOPE_IDENTITY();
