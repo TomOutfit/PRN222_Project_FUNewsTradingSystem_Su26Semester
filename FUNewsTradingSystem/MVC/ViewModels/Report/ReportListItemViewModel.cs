@@ -10,4 +10,5 @@ public class ReportListItemViewModel
     public IEnumerable<string> TagNames { get; set; } = Enumerable.Empty<string>();
     public bool NewsStatus { get; set; }
     public string Decision { get; set; } = string.Empty;
+    public int ConfidenceScore { get; set; }
 }

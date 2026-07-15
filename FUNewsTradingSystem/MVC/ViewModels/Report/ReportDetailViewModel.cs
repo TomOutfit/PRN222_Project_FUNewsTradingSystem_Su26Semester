@@ -17,6 +17,7 @@ public class ReportDetailViewModel
     public string? UpdatedByName { get; set; }
     public bool NewsStatus { get; set; }
     public string Decision { get; set; } = string.Empty;
+    public int ConfidenceScore { get; set; }
     public IEnumerable<string> TagNames { get; set; } = Enumerable.Empty<string>();
     public List<string> Tags { get; set; } = new();
 }
