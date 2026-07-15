@@ -202,14 +202,14 @@ INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES (3, 1);  -- AAPL
 INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES (4, 6);  -- BTC
 INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES (5, 11); -- PFE
 
-RAISE NOTICE 'FUNewsTradingSystem Database Schema and Seed Data deployed successfully!';
+-- RAISE NOTICE 'FUNewsTradingSystem Database Schema and Seed Data deployed successfully!';
 
 -- =====================================================================================
 -- BULK TEST DATA EXPANSION
 -- Purpose: Test pagination, admin statistics, staff report history, and filtering
 -- =====================================================================================
 
-RAISE NOTICE '=== BULK SEED: Starting...';
+-- RAISE NOTICE '=== BULK SEED: Starting...';
 
 -- =====================================================================================
 -- SECTION A — BULK ACCOUNTS (80 Staff + 40 Lecturer = 120)
@@ -248,7 +248,7 @@ FROM names
 WHERE r <= 120;
 
 
-RAISE NOTICE 'Section A done: accounts added.';
+-- RAISE NOTICE 'Section A done: accounts added.';
 
 -- =====================================================================================
 -- SECTION B — BULK CATEGORIES
@@ -356,7 +356,7 @@ INSERT INTO "Category" ("CategoryName", "CategoryDescription", "ParentCategoryID
 SELECT 'Mining & Metals', 'Metal ore extraction and processing', c."CategoryID", TRUE
 FROM "Category" c WHERE c."CategoryName" = 'Materials';
 
-RAISE NOTICE 'Section B done: categories added.';
+-- RAISE NOTICE 'Section B done: categories added.';
 
 -- =====================================================================================
 -- SECTION C — BULK TAGS (90+ new tickers)
@@ -370,7 +370,7 @@ FROM (VALUES
     ('COST','Costco Wholesale Corporation'), ('HD','The Home Depot, Inc.'), ('LOW','Lowe''s Companies, Inc.'),
     ('BA','The Boeing Company'), ('GE','General Electric Company'), ('CAT','Caterpillar Inc.'),
     ('MMM','3M Company'), ('IBM','International Business Machines Corporation'), ('INTC','Intel Corporation'),
-    ('AMD','Advanced Micro Devices, Inc.'), ('QCOM','Qualcomm Incorporated'), ('ORCL','Oracle Corporation'),
+    ('AMD','Advanced Micro Devices, Inc.'), ('QCOM','QualCOMM Incorporated'), ('ORCL','Oracle Corporation'),
     ('CRM','Salesforce, Inc.'), ('ADBE','Adobe Inc.'), ('PYPL','PayPal Holdings, Inc.'),
     ('V','Visa Inc.'), ('MA','Mastercard Incorporated'), ('BAC','Bank of America Corporation'),
     ('WFC','Wells Fargo & Company'), ('GS','The Goldman Sachs Group, Inc.'), ('MS','Morgan Stanley'),
@@ -398,7 +398,7 @@ FROM (VALUES
 ) AS v("TagName", "Note")
 WHERE NOT EXISTS (SELECT 1 FROM "Tag" t WHERE t."TagName" = v."TagName");
 
-RAISE NOTICE 'Section C done: tags added.';
+-- RAISE NOTICE 'Section C done: tags added.';
 
 -- =====================================================================================
 -- SECTION D — BULK NEWS ARTICLES + NEWS TAGS
@@ -519,7 +519,7 @@ BEGIN
     END LOOP;
 END $$;
 
-RAISE NOTICE 'Section D done: NewsArticle + NewsTag added.';
+-- RAISE NOTICE 'Section D done: NewsArticle + NewsTag added.';
 
 -- =====================================================================================
 -- SECTION E — VERIFICATION QUERIES
@@ -542,4 +542,4 @@ GROUP BY a."AccountName"
 ORDER BY report_count DESC
 LIMIT 10;
 
-RAISE NOTICE '=== BULK SEED COMPLETE ===';
+-- RAISE NOTICE '=== BULK SEED COMPLETE ===';
