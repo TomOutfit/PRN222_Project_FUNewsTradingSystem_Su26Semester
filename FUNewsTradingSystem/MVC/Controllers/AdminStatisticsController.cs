@@ -75,6 +75,51 @@ namespace FUNewsTradingSystem_MVC.Controllers
 
             var articles = await _newsArticleService.GetByDateRangeAsync(startUtc, endUtc);
 
+            int buyCount = 0;
+            int sellCount = 0;
+            int holdCount = 0;
+            var sectorCounts = new Dictionary<string, int>();
+            
+            double totalConfidence = 0;
+            double buyConfidence = 0;
+            double sellConfidence = 0;
+            double holdConfidence = 0;
+
+            foreach (var a in articles)
+            {
+                var title = a.NewsTitle ?? "";
+                string decision = "HOLD";
+                if (title.StartsWith("[BUY]")) decision = "BUY";
+                else if (title.StartsWith("[SELL]")) decision = "SELL";
+                else if (title.StartsWith("[HOLD]")) decision = "HOLD";
+
+                if (decision == "BUY") buyCount++;
+                else if (decision == "SELL") sellCount++;
+                else holdCount++;
+
+                var sector = a.Category?.CategoryName ?? "Unknown";
+                if (!sectorCounts.ContainsKey(sector))
+                {
+                    sectorCounts[sector] = 0;
+                }
+                sectorCounts[sector]++;
+
+                int confidence = a.ConfidenceScore ?? 0;
+                totalConfidence += confidence;
+                if (decision == "BUY") buyConfidence += confidence;
+                else if (decision == "SELL") sellConfidence += confidence;
+                else holdConfidence += confidence;
+            }
+
+            vm.BuyCount = buyCount;
+            vm.SellCount = sellCount;
+            vm.HoldCount = holdCount;
+            vm.SectorCounts = sectorCounts;
+            vm.AverageConfidence = articles.Count > 0 ? Math.Round(totalConfidence / articles.Count, 1) : 0;
+            vm.BuyAverageConfidence = buyCount > 0 ? Math.Round(buyConfidence / buyCount, 1) : 0;
+            vm.SellAverageConfidence = sellCount > 0 ? Math.Round(sellConfidence / sellCount, 1) : 0;
+            vm.HoldAverageConfidence = holdCount > 0 ? Math.Round(holdConfidence / holdCount, 1) : 0;
+
             var results = articles.OrderByDescending(a => a.CreatedDate).Select(a => new NewsArticleStatDto
             {
                 NewsArticleID = a.NewsArticleID,
@@ -82,7 +127,9 @@ namespace FUNewsTradingSystem_MVC.Controllers
                 Headline = a.Headline,
                 CreatedDate = a.CreatedDate,
                 CategoryName = a.Category?.CategoryName ?? "Unknown",
-                CreatedByName = a.CreatedByAccount?.AccountName ?? "Deleted User"
+                CreatedByName = a.CreatedByAccount?.AccountName ?? "Deleted User",
+                ConfidenceScore = a.ConfidenceScore ?? 0,
+                Decision = a.NewsTitle.StartsWith("[BUY]") ? "BUY" : (a.NewsTitle.StartsWith("[SELL]") ? "SELL" : "HOLD")
             }).ToPagedList(pageNumber, pageSize);
 
             vm.Results = results;
