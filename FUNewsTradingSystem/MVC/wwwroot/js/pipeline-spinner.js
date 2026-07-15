@@ -1,6 +1,5 @@
 /**
- * pipeline-spinner.js — Handles the AI Trading Pipeline loading UI
- * Controls spinner visibility and button state during async analysis.
+ * pipeline-spinner.js — Handles the AI Trading Pipeline loading UI with premium transition curves
  */
 
 (function () {
@@ -13,28 +12,54 @@
     function setLoading(show) {
         var spinner = document.getElementById('loadingSpinner');
         var btn = document.getElementById('btnRunAnalysis');
+        
         if (spinner) {
-            spinner.className = show ? 'text-center mt-4' : 'd-none text-center mt-4';
+            if (show) {
+                spinner.className = 'text-center mt-4 animate-fade-in-up';
+                spinner.style.animationDuration = '0.4s';
+            } else {
+                spinner.className = 'd-none text-center mt-4';
+            }
         }
+        
         if (btn) {
             btn.disabled = show;
             var btnText = document.getElementById('btnText');
             if (btnText) {
                 btnText.textContent = show ? 'Analyzing...' : 'Run Analysis';
             }
+            
+            if (show) {
+                btn.style.transform = 'scale(0.97)';
+            } else {
+                btn.style.transform = '';
+            }
         }
     }
 
     /**
-     * Display the pipeline result in the result area.
+     * Display the pipeline result in the result area with elastic entrance animation.
      * @param {'success'|'error'} type
      * @param {string} htmlContent
      */
     function showResult(type, htmlContent) {
         var area = document.getElementById('resultArea');
         if (!area) return;
-        area.className = 'mt-4 alert ' + (type === 'success' ? 'alert-success' : 'alert-danger');
+        
+        if (!htmlContent) {
+            area.style.opacity = '0';
+            area.style.transform = 'translateY(10px)';
+            return;
+        }
+
+        area.className = 'mt-4 alert ' + (type === 'success' ? 'alert-success glow-on-appear' : 'alert-danger') + ' animate-fade-in-up';
+        area.style.animationDuration = '0.5s';
         area.innerHTML = htmlContent;
+        
+        requestAnimationFrame(function() {
+            area.style.opacity = '1';
+            area.style.transform = 'translateY(0)';
+        });
     }
 
     /**
