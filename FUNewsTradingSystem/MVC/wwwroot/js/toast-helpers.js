@@ -1,12 +1,5 @@
 /**
- * toast-helpers.js — Bootstrap Toast notification helpers
- *
- * Public API:
- *   ToastHelpers.showSuccess(message)  — green toast, auto-dismiss 3 s
- *   ToastHelpers.showError(message)    — red toast, auto-dismiss 5 s
- *
- * Both create a fixed-position toast container at bottom-right if one
- * does not already exist, and remove the toast element after it hides.
+ * toast-helpers.js — Bootstrap Toast notification helpers (60fps Spring Animations Edition)
  */
 
 (function () {
@@ -38,23 +31,28 @@
     }
 
     /* ─────────────────────────────────────────
-       Core toast builder
-       @param {string} message
-       @param {string} bgClass   — Bootstrap bg-* utility class  e.g. "bg-success"
-       @param {number} delayMs
+       Core toast builder with Elastic Spring Slide-in
        ───────────────────────────────────────── */
     function showToast(message, bgClass, delayMs) {
         var container = getOrCreateContainer();
 
         var toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-white ' + bgClass + ' border-0';
+        toast.className = 'toast align-items-center text-white ' + bgClass + ' border-0 shadow-lg';
         toast.setAttribute('role', 'alert');
         toast.setAttribute('aria-live', 'assertive');
         toast.setAttribute('aria-atomic', 'true');
 
+        // Định hình style cho hiệu ứng trượt nảy mượt mà từ bên ngoài màn hình
+        toast.style.transform = 'translateX(100%)';
+        toast.style.opacity = '0';
+        toast.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease';
+
         toast.innerHTML =
             '<div class="d-flex">' +
-                '<div class="toast-body fw-medium">' + escapeHtml(message) + '</div>' +
+                '<div class="toast-body fw-semibold d-flex align-items-center">' + 
+                    (bgClass.includes('success') ? '<i class="bi bi-check-circle-fill me-2 fs-5"></i>' : '<i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>') +
+                    escapeHtml(message) + 
+                '</div>' +
                 '<button type="button" class="btn-close btn-close-white me-2 m-auto"' +
                         ' data-bs-dismiss="toast" aria-label="Close"></button>' +
             '</div>';
@@ -63,6 +61,12 @@
 
         var bsToast = bootstrap.Toast.getOrCreateInstance(toast, { delay: delayMs });
         bsToast.show();
+
+        // Kích hoạt hoạt ảnh Spring ngay trên GPU Frame tiếp theo
+        requestAnimationFrame(() => {
+            toast.style.transform = 'translateX(0)';
+            toast.style.opacity = '1';
+        });
 
         toast.addEventListener('hidden.bs.toast', function () {
             toast.remove();

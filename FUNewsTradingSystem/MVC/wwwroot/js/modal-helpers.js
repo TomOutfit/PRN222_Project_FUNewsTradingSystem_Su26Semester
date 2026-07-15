@@ -1,12 +1,5 @@
 /**
- * modal-helpers.js — Shared Bootstrap modal utilities
- *
- * Public API:
- *   ModalHelpers.openModal(modalId)           — show a modal by its element ID
- *   ModalHelpers.closeModal(modalId)           — hide a modal by its element ID
- *   ModalHelpers.submitModalForm(formId, successCallback, errorCallback)
- *   ModalHelpers.confirmDelete(entityName, deleteUrl, csrfToken, successCallback)
- *   ModalHelpers.escapeHtml(text)             — XSS-safe text helper
+ * modal-helpers.js — Shared Bootstrap modal utilities with Premium Micro-interactions
  */
 
 (function () {
@@ -30,6 +23,13 @@
         return c;
     }
 
+    function shakeElement(element) {
+        if (!element) return;
+        element.style.animation = 'none';
+        element.offsetHeight; /* Trigger reflow */
+        element.style.animation = 'shakeError 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both';
+    }
+
     /* ─────────────────────────────────────────
        showSuccess / showError  (toast wrappers)
        ───────────────────────────────────────── */
@@ -43,15 +43,25 @@
             t.setAttribute('role', 'alert');
             t.setAttribute('aria-live', 'assertive');
             t.setAttribute('aria-atomic', 'true');
+            t.style.transform = 'translateX(100%)';
+            t.style.opacity = '0';
+            t.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease';
+
             t.innerHTML =
                 '<div class="d-flex">' +
-                    '<div class="toast-body">' + escapeHtml(message) + '</div>' +
+                    '<div class="toast-body fw-medium">' + escapeHtml(message) + '</div>' +
                     '<button type="button" class="btn-close btn-close-white me-2 m-auto" ' +
                             'data-bs-dismiss="toast" aria-label="Close"></button>' +
                 '</div>';
             container.appendChild(t);
             var toast = bootstrap.Toast.getOrCreateInstance(t, { delay: 3000 });
             toast.show();
+
+            requestAnimationFrame(function() {
+                t.style.transform = 'translateX(0)';
+                t.style.opacity = '1';
+            });
+
             t.addEventListener('hidden.bs.toast', function () { t.remove(); });
         }
     }
@@ -66,15 +76,25 @@
             t.setAttribute('role', 'alert');
             t.setAttribute('aria-live', 'assertive');
             t.setAttribute('aria-atomic', 'true');
+            t.style.transform = 'translateX(100%)';
+            t.style.opacity = '0';
+            t.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease';
+
             t.innerHTML =
                 '<div class="d-flex">' +
-                    '<div class="toast-body">' + escapeHtml(message) + '</div>' +
+                    '<div class="toast-body fw-medium">' + escapeHtml(message) + '</div>' +
                     '<button type="button" class="btn-close btn-close-white me-2 m-auto" ' +
                             'data-bs-dismiss="toast" aria-label="Close"></button>' +
                 '</div>';
             container.appendChild(t);
             var toast = bootstrap.Toast.getOrCreateInstance(t, { delay: 5000 });
             toast.show();
+
+            requestAnimationFrame(function() {
+                t.style.transform = 'translateX(0)';
+                t.style.opacity = '1';
+            });
+
             t.addEventListener('hidden.bs.toast', function () { t.remove(); });
         }
     }
@@ -98,9 +118,6 @@
 
     /* ─────────────────────────────────────────
        submitModalForm
-       Submits the named form via AJAX JSON POST.
-       On success : close modal + call successCallback() (e.g. table refresh)
-       On error   : inject inline error into the modal
        ───────────────────────────────────────── */
     function submitModalForm(formId, successCallback, errorCallback) {
         var form = document.getElementById(formId);
@@ -110,10 +127,18 @@
             e.preventDefault();
             clearInlineError(form);
 
+            var submitBtn = form.querySelector('[type="submit"]');
+            var originalBtnHtml = '';
+            if (submitBtn) {
+                originalBtnHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.style.transform = 'scale(0.96)';
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+            }
+
             var url  = form.action || window.location.href;
             var data = {};
 
-            // Collect all named inputs / selects / textareas
             var elements = form.querySelectorAll('[name]');
             elements.forEach(function (el) {
                 if (el.name) data[el.name] = el.value;
@@ -134,13 +159,25 @@
                     closeActiveModal();
                     if (successCallback) successCallback(json);
                 } else {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.style.transform = '';
+                        submitBtn.innerHTML = originalBtnHtml;
+                    }
                     var msg = json.errorMessage || json.ErrorMessage || json.message || 'An error occurred.';
                     showInlineError(form, msg);
+                    shakeElement(form);
                     if (errorCallback) errorCallback(json);
                 }
             })
             .catch(function () {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.style.transform = '';
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
                 showInlineError(form, 'An unexpected network error occurred. Please try again.');
+                shakeElement(form);
                 if (errorCallback) errorCallback(null);
             });
         });
@@ -148,26 +185,21 @@
 
     /* ─────────────────────────────────────────
        confirmDelete
-       Populates _ConfirmDeleteModal with entity info,
-       shows it, and on confirm fires AJAX POST to deleteUrl.
        ───────────────────────────────────────── */
     function confirmDelete(entityName, deleteUrl, csrfToken, successCallback) {
         var modal = document.getElementById('_ConfirmDeleteModal');
         if (!modal) {
-            // Fallback: simple window.confirm
             if (window.confirm('Delete "' + escapeHtml(entityName) + '"?')) {
                 fireDelete(deleteUrl, csrfToken, successCallback);
             }
             return;
         }
 
-        // Populate entity name label
         var nameEl = modal.querySelector('[data-confirm-entity-name]') ||
                      modal.querySelector('.confirm-entity-name') ||
                      modal.querySelector('.entity-name-label');
         if (nameEl) nameEl.textContent = entityName;
 
-        // Store context on the modal for the confirm button handler
         modal.dataset.deleteUrl       = deleteUrl;
         modal.dataset.deleteCsrfToken = csrfToken || '';
         modal.dataset.deleteCallback  = successCallback ? 'true' : 'false';
@@ -176,7 +208,6 @@
         modalInstance.show();
     }
 
-    /* Binds _ConfirmDeleteModal confirm button after DOM is ready */
     function initConfirmDelete() {
         var modal = document.getElementById('_ConfirmDeleteModal');
         if (!modal) return;
@@ -229,7 +260,8 @@
     function showInlineError(form, message) {
         clearInlineError(form);
         var el = document.createElement('div');
-        el.className = 'alert alert-danger mt-3 mb-0 modal-inline-error';
+        el.className = 'alert alert-danger mt-3 mb-0 modal-inline-error animate-fade-in-up';
+        el.style.animationDuration = '0.3s';
         el.setAttribute('role', 'alert');
         el.innerHTML = escapeHtml(message);
         form.appendChild(el);
@@ -240,9 +272,6 @@
         if (existing) existing.remove();
     }
 
-    /* ─────────────────────────────────────────
-       Init & expose
-       ───────────────────────────────────────── */
     $(document).ready(function () {
         initConfirmDelete();
     });
