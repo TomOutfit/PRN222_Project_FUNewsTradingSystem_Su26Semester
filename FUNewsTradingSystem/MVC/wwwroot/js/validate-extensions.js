@@ -1,22 +1,19 @@
 /**
- * validate-extensions.js — jQuery Validate custom validators
- * Extends jquery-validation with domain-specific rules:
- *   - dateRange  : StartDate <= EndDate  (Statistics filter)
- *   - notSelf    : ParentCategoryID != CategoryID  (Category Edit)
- *   - passwordMatch : ConfirmPassword == NewPassword  (Profile Change Password)
- *
- * Usage:
- *   // Automatically wired on document ready when data-val-* attributes are present.
- *   // For explicit wiring call initValidateExtensions() after DOM is ready.
+ * validate-extensions.js — jQuery Validate custom validators (Premium Edition)
  */
 
 (function () {
     'use strict';
 
-    function escapeHtml(text) {
-        var el = document.createElement('span');
-        el.textContent = text;
-        return el.innerHTML;
+    // Trợ giúp rung lắc phần tử bị lỗi nhập liệu
+    function shakeElement(element) {
+        if (!element) return;
+        element.style.animation = 'none';
+        element.offsetHeight; /* Trigger browser reflow */
+        element.style.animation = 'shakeError 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both';
+        element.addEventListener('animationend', function() {
+            element.style.animation = '';
+        }, { once: true });
     }
 
     /* ─────────────────────────────────────────
@@ -33,13 +30,18 @@
 
         var startVal = startEl.value.trim();
         var endVal   = endEl.value.trim();
-        if (!startVal || !endVal) return true; // let required validator handle empty
+        if (!startVal || !endVal) return true; 
 
         var start = new Date(startVal);
         var end   = new Date(endVal);
         if (isNaN(start.getTime()) || isNaN(end.getTime())) return true;
 
-        return start <= end;
+        var isValid = start <= end;
+        if (!isValid) {
+            shakeElement(startEl);
+            shakeElement(endEl);
+        }
+        return isValid;
     }
 
     /* ─────────────────────────────────────────
@@ -58,7 +60,11 @@
 
         if (!parentVal || parentVal === '0' || parentVal === '') return true;
 
-        return parentVal !== currentId;
+        var isValid = parentVal !== currentId;
+        if (!isValid) {
+            shakeElement(parentSelect);
+        }
+        return isValid;
     }
 
     /* ─────────────────────────────────────────
@@ -72,13 +78,19 @@
                        form.querySelector('[name*="NewPassword"]');
         if (!newPwdEl) return true;
 
-        return value === newPwdEl.value;
+        var isValid = value === newPwdEl.value;
+        if (!isValid) {
+            shakeElement(element);
+        }
+        return isValid;
     }
 
     /* ─────────────────────────────────────────
        Init — wire validators + wire forms automatically
        ───────────────────────────────────────── */
     function initValidateExtensions() {
+        if (!$.validator) return;
+
         /* dateRange */
         $.validator.addMethod('dateRange', dateRangeValidator,
             'Start date must be before or equal to end date.');
@@ -95,12 +107,16 @@
             if ($start.length && $end.length) {
                 $form.validate().settings.rules['dateRange__dummy'] = true;
                 $form.on('submit', function (e) {
-                    if (!$form.valid()) return;
+                    if (!$form.valid()) {
+                        shakeElement($form[0]);
+                        return;
+                    }
                     var ok = dateRangeValidator(null, $end[0]);
                     if (!ok) {
                         $form.validate().showErrors({
                             'dateRange__dummy': 'Start date must be before or equal to end date.'
                         });
+                        shakeElement($form[0]);
                         e.preventDefault();
                     }
                 });
@@ -131,6 +147,23 @@
                 $confirm.rules('add', { passwordMatch: true });
             }
         });
+
+        // Tùy biến thông báo lỗi của jquery validate hiển thị lướt nhẹ mượt mà
+        var defaultOptions = $.validator.defaults;
+        defaultOptions.highlight = function (element) {
+            $(element).addClass('is-invalid').removeClass('is-valid');
+            var group = $(element).closest('.form-group, .mb-3');
+            if (group.length) {
+                group.addClass('animate-pulse-error');
+            }
+        };
+        defaultOptions.unhighlight = function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+            var group = $(element).closest('.form-group, .mb-3');
+            if (group.length) {
+                group.removeClass('animate-pulse-error');
+            }
+        };
     }
 
     /* Wire on document ready */
