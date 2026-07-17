@@ -84,7 +84,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
     /// <param name="createdByAccountId">AccountID of the Staff member triggering the pipeline.</param>
     /// <returns>A result object where <c>Success</c> is true and <c>NewsArticleID</c> is populated
     /// on success, or <c>Success</c> is false with an <c>ErrorMessage</c> on any failure.</returns>
-    public async Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId, Func<string, int, Task> onProgress = null)
+    public async Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId, Func<string, int, Task>? onProgress = null)
         {
             try
             {
@@ -224,15 +224,39 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             return string.Join("\n", numberedList);
         }
 
-        private string GenerateFallbackNewsHeadlines(string ticker, string companyName)
+        internal string GenerateFallbackNewsHeadlines(string ticker, string companyName)
         {
             var name = string.IsNullOrWhiteSpace(companyName) ? ticker : companyName;
-            return string.Join("\n", new[]
+            var rand = new Random();
+            var scenario = rand.Next(0, 3); // 0 = Positive, 1 = Negative, 2 = Neutral
+
+            if (scenario == 0)
             {
-                $"1. {name} ({ticker}) Reports Strong Quarterly Performance and Revenue Growth – Financial analysts highlight robust demand across core business divisions.",
-                $"2. Market Sentiment Surges for {ticker} Following Strategic Expansion Announcement – Investors react positively to management's long-term growth outlook and market positioning.",
-                $"3. Institutional Buyers Increase Stake in {ticker} Amidst Broader Market Rally – Wall Street upgrades target prices citing solid operational margins and balance sheet strength."
-            });
+                return string.Join("\n", new[]
+                {
+                    $"1. {name} ({ticker}) Reports Strong Quarterly Performance and Revenue Growth – Financial analysts highlight robust demand across core business divisions.",
+                    $"2. Market Sentiment Surges for {ticker} Following Strategic Expansion Announcement – Investors react positively to management's long-term growth outlook and market positioning.",
+                    $"3. Institutional Buyers Increase Stake in {ticker} Amidst Broader Market Rally – Wall Street upgrades target prices citing solid operational margins and balance sheet strength."
+                });
+            }
+            else if (scenario == 1)
+            {
+                return string.Join("\n", new[]
+                {
+                    $"1. {name} ({ticker}) Shares Decline as Supply Chain Constraints Impact Profit Margins – Analysts warn that rising logistical costs could pressure quarterly earnings.",
+                    $"2. Regulatory Scrutiny Intensifies for {ticker} Amid Compliance Inquiries – Regulatory agencies request additional operational audits, sparking investor anxiety.",
+                    $"3. Institutional Outflow Detected in {ticker} as Sector Rotation Accelerates – Market participants reduce exposure citing near-term macroeconomic headwinds and valuation premium."
+                });
+            }
+            else
+            {
+                return string.Join("\n", new[]
+                {
+                    $"1. {name} ({ticker}) Trades in Narrow Consolidation Range Ahead of Key Economic Data – Investors adopt wait-and-see stance pending macroeconomic catalysts.",
+                    $"2. {ticker} Announces Routine Management Restructuring and Board Reorganization – Board confirms transition plan is running on schedule with zero expected operational disruptions.",
+                    $"3. General Market Consolidation Limits Price Movement for {ticker} – Lower trading volume observed across major exchanges as asset remains rangebound."
+                });
+            }
         }
 
         private async Task<string> RunSentimentAgentAsync(string ticker, string headlines)
@@ -455,17 +479,114 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                    ex.Message.StartsWith("JSON_PARSE_ERROR", StringComparison.OrdinalIgnoreCase);
         }
 
-        private string GenerateMockSentimentOutput(string ticker, string headlines)
+        internal List<string> ExtractHeadlineTitles(string headlines)
         {
-            return $"Positive sentiment detected for {ticker} based on recent market communications and financial media coverage. Institutional order flow reflects constructive momentum with solid buying volume across major trading desks.";
+            var titles = new List<string>();
+            if (string.IsNullOrWhiteSpace(headlines)) return titles;
+
+            var lines = headlines.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                var cleanLine = Regex.Replace(line, @"^\d+\.\s*", "").Trim();
+                if (string.IsNullOrWhiteSpace(cleanLine)) continue;
+
+                var dashIndex = cleanLine.IndexOf(" – ");
+                if (dashIndex < 0) dashIndex = cleanLine.IndexOf(" - ");
+                if (dashIndex < 0) dashIndex = cleanLine.IndexOf(" — ");
+
+                string title = dashIndex >= 0 ? cleanLine.Substring(0, dashIndex).Trim() : cleanLine;
+                if (title.Length > 120) title = title.Substring(0, 117) + "...";
+                
+                if (!string.IsNullOrWhiteSpace(title))
+                {
+                    titles.Add(title);
+                }
+            }
+            return titles;
         }
 
-        private string GenerateMockFundamentalOutput(string ticker, string headlines, string sentimentOutput)
+        internal string DetermineSentimentTone(string headlines)
         {
-            return $"Core business metrics for {ticker} show sustained expansion, supported by strong operating margins and robust balance sheet liquidity. Earnings resilience and strategic market expansion continue to reinforce market leadership.";
+            if (string.IsNullOrWhiteSpace(headlines)) return "Positive";
+
+            var lower = headlines.ToLowerInvariant();
+            int positiveScore = 0;
+            int negativeScore = 0;
+
+            string[] posKeywords = { "rise", "surge", "gain", "grow", "bull", "rally", "up", "profit", "expansion", "buy", "success", "strong", "higher", "positive", "beat", "upgrade" };
+            foreach (var kw in posKeywords)
+            {
+                if (lower.Contains(kw)) positiveScore++;
+            }
+
+            string[] negKeywords = { "drop", "fall", "decline", "warn", "plummet", "bear", "lawsuit", "down", "loss", "lower", "negative", "risk", "investigate", "crash", "miss", "downgrade" };
+            foreach (var kw in negKeywords)
+            {
+                if (lower.Contains(kw)) negativeScore++;
+            }
+
+            if (negativeScore > positiveScore) return "Negative";
+            if (positiveScore > negativeScore) return "Positive";
+            
+            var rand = new Random().Next(0, 3);
+            return rand switch
+            {
+                0 => "Negative",
+                1 => "Neutral",
+                _ => "Positive"
+            };
         }
 
-        private PortfolioManagerResponse GenerateMockPortfolioManagerResponse(string ticker, string sentimentOutput, string fundamentalOutput)
+        internal string GenerateMockSentimentOutput(string ticker, string headlines)
+        {
+            var tone = DetermineSentimentTone(headlines);
+            var titles = ExtractHeadlineTitles(headlines);
+            var sb = new StringBuilder();
+
+            if (tone == "Positive")
+            {
+                sb.Append($"Positive market sentiment has built up around {ticker} recently. ");
+                if (titles.Count > 0)
+                {
+                    sb.Append($"Traders are reacting enthusiastically to reports such as \"{titles[0]}\", driving high-volume accumulation. ");
+                }
+                if (titles.Count > 1)
+                {
+                    sb.Append($"Furthermore, additional interest sparked by \"{titles[1]}\" has reinforced bullish momentum on short-term horizons. ");
+                }
+                sb.Append("Institutional order books display significant buying pressure with key support levels holding firmly.");
+            }
+            else if (tone == "Negative")
+            {
+                sb.Append($"Prevailing market sentiment for {ticker} has turned negative. ");
+                if (titles.Count > 0)
+                {
+                    sb.Append($"Selling pressure accelerated significantly in response to concerns in headlines, specifically \"{titles[0]}\". ");
+                }
+                if (titles.Count > 1)
+                {
+                    sb.Append($"Sentiment remains weighed down by concerns surrounding \"{titles[1]}\", prompting momentum traders to liquidate long positions. ");
+                }
+                sb.Append("Risk off behavior is dominating trading sessions with elevated volatility.");
+            }
+            else // Neutral
+            {
+                sb.Append($"Market sentiment for {ticker} is currently neutral or balanced. ");
+                if (titles.Count > 0)
+                {
+                    sb.Append($"Mixed reactions to news like \"{titles[0]}\" have kept the price in a consolidation range. ");
+                }
+                if (titles.Count > 1)
+                {
+                    sb.Append($"Market participants are carefully weighing the implications of \"{titles[1]}\" before committing to a clear direction. ");
+                }
+                sb.Append("Trading volume is average, indicating a wait-and-see attitude across major desks.");
+            }
+
+            return sb.ToString();
+        }
+
+        internal string GenerateMockFundamentalOutput(string ticker, string headlines, string sentimentOutput)
         {
             var decision = "BUY";
             if (sentimentOutput.Contains("negative", StringComparison.OrdinalIgnoreCase))
@@ -477,14 +598,83 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 decision = "HOLD";
             }
 
+            var titles = ExtractHeadlineTitles(headlines);
+            var sb = new StringBuilder();
+
+            if (decision == "BUY")
+            {
+                sb.Append($"From a fundamental perspective, {ticker} exhibits robust operational health and strong revenue drivers. ");
+                if (titles.Count > 2)
+                {
+                    sb.Append($"Developments like \"{titles[2]}\" point to increased market share and enhanced competitive advantages. ");
+                }
+                else if (titles.Count > 0)
+                {
+                    sb.Append($"Strategic developments highlighted in \"{titles[0]}\" support sustained long-term earnings expansion. ");
+                }
+                sb.Append("Balance sheet liquidity remains healthy, supporting continuous business expansion and capital efficiency.");
+            }
+            else if (decision == "SELL")
+            {
+                sb.Append($"Fundamental headwinds are emerging for {ticker}, potentially constraining future profit margins. ");
+                if (titles.Count > 2)
+                {
+                    sb.Append($"Structural challenges indicated by \"{titles[2]}\" raise questions about near-term valuation models. ");
+                }
+                else if (titles.Count > 0)
+                {
+                    sb.Append($"The operational risks detailed in \"{titles[0]}\" could delay planned growth initiatives. ");
+                }
+                sb.Append("Elevated debt levels or rising input costs could pressure the bottom line, warranting a cautious approach.");
+            }
+            else // HOLD
+            {
+                sb.Append($"The fundamental outlook for {ticker} remains stable with few near-term catalysts. ");
+                if (titles.Count > 2)
+                {
+                    sb.Append($"While \"{titles[2]}\" presents a minor tailwind, it is offset by broader macroeconomic challenges. ");
+                }
+                sb.Append("Company earnings are tracking close to consensus expectations, and capital structures are stable but offer limited near-term upside.");
+            }
+
+            return sb.ToString();
+        }
+
+        internal PortfolioManagerResponse GenerateMockPortfolioManagerResponse(string ticker, string sentimentOutput, string fundamentalOutput)
+        {
+            var decision = "BUY";
+            if (sentimentOutput.Contains("negative", StringComparison.OrdinalIgnoreCase))
+            {
+                decision = "SELL";
+            }
+            else if (sentimentOutput.Contains("neutral", StringComparison.OrdinalIgnoreCase))
+            {
+                decision = "HOLD";
+            }
+
+            string riskWarnings;
+            var sym = ticker.ToUpperInvariant();
+            if (sym == "BTC" || sym == "ETH" || sym == "SOL" || sym == "BNB" || sym == "XRP")
+            {
+                riskWarnings = "Regulatory scrutiny on digital asset trading platforms, high network/transaction fee spikes, and extreme volatility driven by retail leverage liquidation.";
+            }
+            else if (sym == "SPY" || sym == "FNTS" || sym == "QQQ" || sym == "DIA")
+            {
+                riskWarnings = "Systemic index rebalancing risks, shifting monetary policy actions by the Federal Reserve, and macroeconomic inflation indicators impacting consumer demand.";
+            }
+            else
+            {
+                riskWarnings = "Supply chain dependencies, intense sector-wide price competition, potential regulatory compliance hurdles, and broader macroeconomic sector rotation.";
+            }
+
             return new PortfolioManagerResponse
             {
                 Decision = decision,
                 Title = $"[{decision}] {ticker} Automated Analysis",
                 Headline = $"Multi-agent quantitative analysis evaluating real-time market sentiment, core fundamental drivers, and portfolio risk parameters for {ticker}.",
-                Content = $"(1) Sentiment view: {sentimentOutput}\n\n(2) Fundamental view: {fundamentalOutput}\n\n(3) Key risk warnings: Macroeconomic interest rate shifts, regulatory scrutiny, and broader equity market volatility may impact near-term price targets.",
+                Content = $"(1) Sentiment view: {sentimentOutput}\n\n(2) Fundamental view: {fundamentalOutput}\n\n(3) Key risk warnings: {riskWarnings}",
                 Source = "NewsAPI.org + GPT-4o Agent Engine",
-                ConfidenceScore = new Random().Next(75, 96) // generate a realistic score between 75 and 95
+                ConfidenceScore = new Random().Next(75, 96)
             };
         }
 

@@ -70,21 +70,88 @@ pipeline {
             steps {
                 script {
                     echo 'Scanning and running test projects...'
-                    if (isUnix()) {
-                        sh "dotnet test ${env.SLN_FILE} --configuration ${env.BUILD_CONFIGURATION} --no-build --verbosity normal --logger \"trx;LogFileName=test-results.trx\" --results-directory TestResults"
-                    } else {
-                        bat "dotnet test ${env.SLN_FILE} --configuration ${env.BUILD_CONFIGURATION} --no-build --verbosity normal --logger \"trx;LogFileName=test-results.trx\" --results-directory TestResults"
+                    catchError(buildResult: 'SUCCESS', message: 'No test projects found or tests failed') {
+                        if (isUnix()) {
+                            sh """
+                            dotnet test ${env.SLN_FILE} \
+                              --configuration ${env.BUILD_CONFIGURATION} \
+                              --verbosity normal \
+                              --logger "trx;LogFileName=test-results.trx" \
+                              --results-directory TestResults \
+                              --logger "html;LogFileName=test-results.html"
+                            """
+                        } else {
+                            bat """
+                            dotnet test ${env.SLN_FILE} ^
+                              --configuration ${env.BUILD_CONFIGURATION} ^
+                              --verbosity normal ^
+                              --logger "trx;LogFileName=test-results.trx" ^
+                              --results-directory TestResults ^
+                              --logger "html;LogFileName=test-results.html"
+                            """
+                        }
                     }
                 }
             }
             post {
                 always {
                     script {
-                        try {
-                            mstest testResultsFile: '**/TestResults/*.trx', keepLongStdio: true
-                        } catch (Exception e) {
-                            echo "No test results (.trx) found or MSTest plugin is not installed: ${e.getMessage()}"
+                        def trxFiles  = findFiles(glob: '**/TestResults/*.trx')
+                        def htmlFiles = findFiles(glob: '**/TestResults/*.html')
+
+                        // --- HTML Report ---
+                        if (htmlFiles) {
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: true,
+                                keepAll: true,
+                                reportDir: 'TestResults',
+                                reportFiles: htmlFiles[0].name,
+                                reportName: 'Test Results — HTML Report'
+                            ])
+                        } else {
+                            echo '[Test] No HTML test report found (no test project or tests not run).'
                         }
+
+                        // --- TRX / MSTest ---
+                        if (trxFiles) {
+                            try {
+                                mstest testResultsFile: trxFiles[0].path, keepLongStdio: true
+                            } catch (Exception e) {
+                                echo "MSTest plugin not available: ${e.getMessage()}"
+                            }
+                        }
+
+                        // --- Summary Table ---
+                        def total  = 0
+                        def passed = 0
+                        def failed = 0
+                        def skipped = 0
+
+                        if (trxFiles) {
+                            def xml = new XmlSlurper().parse(new FileReader(trxFiles[0].path))
+                            total   = xml.TestRun.TestDefinitions.TestMethod.size()
+                            def counters = xml.TestRun.Results.Counters.'#text'.toString().trim().split('\\s+')
+                            passed  = counters.size() > 0 ? counters[0].toInteger() : 0
+                            failed  = counters.size() > 1 ? counters[1].toInteger() : 0
+                            skipped = counters.size() > 2 ? counters[2].toInteger() : 0
+                        }
+
+                        echo ''
+                        echo '=============================================='
+                        echo '          TEST RESULTS SUMMARY'
+                        echo '=============================================='
+                        echo "  Total   : ${total}"
+                        echo "  Passed  : ${passed}   [${passed > 0 ? 'SUCCESS' : 'NONE'}]"
+                        echo "  Failed  : ${failed}   [${failed > 0 ? 'FAILURE' : 'NONE'}]"
+                        echo "  Skipped : ${skipped}"
+                        echo '=============================================='
+                        echo "  Report  : ${htmlFiles ? htmlFiles[0].path : 'N/A'}"
+                        echo "  TRX     : ${trxFiles  ? trxFiles[0].path  : 'N/A'}"
+                        echo '=============================================='
+                        echo ''
+
+                        currentBuild.result = failed > 0 ? 'FAILURE' : 'SUCCESS'
                     }
                 }
             }
@@ -99,7 +166,6 @@ pipeline {
                         bat "dotnet publish ${env.MVC_PROJECT} -c ${env.BUILD_CONFIGURATION} -o ./publish"
                     }
                 }
-                // Archive the published outputs in Jenkins
                 archiveArtifacts artifacts: 'publish/**', onlyIfSuccessful: true
             }
         }
