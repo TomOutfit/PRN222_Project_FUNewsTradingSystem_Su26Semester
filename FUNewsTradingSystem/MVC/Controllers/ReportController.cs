@@ -1,8 +1,10 @@
 using System.Security.Claims;
+using System.Net.Http;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_MVC.Extensions;
 using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.ViewModels.Report;
+using FUNewsTradingSystem_MVC.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -16,17 +18,23 @@ public class ReportController : Controller
     private readonly ICategoryService _categoryService;
     private readonly ITagService _tagService;
     private readonly IHubContext<NotificationHub> _notificationHub;
+    private readonly HttpClient _httpClient;
+    private readonly IMarketDataService _marketDataService;
 
     public ReportController(
         INewsArticleService newsService,
         ICategoryService categoryService,
         ITagService tagService,
-        IHubContext<NotificationHub> notificationHub)
+        IHubContext<NotificationHub> notificationHub,
+        HttpClient httpClient,
+        IMarketDataService marketDataService)
     {
         _newsService = newsService;
         _categoryService = categoryService;
         _tagService = tagService;
         _notificationHub = notificationHub;
+        _httpClient = httpClient;
+        _marketDataService = marketDataService;
     }
 
     /// <summary>
@@ -158,6 +166,128 @@ public class ReportController : Controller
             success = true,
             newStatus
         });
+    }
+
+    /// <summary>
+    /// GET /api/market/chart/{symbol} — Returns live price history for a symbol.
+    /// Priority: (1) MarketDataService rolling history (3-second ticks), (2) Yahoo Finance chart API, (3) Simulation fallback.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet]
+    [Route("api/market/chart/{symbol}")]
+    public IActionResult GetChartData(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+            return BadRequest("Symbol is required.");
+
+        string normalizedSymbol = symbol.Trim().ToUpperInvariant();
+
+        // ── 1. MarketDataService: live 3-second tick history (always available once the app starts) ──
+        if (_marketDataService.HasData(normalizedSymbol))
+        {
+            var history = _marketDataService.GetHistory(normalizedSymbol, maxPoints: 120);
+            if (history.Count > 0)
+            {
+                var labels = history.Select(h => h.Time.ToString("HH:mm:ss")).ToList();
+                var prices = history.Select(h => h.Price).ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    symbol = normalizedSymbol,
+                    labels = labels,
+                    prices = prices,
+                    source = "Live Market Data (Real-Time)"
+                });
+            }
+        }
+
+        // ── 2. Yahoo Finance: 1-month daily chart ──
+        string mappedSymbol = normalizedSymbol switch
+        {
+            "BTC" => "BTC-USD",
+            "ETH" => "ETH-USD",
+            "SOL" => "SOL-USD",
+            "ADA" => "ADA-USD",
+            "DOGE" => "DOGE-USD",
+            "XRP" => "XRP-USD",
+            "BNB" => "BNB-USD",
+            "LTC" => "LTC-USD",
+            "DOT" => "DOT-USD",
+            "LINK" => "LINK-USD",
+            "FNTS" => "^IXIC",
+            _ => normalizedSymbol
+        };
+
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(mappedSymbol)}?range=1mo&interval=1d");
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+
+            var response = _httpClient.Send(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                using var doc = System.Text.Json.JsonDocument.Parse(content);
+
+                if (doc.RootElement.TryGetProperty("chart", out var chartNode) &&
+                    chartNode.TryGetProperty("result", out var resultList) &&
+                    resultList.ValueKind == System.Text.Json.JsonValueKind.Array &&
+                    resultList.GetArrayLength() > 0)
+                {
+                    var firstResult = resultList[0];
+                    var timestamps = new List<long>();
+                    if (firstResult.TryGetProperty("timestamp", out var tsProp) &&
+                        tsProp.ValueKind == System.Text.Json.JsonValueKind.Array)
+                        foreach (var ts in tsProp.EnumerateArray())
+                            timestamps.Add(ts.GetInt64());
+
+                    var closePrices = new List<double>();
+                    if (firstResult.TryGetProperty("indicators", out var indNode) &&
+                        indNode.TryGetProperty("quote", out var quoteList) &&
+                        quoteList.ValueKind == System.Text.Json.JsonValueKind.Array &&
+                        quoteList.GetArrayLength() > 0 &&
+                        quoteList[0].TryGetProperty("close", out var closeProp) &&
+                        closeProp.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        foreach (var cp in closeProp.EnumerateArray())
+                            closePrices.Add(cp.ValueKind == System.Text.Json.JsonValueKind.Number
+                                ? cp.GetDouble()
+                                : (closePrices.Count > 0 ? closePrices[^1] : 0.0));
+                    }
+
+                    var labels = new List<string>();
+                    var prices = new List<double>();
+                    int limit = Math.Min(timestamps.Count, closePrices.Count);
+                    for (int i = 0; i < limit; i++)
+                    {
+                        labels.Add(DateTimeOffset.FromUnixTimeSeconds(timestamps[i]).UtcDateTime.ToString("MMM dd"));
+                        prices.Add(Math.Round(closePrices[i], normalizedSymbol == "BTC" ? 0 : 2));
+                    }
+
+                    if (prices.Count > 0)
+                        return Ok(new { success = true, symbol = normalizedSymbol, labels, prices, source = "Yahoo Finance" });
+                }
+            }
+        }
+        catch { /* swallow — trigger fallback */ }
+
+        // ── 3. Simulation fallback (only when all above fail) ──
+        var fallbackLabels = Enumerable.Range(0, 30)
+            .Select(i => DateTime.UtcNow.AddDays(-29 + i).ToString("MMM dd"))
+            .ToList();
+        var rng = new Random();
+        double startPrice = rng.Next(80, 600);
+        var fallbackPrices = new List<double>();
+        for (int i = 0; i < 30; i++)
+        {
+            double change = (rng.NextDouble() - 0.5) * 8;
+            startPrice = Math.Max(10, startPrice + change);
+            fallbackPrices.Add(Math.Round(startPrice, 2));
+        }
+
+        return Ok(new { success = true, symbol = normalizedSymbol, labels = fallbackLabels, prices = fallbackPrices, source = "Simulated Trend" });
     }
 
     private string ExtractDecision(string title)
