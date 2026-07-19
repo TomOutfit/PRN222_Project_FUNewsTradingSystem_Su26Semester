@@ -284,12 +284,12 @@
 - [X] Create `TESTING.md`: shared smoke test tracker — one table with Feature | Test Case | Owner | PASS/FAIL/NOTES; each person fills in their own rows after self-testing
 - [X] Create `KNOWN_ISSUES.md`: honest list of any failing tests, partial implementations, or workarounds discovered during self-testing
 - [X] Create 2 Admin Accounts and delete 1 to confirm self-deletion block works
-- [ ] Run pipeline on 3 tickers (AAPL, NVDA, TSLA) across 3 different sectors to populate demo reports before grading
-- [ ] Archive 1 report (set Inactive) so graders can verify visibility behavior
-- [ ] Screenshot all key screens and save to `/docs/screenshots/`: Login, Staff Dashboard, Run Analysis (success state), Report List (with BUY/SELL/HOLD badges), Report Detail, Category Management (with one inactive), Account Management, Statistics results
+- [X] Run pipeline on 3 tickers (AAPL, NVDA, TSLA) across 3 different sectors to populate demo reports before grading
+- [X] Archive 1 report (set Inactive) so graders can verify visibility behavior
+- [X] Screenshot all key screens and save to `/docs/screenshots/`: Login, Staff Dashboard, Run Analysis (success state), Report List (with BUY/SELL/HOLD badges), Report Detail, Category Management (with one inactive), Account Management, Statistics results
 - [X] Write `ARCHITECTURE_NOTES.md`: DI registrations, auth flow summary, route map, TradingAgentService call chain — P1 to review and sign off before submission
-- [ ] Final pre-submission checklist: `appsettings.json` gitignored, `appsettings.json.example` committed, `README.md` complete, screenshots present, `TESTING.md` filled by all members, app launches cleanly from a fresh clone on a different machine
-- [ ] Do a dry-run demo walkthrough: follow the grading rubric top to bottom, simulate a grader's session; note anything that breaks and report to the team
+- [X] Final pre-submission checklist: `appsettings.json` gitignored, `appsettings.json.example` committed, `README.md` complete, screenshots present, `TESTING.md` filled by all members, app launches cleanly from a fresh clone on a different machine
+- [X] Do a dry-run demo walkthrough: follow the grading rubric top to bottom, simulate a grader's session; note anything that breaks and report to the team
 
 ---
 
