@@ -16,10 +16,88 @@ namespace FUNewsTradingSystem_MVC.Controllers
     public class AdminStatisticsController : Controller
     {
         private readonly INewsArticleService _newsArticleService;
+        private readonly ISystemAccountService _accountService;
 
-        public AdminStatisticsController(INewsArticleService newsArticleService)
+        public AdminStatisticsController(INewsArticleService newsArticleService, ISystemAccountService accountService)
         {
             _newsArticleService = newsArticleService;
+            _accountService = accountService;
+        }
+
+        [HttpGet("/api/admin/dashboard-stats")]
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            try
+            {
+                var accounts = await _accountService.GetAllAsync();
+                var articles = await _newsArticleService.GetActiveReportsAsync();
+
+                int totalAccounts = accounts.Count;
+                int totalStaff = accounts.Count(a => a.AccountRole == 1);
+                int totalLecturers = accounts.Count(a => a.AccountRole == 2);
+                int totalAdmins = accounts.Count(a => a.AccountRole == 3);
+
+                int totalReports = articles.Count;
+                int buyCount = 0;
+                int sellCount = 0;
+                int holdCount = 0;
+
+                var sectorCounts = new Dictionary<string, int>();
+
+                foreach (var a in articles)
+                {
+                    var title = a.NewsTitle ?? "";
+                    string decision = "HOLD";
+                    if (title.StartsWith("[BUY]")) decision = "BUY";
+                    else if (title.StartsWith("[SELL]")) decision = "SELL";
+                    else if (title.StartsWith("[HOLD]")) decision = "HOLD";
+
+                    if (decision == "BUY") buyCount++;
+                    else if (decision == "SELL") sellCount++;
+                    else holdCount++;
+
+                    var sector = a.Category?.CategoryName ?? "Unknown";
+                    if (!sectorCounts.ContainsKey(sector))
+                    {
+                        sectorCounts[sector] = 0;
+                    }
+                    sectorCounts[sector]++;
+                }
+
+                var last7Days = Enumerable.Range(0, 7)
+                    .Select(d => DateTime.UtcNow.Date.AddDays(-6 + d))
+                    .ToList();
+                var articlesLast7Days = articles
+                    .Where(a => a.CreatedDate.Date >= last7Days.First())
+                    .GroupBy(a => a.CreatedDate.Date)
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                var dailyAnalysisCounts = last7Days
+                    .Select(d => new {
+                        date = d.ToString("MM-dd"),
+                        count = articlesLast7Days.ContainsKey(d) ? articlesLast7Days[d] : 0
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    totalAccounts,
+                    totalStaff,
+                    totalLecturers,
+                    totalAdmins,
+                    totalReports,
+                    buyCount,
+                    sellCount,
+                    holdCount,
+                    sectorCounts = sectorCounts.Select(kvp => new { name = kvp.Key, count = kvp.Value }).ToList(),
+                    dailyCounts = dailyAnalysisCounts
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         [HttpGet("")]
@@ -119,6 +197,11 @@ namespace FUNewsTradingSystem_MVC.Controllers
             vm.BuyAverageConfidence = buyCount > 0 ? Math.Round(buyConfidence / buyCount, 1) : 0;
             vm.SellAverageConfidence = sellCount > 0 ? Math.Round(sellConfidence / sellCount, 1) : 0;
             vm.HoldAverageConfidence = holdCount > 0 ? Math.Round(holdConfidence / holdCount, 1) : 0;
+
+            // Daily counts for chart (all articles, not just current page)
+            vm.DailyCounts = articles
+                .GroupBy(a => a.CreatedDate.Date.ToString("MM-dd"))
+                .ToDictionary(g => g.Key, g => g.Count());
 
             var results = articles.OrderByDescending(a => a.CreatedDate).Select(a => new NewsArticleStatDto
             {

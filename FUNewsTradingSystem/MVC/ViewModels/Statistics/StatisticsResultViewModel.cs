@@ -31,5 +31,8 @@ namespace FUNewsTradingSystem_MVC.ViewModels.Statistics
         public double BuyAverageConfidence { get; set; }
         public double SellAverageConfidence { get; set; }
         public double HoldAverageConfidence { get; set; }
+
+        // Daily trend for chart (all items, not paged)
+        public Dictionary<string, int> DailyCounts { get; set; } = new Dictionary<string, int>();
     }
 }
