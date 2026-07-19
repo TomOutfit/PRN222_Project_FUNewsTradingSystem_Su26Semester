@@ -1,86 +1,470 @@
 @model FUNewsTradingSystem_MVC.ViewModels.Statistics.StatisticsResultViewModel
 @{
     ViewData["Title"] = "Statistical Reports";
+
+    int totalCount = Model.BuyCount + Model.SellCount + Model.HoldCount;
+    double totalAvgConf = Model.AverageConfidence;
+    int reportPeriodDays = (Model.Filter.EndDate - Model.Filter.StartDate).Days + 1;
 }
 
 <style>
-    .filter-card {
+    /* ── Filter Bar ── */
+    .stats-filter-bar {
         background: var(--surface-card);
-        border-radius: 18px;
+        border-radius: 22px;
         border: 1px solid var(--border);
-        padding: 1.5rem;
-        margin-bottom: 1.75rem;
-        box-shadow: var(--shadow-sm);
+        padding: 1.5rem 1.75rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+        position: relative;
+        overflow: hidden;
     }
-    .filter-card .form-label {
-        font-size: .78rem;
+    .stats-filter-bar::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(16,185,129,0.1), rgba(0,0,0,0));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+    .stats-filter-bar .form-label {
+        font-size: .72rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: .05em;
+        letter-spacing: .07em;
+        color: var(--text-muted);
+        margin-bottom: .4rem;
+    }
+    .stats-date-input {
+        border-radius: 12px !important;
+        border: 1.5px solid var(--border) !important;
+        background: var(--surface) !important;
+        color: var(--text-main) !important;
+        font-size: .875rem;
+        font-weight: 600;
+        padding: .55rem .875rem !important;
+        transition: border-color .25s, box-shadow .25s;
+    }
+    .stats-date-input:focus {
+        border-color: var(--brand-1) !important;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.12) !important;
+        outline: none;
+    }
+    .stats-btn-generate {
+        background: var(--brand-gradient);
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: .875rem;
+        letter-spacing: .03em;
+        padding: .6rem 1.5rem;
+        color: #fff;
+        transition: opacity .25s, transform .2s, box-shadow .25s;
+        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+        white-space: nowrap;
+    }
+    .stats-btn-generate:hover {
+        opacity: .92;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+        color: #fff;
+    }
+    .stats-btn-generate:active { transform: translateY(0); }
+
+    /* ── KPI Cards ── */
+    .kpi-card {
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--surface-card);
+        padding: 1.35rem 1.4rem;
+        position: relative;
+        overflow: hidden;
+        transition: transform .35s cubic-bezier(0.16,1,0.3,1), box-shadow .35s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+    }
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 36px rgba(0,0,0,0.09);
+    }
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3.5px;
+        border-radius: 20px 20px 0 0;
+    }
+    .kpi-card.kpi-total::before  { background: var(--brand-gradient); }
+    .kpi-card.kpi-buy::before    { background: linear-gradient(90deg, #10b981, #059669); }
+    .kpi-card.kpi-sell::before   { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    .kpi-card.kpi-hold::before   { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .kpi-card.kpi-conf::before   { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+    .kpi-card.kpi-period::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+    .kpi-icon-wrap {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: .4rem;
+        flex-shrink: 0;
+    }
+    .kpi-icon-total  { background: rgba(37,99,235,0.1);  color: #2563eb; }
+    .kpi-icon-buy    { background: rgba(16,185,129,0.1);   color: #10b981; }
+    .kpi-icon-sell   { background: rgba(239,68,68,0.1);   color: #ef4444; }
+    .kpi-icon-hold   { background: rgba(245,158,11,0.1);  color: #f59e0b; }
+    .kpi-icon-conf   { background: rgba(2,132,199,0.1);   color: #0284c7; }
+    .kpi-icon-period { background: rgba(139,92,246,0.1);  color: #8b5cf6; }
+
+    .kpi-label {
+        font-size: .68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .09em;
         color: var(--text-muted);
     }
+    .kpi-value {
+        font-size: 1.85rem;
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -.02em;
+    }
+    .kpi-value.kpi-total { color: var(--brand-1); }
+    .kpi-value.kpi-buy   { color: #10b981; }
+    .kpi-value.kpi-sell  { color: #ef4444; }
+    .kpi-value.kpi-hold  { color: #f59e0b; }
+    .kpi-value.kpi-conf  { color: #0284c7; }
+    .kpi-value.kpi-period{ color: #8b5cf6; }
+    .kpi-sub {
+        font-size: .73rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        line-height: 1.3;
+    }
+    .kpi-trend {
+        display: inline-flex; align-items: center; gap: .25rem;
+        font-size: .7rem; font-weight: 700;
+        border-radius: 99px;
+        padding: .15rem .5rem .15rem .35rem;
+        margin-top: .2rem;
+        width: fit-content;
+    }
+    .kpi-trend.up   { background: rgba(16,185,129,0.1);  color: #10b981; }
+    .kpi-trend.neutral { background: rgba(100,116,139,0.1); color: #64748b; }
 
+    /* ── Chart Cards ── */
+    .chart-card {
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--surface-card);
+        padding: 1.4rem 1.5rem 1.25rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        transition: box-shadow .3s, transform .3s;
+        position: relative;
+        overflow: hidden;
+    }
+    .chart-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+    .chart-card-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 1.1rem;
+    }
+    .chart-card-title {
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--text-main);
+        display: flex; align-items: center; gap: .45rem;
+    }
+    .chart-card-title .chart-icon {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .85rem;
+    }
+    .chart-card-badge {
+        font-size: .68rem;
+        font-weight: 700;
+        border-radius: 99px;
+        padding: .2rem .6rem;
+        letter-spacing: .04em;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+    .chart-canvas-wrap { position: relative; }
+
+    /* ── Chart Legend ── */
+    .chart-legend {
+        display: flex; flex-wrap: wrap; gap: .875rem;
+        margin-top: .875rem;
+        padding-top: .875rem;
+        border-top: 1px solid var(--border);
+    }
+    .legend-item {
+        display: flex; align-items: center; gap: .35rem;
+        font-size: .78rem; font-weight: 600;
+    }
+    .legend-dot {
+        width: 9px; height: 9px;
+        border-radius: 50%; flex-shrink: 0;
+    }
+    .legend-value { color: var(--text-main); font-weight: 700; }
+    .legend-pct   { color: var(--text-muted); font-weight: 500; }
+
+    /* ── Confidence Bars ── */
+    .conf-section { display: flex; flex-direction: column; gap: .875rem; }
+    .conf-item    { display: flex; flex-direction: column; gap: .3rem; }
+    .conf-header  { display: flex; justify-content: space-between; align-items: center; }
+    .conf-label   { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+    .conf-val     { font-size: .8rem; font-weight: 800; }
+    .conf-bar     { height: 5px; border-radius: 99px; background: var(--border); overflow: hidden; }
+    .conf-fill    { height: 100%; border-radius: 99px; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
+
+    /* ── Results Table ── */
+    .results-card {
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--surface-card);
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
     .results-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1rem 1.25rem;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1rem 1.4rem;
         border-bottom: 1px solid var(--border);
+        background: var(--surface);
     }
     .results-header h6 {
-        font-weight: 700;
-        margin: 0;
+        font-weight: 700; margin: 0;
         color: var(--text-main);
+        display: flex; align-items: center; gap: .5rem;
+        font-size: .875rem;
     }
-
-    .table tbody td { font-size: .875rem; }
-
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
+    /* Table cell specifics (cell-level overrides only, no base table rules) */
+    .table .title-cell {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--text-main);
+        font-size: .875rem;
+    }
+    .table .headline-cell {
+        max-width: 260px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
         color: var(--text-muted);
+        font-size: .8rem;
+        line-height: 1.4;
     }
-    .empty-state .empty-icon {
-        font-size: 3.5rem;
-        margin-bottom: 1rem;
-        opacity: 0.4;
+    .table .date-cell {
+        white-space: nowrap;
+        color: var(--text-muted);
+        font-size: .8rem;
     }
-    .empty-state h6 { color: var(--text-muted); font-weight: 600; }
+    .table .sector-badge {
+        border-radius: 8px;
+        font-size: .73rem;
+        font-weight: 600;
+        padding: .25rem .55rem;
+        background: rgba(37,99,235,0.08);
+        color: var(--brand-1);
+        border: 1px solid rgba(37,99,235,0.12);
+        white-space: nowrap;
+    }
+    .table .signal-badge {
+        border-radius: 8px;
+        font-size: .73rem;
+        font-weight: 800;
+        padding: .28rem .6rem;
+        letter-spacing: .04em;
+        white-space: nowrap;
+    }
+    .signal-buy  { background: rgba(16,185,129,0.1);  color: #059669; border: 1px solid rgba(16,185,129,0.2);  }
+    .signal-sell { background: rgba(239,68,68,0.1);    color: #dc2626; border: 1px solid rgba(239,68,68,0.2);  }
+    .signal-hold { background: rgba(245,158,11,0.1);   color: #d97706; border: 1px solid rgba(245,158,11,0.2); }
+    .conf-mini-bar {
+        display: flex; align-items: center; gap: .4rem;
+    }
+    .conf-mini-track {
+        width: 52px; height: 4.5px;
+        border-radius: 99px;
+        background: var(--border);
+        overflow: hidden; flex-shrink: 0;
+    }
+    .conf-mini-fill {
+        height: 100%; border-radius: 99px;
+        transition: width .8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .conf-mini-val {
+        font-size: .75rem; font-weight: 700;
+        color: var(--text-main); min-width: 30px;
+    }
+    .creator-chip {
+        display: flex; align-items: center; gap: .45rem;
+        white-space: nowrap;
+    }
+    .creator-avatar {
+        width: 26px; height: 26px;
+        border-radius: 50%;
+        background: var(--brand-gradient);
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-weight: 700; font-size: .7rem;
+        flex-shrink: 0;
+    }
+    .creator-name { font-size: .82rem; font-weight: 600; }
+
+    /* ── Empty State ── */
+    .stats-empty {
+        text-align: center; padding: 4.5rem 2rem;
+        display: flex; flex-direction: column; align-items: center; gap: .75rem;
+    }
+    .stats-empty-icon {
+        width: 72px; height: 72px; border-radius: 50%;
+        background: rgba(37,99,235,0.06);
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: .5rem;
+    }
+    .stats-empty h6 { font-weight: 700; color: var(--text-muted); margin: 0; }
+    .stats-empty p   { color: var(--text-muted); font-size: .875rem; margin: 0; }
+
+    /* ── Quick Stat Pills in table header ── */
+    .stat-pill {
+        border-radius: 99px;
+        font-size: .72rem; font-weight: 700;
+        padding: .2rem .6rem;
+        border: 1px solid;
+    }
+    .stat-pill-buy  { background: rgba(16,185,129,0.08);  color: #10b981; border-color: rgba(16,185,129,0.2); }
+    .stat-pill-sell { background: rgba(239,68,68,0.08);   color: #ef4444; border-color: rgba(239,68,68,0.2); }
+    .stat-pill-hold { background: rgba(245,158,11,0.08); color: #f59e0b; border-color: rgba(245,158,11,0.2); }
+
+    /* ── Export buttons ── */
+    .btn-export {
+        border-radius: 10px;
+        font-size: .78rem;
+        font-weight: 700;
+        padding: .45rem .875rem;
+        transition: all .2s;
+        display: inline-flex; align-items: center; gap: .35rem;
+    }
+    .btn-export-excel {
+        background: rgba(16,185,129,0.08);
+        border: 1px solid rgba(16,185,129,0.25);
+        color: #10b981;
+    }
+    .btn-export-excel:hover {
+        background: rgba(16,185,129,0.15);
+        color: #059669;
+        transform: translateY(-1px);
+    }
+    .btn-export-pdf {
+        background: rgba(239,68,68,0.08);
+        border: 1px solid rgba(239,68,68,0.25);
+        color: #ef4444;
+    }
+    .btn-export-pdf:hover {
+        background: rgba(239,68,68,0.15);
+        color: #dc2626;
+        transform: translateY(-1px);
+    }
+
+    /* ── Count-up animation ── */
+    .kpi-value { transition: color .3s; }
+
+    /* ── Dark mode overrides ── */
+    [data-bs-theme="dark"] .stats-filter-bar { background: #161b2e; border-color: rgba(255,255,255,0.06); }
+    [data-bs-theme="dark"] .stats-date-input { background: #1e2236 !important; border-color: rgba(255,255,255,0.08) !important; color: #e2e8f0 !important; }
+    [data-bs-theme="dark"] .chart-card { background: #161b2e; border-color: rgba(255,255,255,0.06); }
+    [data-bs-theme="dark"] .chart-card-header { border-color: rgba(255,255,255,0.05); }
+    [data-bs-theme="dark"] .chart-legend { border-color: rgba(255,255,255,0.06); }
+    [data-bs-theme="dark"] .kpi-card { background: #161b2e; border-color: rgba(255,255,255,0.06); }
+    [data-bs-theme="dark"] .kpi-icon-total { background: rgba(37,99,235,0.15); }
+    [data-bs-theme="dark"] .kpi-icon-buy   { background: rgba(16,185,129,0.15); }
+    [data-bs-theme="dark"] .kpi-icon-sell  { background: rgba(239,68,68,0.15); }
+    [data-bs-theme="dark"] .kpi-icon-hold  { background: rgba(245,158,11,0.15); }
+    [data-bs-theme="dark"] .kpi-icon-conf  { background: rgba(2,132,199,0.15); }
+    [data-bs-theme="dark"] .kpi-icon-period{ background: rgba(139,92,246,0.15); }
+    [data-bs-theme="dark"] .results-card { background: #161b2e; border-color: rgba(255,255,255,0.06); }
+    [data-bs-theme="dark"] .results-header { background: #1e2236; border-color: rgba(255,255,255,0.06); }
+    [data-bs-theme="dark"] .table thead th { background: #0f172a !important; }
+    [data-bs-theme="dark"] .table { color: #e2e8f0; }
+    [data-bs-theme="dark"] .table tbody tr { border-color: rgba(255,255,255,0.04); }
+    [data-bs-theme="dark"] .table tbody tr:hover { background: rgba(37,99,235,0.06); }
+    [data-bs-theme="dark"] .table .headline-cell { color: rgba(226,232,240,0.6); }
+    [data-bs-theme="dark"] .table .date-cell { color: rgba(226,232,240,0.5); }
+    [data-bs-theme="dark"] .table .title-cell { color: #e2e8f0; }
+    [data-bs-theme="dark"] .sector-badge { background: rgba(59,130,246,0.12); color: #60a5fa; border-color: rgba(59,130,246,0.2); }
+    [data-bs-theme="dark"] .signal-buy  { background: rgba(16,185,129,0.12);  color: #34d399; border-color: rgba(16,185,129,0.25); }
+    [data-bs-theme="dark"] .signal-sell { background: rgba(239,68,68,0.12);   color: #f87171; border-color: rgba(239,68,68,0.25); }
+    [data-bs-theme="dark"] .signal-hold { background: rgba(245,158,11,0.12);  color: #fbbf24; border-color: rgba(245,158,11,0.25); }
+    [data-bs-theme="dark"] .creator-name { color: #e2e8f0; }
+    [data-bs-theme="dark"] .kpi-sub { color: rgba(226,232,240,0.5); }
+    [data-bs-theme="dark"] .conf-label { color: rgba(226,232,240,0.6); }
+    [data-bs-theme="dark"] .conf-bar { background: rgba(255,255,255,0.08); }
+    [data-bs-theme="dark"] .conf-mini-track { background: rgba(255,255,255,0.08); }
+    [data-bs-theme="dark"] .stat-pill-buy  { background: rgba(16,185,129,0.1);  color: #34d399; border-color: rgba(16,185,129,0.2); }
+    [data-bs-theme="dark"] .stat-pill-sell { background: rgba(239,68,68,0.1);   color: #f87171; border-color: rgba(239,68,68,0.2); }
+    [data-bs-theme="dark"] .stat-pill-hold { background: rgba(245,158,11,0.1);  color: #fbbf24; border-color: rgba(245,158,11,0.2); }
+    [data-bs-theme="dark"] .chart-card-badge { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); color: rgba(226,232,240,0.5); }
+    [data-bs-theme="dark"] .btn-export-excel { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); color: #34d399; }
+    [data-bs-theme="dark"] .btn-export-pdf   { background: rgba(239,68,68,0.1);  border-color: rgba(239,68,68,0.2);  color: #f87171; }
+    [data-bs-theme="dark"] .stats-empty-icon { background: rgba(37,99,235,0.1); }
+    [data-bs-theme="dark"] .stats-empty-icon svg { color: rgba(96,165,250,0.5); }
+    [data-bs-theme="dark"] .kpi-label { color: rgba(226,232,240,0.45); }
+    [data-bs-theme="dark"] .legend-pct { color: rgba(226,232,240,0.45); }
 </style>
 
+<!-- ── Page Header ── -->
 <div class="page-header">
     <div>
-        <h2><i class="bi bi-bar-chart-line-fill me-2" style="background:linear-gradient(135deg,#6d28d9,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>Statistical Reports</h2>
-        <p class="text-muted mb-0">Filter and review AI-generated trading analysis across all staff members.</p>
+        <h2>
+            <i class="bi bi-graph-up-arrow me-2" style="background:var(--brand-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>
+            Statistical Reports
+        </h2>
+        <p class="text-muted mb-0">AI-generated trading analysis across all staff members — filtered by date range.</p>
     </div>
 </div>
 
-<div class="filter-card">
+<!-- ── Filter Bar ── -->
+<div class="stats-filter-bar">
     <form id="filterForm" asp-controller="AdminStatistics" asp-action="Index" method="get">
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label asp-for="Filter.StartDate" class="form-label"></label>
+                <label asp-for="Filter.StartDate" class="form-label d-block"></label>
                 <div class="input-group">
-                    <span class="input-group-text" style="border-color:var(--border);background:var(--surface);color:var(--text-muted)">
+                    <span class="input-group-text" style="border-radius:12px 0 0 12px;border-color:var(--border);background:var(--surface);color:var(--text-muted)">
                         <i class="bi bi-calendar3"></i>
                     </span>
-                    <input name="startDate" value="@Model.Filter.StartDate.ToString("yyyy-MM-dd")" class="form-control" type="date" id="startDate" />
+                    <input name="startDate" value="@Model.Filter.StartDate.ToString("yyyy-MM-dd")"
+                           class="form-control stats-date-input" type="date" id="startDate" />
                 </div>
-                <span asp-validation-for="Filter.StartDate" class="text-danger" style="font-size:.78rem"></span>
+                <span asp-validation-for="Filter.StartDate" class="text-danger d-block" style="font-size:.75rem;margin-top:.2rem"></span>
             </div>
             <div class="col-md-4">
-                <label asp-for="Filter.EndDate" class="form-label"></label>
+                <label asp-for="Filter.EndDate" class="form-label d-block"></label>
                 <div class="input-group">
-                    <span class="input-group-text" style="border-color:var(--border);background:var(--surface);color:var(--text-muted)">
+                    <span class="input-group-text" style="border-radius:12px 0 0 12px;border-color:var(--border);background:var(--surface);color:var(--text-muted)">
                         <i class="bi bi-calendar3-range"></i>
                     </span>
-                    <input name="endDate" value="@Model.Filter.EndDate.ToString("yyyy-MM-dd")" class="form-control" type="date" id="endDate" />
+                    <input name="endDate" value="@Model.Filter.EndDate.ToString("yyyy-MM-dd")"
+                            class="form-control stats-date-input" type="date" id="endDate" />
                 </div>
-                <span asp-validation-for="Filter.EndDate" class="text-danger" style="font-size:.78rem"></span>
+                <span asp-validation-for="Filter.EndDate" class="text-danger d-block" style="font-size:.75rem;margin-top:.2rem"></span>
             </div>
             <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100" onclick="return validateDates()">
-                    <i class="bi bi-funnel-fill me-2"></i>Generate Report
+                <button type="submit" class="btn stats-btn-generate w-100" onclick="return validateDates()">
+                    <i class="bi bi-sparkles me-2"></i>Generate Report
                 </button>
             </div>
         </div>
@@ -89,13 +473,232 @@
 
 @if (Model.HasResults)
 {
-    <div class="card">
+    <!-- ── KPI Summary Cards ── -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-2">
+            <div class="kpi-card kpi-total">
+                <div class="kpi-icon-wrap kpi-icon-total">
+                    <i class="bi bi-files-alt"></i>
+                </div>
+                <div class="kpi-label">Total Reports</div>
+                <div class="kpi-value kpi-total" data-target="@totalCount">@totalCount</div>
+                <div class="kpi-sub">in selected period</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="kpi-card kpi-buy">
+                <div class="kpi-icon-wrap kpi-icon-buy">
+                    <i class="bi bi-arrow-up-circle-fill"></i>
+                </div>
+                <div class="kpi-label">BUY Signals</div>
+                <div class="kpi-value kpi-buy" data-target="@Model.BuyCount">@Model.BuyCount</div>
+                <div class="kpi-sub">Average Confidence: @Model.BuyAverageConfidence%</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="kpi-card kpi-sell">
+                <div class="kpi-icon-wrap kpi-icon-sell">
+                    <i class="bi bi-arrow-down-circle-fill"></i>
+                </div>
+                <div class="kpi-label">SELL Signals</div>
+                <div class="kpi-value kpi-sell" data-target="@Model.SellCount">@Model.SellCount</div>
+                <div class="kpi-sub">Average Confidence: @Model.SellAverageConfidence%</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="kpi-card kpi-hold">
+                <div class="kpi-icon-wrap kpi-icon-hold">
+                    <i class="bi bi-pause-circle-fill"></i>
+                </div>
+                <div class="kpi-label">HOLD Signals</div>
+                <div class="kpi-value kpi-hold" data-target="@Model.HoldCount">@Model.HoldCount</div>
+                <div class="kpi-sub">Average Confidence: @Model.HoldAverageConfidence%</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="kpi-card kpi-conf">
+                <div class="kpi-icon-wrap kpi-icon-conf">
+                    <i class="bi bi-gauge-high"></i>
+                </div>
+                <div class="kpi-label">Average Confidence</div>
+                <div class="kpi-value kpi-conf" data-target="@totalAvgConf" data-suffix="%">@totalAvgConf%</div>
+                <div class="kpi-sub">Across all signals</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="kpi-card kpi-period">
+                <div class="kpi-icon-wrap kpi-icon-period">
+                    <i class="bi bi-calendar-week"></i>
+                </div>
+                <div class="kpi-label">Report Period</div>
+                <div class="kpi-value kpi-period">@reportPeriodDays</div>
+                <div class="kpi-sub">Days selected</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Charts Row ── -->
+    <div class="row g-4 mb-4">
+        <!-- Doughnut: Signal Distribution -->
+        <div class="col-lg-4">
+            <div class="chart-card h-100">
+                <div class="chart-card-header">
+                    <span class="chart-card-title">
+                        <span class="chart-icon" style="background:rgba(37,99,235,0.1);color:#2563eb">
+                            <i class="bi bi-pie-chart-fill"></i>
+                        </span>
+                        Signal Distribution
+                    </span>
+                    <span class="chart-card-badge">@totalCount total</span>
+                </div>
+                <div class="chart-canvas-wrap" style="height: 210px;">
+                    <canvas id="decisionChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#10b981"></span>
+                        <span>BUY</span>
+                        <span class="legend-value">@Model.BuyCount</span>
+                        <span class="legend-pct">(@(totalCount > 0 ? Math.Round((double)Model.BuyCount / totalCount * 100) : 0)%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#f59e0b"></span>
+                        <span>HOLD</span>
+                        <span class="legend-value">@Model.HoldCount</span>
+                        <span class="legend-pct">(@(totalCount > 0 ? Math.Round((double)Model.HoldCount / totalCount * 100) : 0)%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#ef4444"></span>
+                        <span>SELL</span>
+                        <span class="legend-value">@Model.SellCount</span>
+                        <span class="legend-pct">(@(totalCount > 0 ? Math.Round((double)Model.SellCount / totalCount * 100) : 0)%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bar: Sector Breakdown -->
+        <div class="col-lg-4">
+            <div class="chart-card h-100">
+                <div class="chart-card-header">
+                    <span class="chart-card-title">
+                        <span class="chart-icon" style="background:rgba(16,185,129,0.1);color:#10b981">
+                            <i class="bi bi-bar-chart-fill"></i>
+                        </span>
+                        Reports by Sector
+                    </span>
+                    <span class="chart-card-badge">@(Model.SectorCounts?.Count ?? 0) sectors</span>
+                </div>
+                <div class="chart-canvas-wrap" style="height: 210px;">
+                    <canvas id="sectorChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confidence Bars -->
+        <div class="col-lg-4">
+            <div class="chart-card h-100">
+                <div class="chart-card-header">
+                    <span class="chart-card-title">
+                        <span class="chart-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b">
+                            <i class="bi bi-speedometer2"></i>
+                        </span>
+                        Average Confidence by Signal
+                    </span>
+                    <span class="chart-card-badge">@totalAvgConf% Overall</span>
+                </div>
+                <div class="conf-section mt-1">
+                    <div class="conf-item">
+                        <div class="conf-header">
+                            <span class="conf-label" style="color:#10b981">BUY</span>
+                            <span class="conf-val" style="color:#10b981">@Model.BuyAverageConfidence%</span>
+                        </div>
+                        <div class="conf-bar">
+                            <div class="conf-fill" id="confBuy" data-width="@Model.BuyAverageConfidence" style="width:0;background:linear-gradient(90deg,#10b981,#059669)"></div>
+                        </div>
+                    </div>
+                    <div class="conf-item">
+                        <div class="conf-header">
+                            <span class="conf-label" style="color:#ef4444">SELL</span>
+                            <span class="conf-val" style="color:#ef4444">@Model.SellAverageConfidence%</span>
+                        </div>
+                        <div class="conf-bar">
+                            <div class="conf-fill" id="confSell" data-width="@Model.SellAverageConfidence" style="width:0;background:linear-gradient(90deg,#ef4444,#dc2626)"></div>
+                        </div>
+                    </div>
+                    <div class="conf-item">
+                        <div class="conf-header">
+                            <span class="conf-label" style="color:#f59e0b">HOLD</span>
+                            <span class="conf-val" style="color:#f59e0b">@Model.HoldAverageConfidence%</span>
+                        </div>
+                        <div class="conf-bar">
+                            <div class="conf-fill" id="confHold" data-width="@Model.HoldAverageConfidence" style="width:0;background:linear-gradient(90deg,#f59e0b,#d97706)"></div>
+                        </div>
+                    </div>
+                    <div class="conf-item">
+                        <div class="conf-header">
+                            <span class="conf-label" style="color:#0284c7">Overall</span>
+                            <span class="conf-val" style="color:#0284c7">@totalAvgConf%</span>
+                        </div>
+                        <div class="conf-bar">
+                            <div class="conf-fill" id="confOverall" data-width="@totalAvgConf" style="width:0;background:linear-gradient(90deg,#0284c7,#38bdf8)"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Daily Trend Full Width ── -->
+    @if (Model.Results != null && Model.Results.Any())
+    {
+        var dailyCounts = Model.Results
+            .GroupBy(r => r.CreatedDate.Date)
+            .OrderBy(g => g.Key)
+            .Select(g => new { date = g.Key, count = g.Count() })
+            .ToList();
+
+        if (dailyCounts.Any())
+        {
+            <div class="chart-card mb-4">
+                <div class="chart-card-header">
+                    <span class="chart-card-title">
+                        <span class="chart-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6">
+                            <i class="bi bi-graph-up"></i>
+                        </span>
+                        Daily Report Volume Trend
+                    </span>
+                    <span class="chart-card-badge">@dailyCounts.Sum(d => d.count) reports · @dailyCounts.Count days</span>
+                </div>
+                <div class="chart-canvas-wrap" style="height: 180px;">
+                    <canvas id="dailyTrendChart"></canvas>
+                </div>
+            </div>
+        }
+    }
+
+    <!-- ── Results Table ── -->
+    <div class="results-card mb-4">
         <div class="results-header">
-            <div class="d-flex align-items-center gap-2">
-                <h6><i class="bi bi-table me-2" style="color:var(--accent)"></i>Results</h6>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h6>
+                    <i class="bi bi-table" style="color:var(--accent)"></i>
+                    Results
+                </h6>
                 @if (Model.Results != null && Model.Results.Any())
                 {
-                    <span class="badge bg-primary">@Model.Results.TotalItemCount total records</span>
+                    <span class="stat-pill stat-pill-buy">
+                        <i class="bi bi-arrow-up-circle me-1"></i>@Model.BuyCount BUY
+                    </span>
+                    <span class="stat-pill stat-pill-hold">
+                        <i class="bi bi-pause-circle me-1"></i>@Model.HoldCount HOLD
+                    </span>
+                    <span class="stat-pill stat-pill-sell">
+                        <i class="bi bi-arrow-down-circle me-1"></i>@Model.SellCount SELL
+                    </span>
+                    <span class="badge bg-secondary" style="font-size:.72rem;font-weight:700;border-radius:99px;padding:.2rem .6rem">
+                        @Model.Results.TotalItemCount total records
+                    </span>
                 }
             </div>
             @if (Model.Results != null && Model.Results.Any())
@@ -104,14 +707,14 @@
                     <a asp-action="ExportExcel"
                        asp-route-startDate="@Model.Filter.StartDate.ToString("yyyy-MM-dd")"
                        asp-route-endDate="@Model.Filter.EndDate.ToString("yyyy-MM-dd")"
-                       class="btn btn-outline-success btn-sm">
-                        <i class="bi bi-file-earmark-excel me-1"></i>Export to Excel
+                       class="btn btn-export btn-export-excel">
+                        <i class="bi bi-file-earmark-excel"></i>Excel
                     </a>
                     <a asp-action="ExportPdf"
                        asp-route-startDate="@Model.Filter.StartDate.ToString("yyyy-MM-dd")"
                        asp-route-endDate="@Model.Filter.EndDate.ToString("yyyy-MM-dd")"
-                       class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Export to PDF
+                       class="btn btn-export btn-export-pdf">
+                        <i class="bi bi-file-earmark-pdf"></i>PDF
                     </a>
                 </div>
             }
@@ -124,37 +727,52 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th style="padding-left:1.25rem">Title</th>
+                                <th>Title</th>
                                 <th>Headline</th>
                                 <th>Date</th>
                                 <th>Sector</th>
-                                <th style="padding-right:1.25rem">Created By</th>
+                                <th>Signal</th>
+                                <th>Conf.</th>
+                                <th>Created By</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var item in Model.Results)
                             {
+                                string signalClass = item.Decision switch
+                                {
+                                    "BUY"  => "signal-buy",
+                                    "SELL" => "signal-sell",
+                                    _      => "signal-hold"
+                                };
+                                string confColor = item.Decision switch
+                                {
+                                    "BUY"  => "#10b981",
+                                    "SELL" => "#ef4444",
+                                    _      => "#f59e0b"
+                                };
                                 <tr>
-                                    <td style="padding-left:1.25rem">
-                                        <strong style="font-size:.9rem">@item.NewsTitle</strong>
+                                    <td class="title-cell" title="@item.NewsTitle">@item.NewsTitle</td>
+                                    <td class="headline-cell">@item.Headline</td>
+                                    <td class="date-cell">
+                                        <i class="bi bi-clock me-1 opacity-50"></i>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")
+                                    </td>
+                                    <td><span class="sector-badge">@item.CategoryName</span></td>
+                                    <td><span class="signal-badge @signalClass">@item.Decision</span></td>
+                                    <td>
+                                        <div class="conf-mini-bar">
+                                            <div class="conf-mini-track">
+                                                <div class="conf-mini-fill" style="width:@item.ConfidenceScore%;background:@confColor"></div>
+                                            </div>
+                                            <span class="conf-mini-val">@item.ConfidenceScore%</span>
+                                        </div>
                                     </td>
                                     <td>
-                                        <span style="color:var(--text-muted);font-size:.82rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
-                                            @item.Headline
-                                        </span>
-                                    </td>
-                                    <td style="white-space:nowrap;color:var(--text-muted);font-size:.82rem">
-                                        <i class="bi bi-clock me-1"></i>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-secondary">@item.CategoryName</span>
-                                    </td>
-                                    <td style="padding-right:1.25rem">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#db2777);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.75rem;flex-shrink:0">
+                                        <div class="creator-chip">
+                                            <div class="creator-avatar">
                                                 @(item.CreatedByName?.Length > 0 ? item.CreatedByName[0].ToString().ToUpper() : "?")
                                             </div>
-                                            <span style="font-size:.875rem">@item.CreatedByName</span>
+                                            <span class="creator-name">@item.CreatedByName</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -165,10 +783,14 @@
             }
             else
             {
-                <div class="empty-state">
-                    <div class="empty-icon">📭</div>
+                <div class="stats-empty">
+                    <div class="stats-empty-icon">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent);opacity:.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                        </svg>
+                    </div>
                     <h6>No reports found</h6>
-                    <p style="font-size:.875rem">No trading analysis reports were found for the selected date range.</p>
+                    <p>No trading analysis reports were found for the selected date range.</p>
                 </div>
             }
         </div>
@@ -176,20 +798,25 @@
 
     @if (Model.Results != null && Model.Results.Any())
     {
-        <!-- Pagination Controls -->
         @await Html.PartialAsync("_Pagination", Model.Results)
     }
 }
 else
 {
-    <div class="text-center py-5" style="color:var(--text-muted)">
-        <div style="font-size:4rem;opacity:.3;margin-bottom:1rem">📊</div>
-        <h6 style="color:var(--text-muted)">Select a date range above to generate a statistical report</h6>
+    <div class="stats-empty" style="margin-top:2rem">
+        <div class="stats-empty-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent);opacity:.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+            </svg>
+        </div>
+        <h6>Select a date range to get started</h6>
+        <p>Choose a start and end date above, then click <strong>Generate Report</strong> to view statistics.</p>
     </div>
 }
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         function validateDates() {
             var startDateStr = document.getElementById("startDate").value;
@@ -202,5 +829,223 @@ else
             }
             return true;
         }
+
+        (function() {
+            var buyCount  = @Model.BuyCount;
+            var sellCount = @Model.SellCount;
+            var holdCount = @Model.HoldCount;
+            var totalCount = buyCount + sellCount + holdCount;
+
+            var sectorLabels = @Html.Raw(Json.Serialize(Model.SectorCounts?.Keys ?? Enumerable.Empty<string>()));
+            var sectorValues = @Html.Raw(Json.Serialize(Model.SectorCounts?.Values ?? Enumerable.Empty<int>()));
+
+            var dailyLabels = @Html.Raw(Json.Serialize(
+                (Model.Results?.GroupBy(r => r.CreatedDate.Date)
+                               .OrderBy(g => g.Key)
+                               .Select(g => g.Key.ToString("MM-dd"))
+                               .ToList() ?? new List<string>())
+            ));
+            var dailyValues = @Html.Raw(Json.Serialize(
+                (Model.Results?.GroupBy(r => r.CreatedDate.Date)
+                               .OrderBy(g => g.Key)
+                               .Select(g => g.Count())
+                               .ToList() ?? new List<int>())
+            ));
+
+            var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+            function getChartColors() {
+                return {
+                    text:  isDark ? '#94a3b8' : '#374151',
+                    grid:  isDark ? 'rgba(255,255,255,0.05)' : 'rgba(55,65,81,0.07)',
+                    surface: isDark ? '#1e2236' : '#ffffff',
+                    border: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'
+                };
+            }
+
+            function renderCharts() {
+                var c = getChartColors();
+
+                /* ── Doughnut: Signal Distribution ── */
+                var dc = document.getElementById('decisionChart');
+                if (dc) {
+                    if (dc.chart) dc.chart.destroy();
+                    if (totalCount > 0) {
+                        dc.chart = new Chart(dc, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['BUY', 'HOLD', 'SELL'],
+                                datasets: [{
+                                    data: [buyCount, holdCount, sellCount],
+                                    backgroundColor: ['rgba(16,185,129,0.85)', 'rgba(245,158,11,0.85)', 'rgba(239,68,68,0.85)'],
+                                    borderColor: [c.surface, c.surface, c.surface],
+                                    borderWidth: 3,
+                                    hoverOffset: 8,
+                                    hoverBorderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                cutout: '70%',
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: c.surface,
+                                        titleColor: c.text,
+                                        bodyColor: c.text,
+                                        borderColor: c.border,
+                                        borderWidth: 1,
+                                        padding: 10,
+                                        cornerRadius: 10,
+                                        callbacks: {
+                                            label: function(ctx) {
+                                                var pct = totalCount > 0 ? Math.round(ctx.raw / totalCount * 100) : 0;
+                                                return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+
+                /* ── Bar: Sector Breakdown ── */
+                var sc = document.getElementById('sectorChart');
+                if (sc) {
+                    if (sc.chart) sc.chart.destroy();
+                    if (sectorLabels && sectorLabels.length > 0) {
+                        var palette = ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#64748b'];
+                        var barColors = sectorLabels.map(function(_, i) { return palette[i % palette.length]; });
+                        sc.chart = new Chart(sc, {
+                            type: 'bar',
+                            data: {
+                                labels: sectorLabels,
+                                datasets: [{
+                                    label: 'Reports',
+                                    data: sectorValues,
+                                    backgroundColor: barColors.map(function(c) { return c + 'cc'; }),
+                                    borderColor: barColors,
+                                    borderWidth: 1.5,
+                                    borderRadius: 8,
+                                    borderSkipped: false
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: c.surface,
+                                        titleColor: c.text,
+                                        bodyColor: c.text,
+                                        borderColor: c.border,
+                                        borderWidth: 1,
+                                        padding: 10,
+                                        cornerRadius: 10
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        grid: { display: false },
+                                        ticks: { color: c.text, font: { size: 10, weight: '600' } }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: c.grid },
+                                        ticks: { color: c.text, precision: 0, font: { size: 10 } }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+
+                /* ── Line: Daily Volume Trend ── */
+                var lc = document.getElementById('dailyTrendChart');
+                if (lc) {
+                    if (lc.chart) lc.chart.destroy();
+                    if (dailyLabels && dailyLabels.length > 0) {
+                        lc.chart = new Chart(lc, {
+                            type: 'line',
+                            data: {
+                                labels: dailyLabels,
+                                datasets: [{
+                                    label: 'Reports',
+                                    data: dailyValues,
+                                    borderColor: '#8b5cf6',
+                                    backgroundColor: 'rgba(139,92,246,0.07)',
+                                    borderWidth: 2.5,
+                                    fill: true,
+                                    tension: 0.4,
+                                    pointRadius: 3,
+                                    pointBackgroundColor: '#8b5cf6',
+                                    pointBorderColor: c.surface,
+                                    pointBorderWidth: 2,
+                                    pointHoverRadius: 6,
+                                    pointHoverBackgroundColor: '#8b5cf6',
+                                    pointHoverBorderColor: c.surface
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: c.surface,
+                                        titleColor: c.text,
+                                        bodyColor: c.text,
+                                        borderColor: c.border,
+                                        borderWidth: 1,
+                                        padding: 10,
+                                        cornerRadius: 10,
+                                        mode: 'index',
+                                        intersect: false
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        grid: { display: false },
+                                        ticks: { color: c.text, font: { size: 10 } }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: c.grid },
+                                        ticks: { color: c.text, precision: 0, font: { size: 10 } }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Animate confidence bars on load
+            function animateConfBars() {
+                ['confBuy', 'confSell', 'confHold', 'confOverall'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) {
+                        var target = el.getAttribute('data-width');
+                        setTimeout(function() {
+                            el.style.width = target + '%';
+                        }, 300);
+                    }
+                });
+            }
+
+            renderCharts();
+            animateConfBars();
+
+            // Re-render charts when theme toggles
+            var themeObserver = new MutationObserver(function() {
+                isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                renderCharts();
+                animateConfBars();
+            });
+            themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
+        })();
     </script>
 }
