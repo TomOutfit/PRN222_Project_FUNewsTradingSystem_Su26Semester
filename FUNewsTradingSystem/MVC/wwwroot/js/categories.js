@@ -195,12 +195,13 @@ function submitEditForm() {
 }
 
 // V. THAY ĐỔI NHANH TRẠNG THÁI ACTIVE BẰNG CÔNG TẮC (Hiệu ứng Spring scale mượt mà)
-function toggleActive(id, checkbox) {
-    const originalState = !checkbox.checked;
+function toggleActive(id, toggleBtn) {
+    const labelEl = toggleBtn.nextElementSibling;
+    const isCurrentlyChecked = toggleBtn.classList.contains('checked');
 
-    // Hiệu ứng vật lý nảy nhẹ khi nhấn vào checkbox
-    checkbox.style.transform = 'scale(1.2)';
-    setTimeout(() => checkbox.style.transform = '', 200);
+    // Spring bounce animation on click
+    toggleBtn.style.transform = 'scale(1.25)';
+    setTimeout(() => toggleBtn.style.transform = '', 250);
 
     fetch(`/Staff/Categories/ToggleActive/${id}`, {
         method: 'POST',
@@ -211,17 +212,27 @@ function toggleActive(id, checkbox) {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                checkbox.checked = data.newIsActive;
+                if (data.newIsActive) {
+                    toggleBtn.classList.add('checked');
+                    if (labelEl) {
+                        labelEl.textContent = 'Active';
+                        labelEl.style.color = '#059669';
+                    }
+                } else {
+                    toggleBtn.classList.remove('checked');
+                    if (labelEl) {
+                        labelEl.textContent = 'Inactive';
+                        labelEl.style.color = '#64748b';
+                    }
+                }
                 if (window.ToastHelpers) {
                     window.ToastHelpers.showSuccess('Category status updated!');
                 }
             } else {
-                checkbox.checked = originalState;
                 showToastError(data.message || 'Failed to change category status.');
             }
         })
         .catch(err => {
-            checkbox.checked = originalState;
             showToastError('Network error. Status change reverted.');
         });
 }

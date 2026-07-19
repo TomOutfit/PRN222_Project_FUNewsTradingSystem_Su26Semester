@@ -9,82 +9,314 @@
 }
 
 <style>
+    /* ── Stat Chips ── */
     .stat-chip {
         display: inline-flex;
         align-items: center;
-        gap: .5rem;
+        gap: .45rem;
         padding: .45rem 1rem;
         border-radius: 30px;
         font-size: .8125rem;
         font-weight: 600;
+        border: 1px solid;
+        transition: transform .2s;
     }
-    .toggle-switch { cursor: pointer; }
+    .stat-chip:hover { transform: translateY(-1px); }
+    .stat-chip.active-chip {
+        background: rgba(16,185,129,.08);
+        color: #059669;
+        border-color: rgba(16,185,129,.25);
+    }
+    .stat-chip.inactive-chip {
+        background: rgba(100,116,139,.06);
+        color: #64748b;
+        border-color: rgba(100,116,139,.2);
+    }
 
-    .table tbody tr td:first-child { padding-left: 1.25rem; }
-    .table tbody tr td:last-child  { padding-right: 1.25rem; }
-    .table thead tr th:first-child { padding-left: 1.25rem; }
-    .table thead tr th:last-child  { padding-right: 1.25rem; }
-
-    .cat-name { font-weight: 600; font-size: .9rem; }
-    .cat-desc { font-size: .82rem; color: var(--text-muted); }
-    .parent-tag {
-        font-size: .78rem;
-        background: rgba(124,58,237,.1);
-        color: var(--accent);
+    /* ════════════════════════════════════════════
+       PREMIUM CATEGORY TABLE
+       ════════════════════════════════════════════ */
+    .cat-table-card {
+        background: var(--surface-card);
         border-radius: 20px;
-        padding: .2em .65em;
-        font-weight: 500;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.3s ease;
     }
-    [data-bs-theme="dark"] .parent-tag { background: rgba(124,58,237,.2); }
+    .cat-table-card:hover { box-shadow: var(--shadow-lg); }
 
-    .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-muted); }
-    .empty-state .empty-icon { font-size:3.5rem; margin-bottom:1rem; opacity:.35; }
+    .cat-table-header {
+        background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #064e3b 100%);
+        padding: 1rem 1.5rem;
+        display: flex; align-items: center; justify-content: space-between;
+        position: relative; overflow: hidden;
+    }
+    .cat-table-header::before {
+        content: '';
+        position: absolute; top: 0; left: -100%;
+        width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(52,211,153,0.15), transparent);
+        animation: headerShimmer 3s ease-in-out infinite;
+    }
+    @@keyframes headerShimmer {
+        0%   { left: -60%; }
+        100% { left: 120%; }
+    }
+    .cat-table-header-title {
+        display: flex; align-items: center; gap: .6rem;
+        color: rgba(255,255,255,0.85);
+        font-weight: 700; font-size: .875rem;
+    }
+    .cat-table-header-title i { color: #34d399; font-size: 1.1rem; }
+    .cat-table-header-count {
+        background: rgba(52,211,153,0.15);
+        border: 1px solid rgba(52,211,153,0.25);
+        color: #34d399;
+        font-size: .72rem; font-weight: 700;
+        padding: .2rem .6rem; border-radius: 99px;
+    }
+
+    /* ── Column Headers ── */
+    .cat-thead th {
+        background: linear-gradient(180deg, rgba(248,250,252,0.95) 0%, rgba(241,245,249,0.9) 100%);
+        color: #64748b !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        font-size: .68rem !important;
+        letter-spacing: .08em !important;
+        padding: .75rem 1.1rem !important;
+        border-bottom: 2px solid var(--border) !important;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    [data-bs-theme="dark"] .cat-thead th {
+        background: linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.9) 100%);
+        border-bottom-color: rgba(255,255,255,0.06) !important;
+    }
+    .cat-thead th .th-inner { display: flex; align-items: center; gap: .35rem; }
+    .cat-thead th .th-icon {
+        width: 18px; height: 18px;
+        border-radius: 5px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: .7rem;
+        background: rgba(16,185,129,.08);
+        color: #059669;
+    }
+    [data-bs-theme="dark"] .cat-thead th .th-icon {
+        background: rgba(52,211,153,.1);
+        color: #34d399;
+    }
+
+    /* ── Table Rows ── */
+    .cat-tbody tr {
+        border-bottom: 1px solid var(--border) !important;
+        background: var(--surface-card);
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .cat-tbody tr:last-child { border-bottom: none !important; }
+    .cat-tbody tr:hover { background: rgba(16,185,129,.05) !important; transform: translateX(2px); }
+    [data-bs-theme="dark"] .cat-tbody tr:hover { background: rgba(52,211,153,.05) !important; }
+    .cat-tbody td {
+        padding: .85rem 1.1rem !important;
+        vertical-align: middle;
+        color: var(--text-main);
+        font-size: .85rem;
+    }
+    .cat-tbody .row-num { color: var(--text-muted); font-size: .8rem; width: 52px; }
+
+    /* ── Row Entrance Animation ── */
+    @@keyframes catRowEntrance {
+        from { opacity: 0; transform: translateY(4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .cat-tbody tr { animation: catRowEntrance 0.35s ease both; }
+    .cat-tbody tr:nth-child(1)  { animation-delay: 0.03s; }
+    .cat-tbody tr:nth-child(2)  { animation-delay: 0.06s; }
+    .cat-tbody tr:nth-child(3)  { animation-delay: 0.09s; }
+    .cat-tbody tr:nth-child(n+4) { animation-delay: 0.12s; }
+
+    /* ── Category Name ── */
+    .cat-name { font-weight: 600; font-size: .875rem; color: var(--text-main); }
+    .cat-desc { font-size: .78rem; color: var(--text-muted); margin-top: .1rem; }
+
+    /* ── Parent Tag ── */
+    .parent-tag {
+        display: inline-flex; align-items: center; gap: .25rem;
+        font-size: .72rem; font-weight: 700;
+        background: rgba(16,185,129,.08);
+        color: #059669;
+        border-radius: 20px; padding: .2em .6em;
+        border: 1px solid rgba(16,185,129,.2);
+    }
+    [data-bs-theme="dark"] .parent-tag {
+        background: rgba(52,211,153,.1);
+        color: #34d399;
+        border-color: rgba(52,211,153,.25);
+    }
+
+    /* ── Toggle Switch ── */
+    .cat-toggle {
+        width: 42px; height: 22px;
+        border-radius: 99px;
+        background: rgba(100,116,139,.2);
+        border: none;
+        position: relative;
+        cursor: pointer;
+        transition: background .25s ease;
+    }
+    .cat-toggle::after {
+        content: '';
+        position: absolute;
+        width: 16px; height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        top: 3px; left: 3px;
+        transition: transform .25s cubic-bezier(0.34,1.56,0.64,1);
+        box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .cat-toggle.checked {
+        background: linear-gradient(135deg, #059669, #10b981);
+    }
+    .cat-toggle.checked::after {
+        transform: translateX(20px);
+    }
+    .cat-toggle-label {
+        font-size: .73rem; font-weight: 700;
+        margin-left: .5rem;
+        transition: color .2s;
+    }
+
+    /* ── Action Buttons ── */
+    .cat-btn {
+        display: inline-flex; align-items: center; gap: .3rem;
+        padding: .4rem .85rem;
+        border-radius: 10px;
+        font-size: .76rem; font-weight: 700;
+        border: 1.5px solid;
+        cursor: pointer;
+        transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
+        white-space: nowrap;
+        position: relative; overflow: hidden;
+    }
+    .cat-btn::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: rgba(255,255,255,0.15);
+        transform: translateX(-100%);
+        transition: transform .3s ease;
+    }
+    .cat-btn:hover::after { transform: translateX(0); }
+    .cat-btn:active { transform: scale(0.95) !important; }
+    .cat-btn-edit {
+        background: rgba(16,185,129,.07);
+        border-color: rgba(16,185,129,.2);
+        color: #059669;
+    }
+    .cat-btn-edit:hover {
+        background: #059669; border-color: #059669; color: #fff;
+        box-shadow: 0 4px 16px rgba(16,185,129,.4);
+        transform: translateY(-2px);
+    }
+    .cat-btn-delete {
+        background: rgba(239,68,68,.07);
+        border-color: rgba(239,68,68,.2);
+        color: #dc2626;
+    }
+    .cat-btn-delete:hover {
+        background: #dc2626; border-color: #dc2626; color: #fff;
+        box-shadow: 0 4px 16px rgba(239,68,68,.4);
+        transform: translateY(-2px);
+    }
+
+    /* ── Row shimmer ── */
+    @@keyframes rowShimmer { 0% { left: -75%; } 100% { left: 120%; } }
+    .cat-tbody tr .row-shimmer {
+        position: absolute; top: 0; bottom: 0; width: 50%;
+        background: linear-gradient(90deg, transparent, rgba(16,185,129,0.04), transparent);
+        pointer-events: none; display: none;
+    }
+    .cat-tbody tr:hover .row-shimmer { display: block; animation: rowShimmer 1.2s ease-in-out; }
+
+    /* ── Table wrapper ── */
+    .cat-table-wrap { border-radius: 0 0 20px 20px; overflow: hidden; border-top: none; }
+
+    /* ── Empty State ── */
+    .fnts-empty { text-align: center; padding: 4rem 2rem; display: flex; flex-direction: column; align-items: center; gap: .6rem; }
+    .fnts-empty-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(16,185,129,.06); display: flex; align-items: center; justify-content: center; }
+    [data-bs-theme="dark"] .fnts-empty-icon { background: rgba(16,185,129,.1); }
+    .fnts-empty h6 { font-weight: 700; color: var(--text-muted); margin: 0; }
+    .fnts-empty p   { color: var(--text-muted); font-size: .85rem; margin: 0; }
 </style>
 
 <div class="page-header">
     <div>
         <h2>
             <i class="bi bi-folder2-fill me-2"
-               style="background:linear-gradient(135deg,#059669,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>
+               style="background:var(--brand-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>
             Category Management
         </h2>
         <p class="text-muted mb-0">Manage market sector categories used to organise trading news.</p>
     </div>
-    <div class="d-flex align-items-center gap-3">
-        <span class="stat-chip" style="background:rgba(16,185,129,.1);color:#059669">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="stat-chip active-chip">
             <i class="bi bi-check-circle-fill"></i>@activeCount Active
         </span>
-        <span class="stat-chip" style="background:rgba(100,116,139,.1);color:var(--text-muted)">
+        <span class="stat-chip inactive-chip">
             <i class="bi bi-pause-circle-fill"></i>@inactiveCount Inactive
         </span>
-        <button class="btn btn-success" onclick="openCreateModal()">
+        <button class="btn fintech-btn-primary" onclick="openCreateModal()">
             <i class="bi bi-plus-circle me-1"></i>Add Category
         </button>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body p-0">
+<!-- ── Premium Table Card ── -->
+<div class="cat-table-card">
+    <!-- Gradient Header -->
+    <div class="cat-table-header">
+        <div class="cat-table-header-title">
+            <i class="bi bi-folder2-open"></i>
+            All Categories
+        </div>
+        <span class="cat-table-header-count">@Model.TotalItemCount categories</span>
+    </div>
+
+    <div class="cat-table-wrap">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
-                <thead>
+                <thead class="cat-thead">
                     <tr>
-                        <th>#</th>
-                        <th>Category</th>
-                        <th>Parent</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
+                        <th>
+                            <div class="th-inner"><span class="th-icon"><i class="bi bi-hash"></i></span>#</div>
+                        </th>
+                        <th>
+                            <div class="th-inner"><span class="th-icon"><i class="bi bi-folder2"></i></span>Category</div>
+                        </th>
+                        <th>
+                            <div class="th-inner"><span class="th-icon"><i class="bi bi-diagram-2"></i></span>Parent</div>
+                        </th>
+                        <th>
+                            <div class="th-inner"><span class="th-icon"><i class="bi bi-toggle-on"></i></span>Status</div>
+                        </th>
+                        <th class="text-end">
+                            <div class="th-inner justify-content-end"><span class="th-icon"><i class="bi bi-gear"></i></span>Actions</div>
+                        </th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="cat-tbody">
                     @if (!Model.Any())
                     {
                         <tr>
                             <td colspan="5">
-                                <div class="empty-state">
-                                    <div class="empty-icon">📂</div>
-                                    <h6 style="color:var(--text-muted)">No categories yet</h6>
-                                    <p style="font-size:.875rem">Click "Add Category" to create the first one.</p>
+                                <div class="fnts-empty">
+                                    <div class="fnts-empty-icon">
+                                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:#34d399;opacity:.6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/>
+                                        </svg>
+                                    </div>
+                                    <h6>No categories yet</h6>
+                                    <p>Click "Add Category" to create the first one.</p>
                                 </div>
                             </td>
                         </tr>
@@ -94,8 +326,7 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td style="color:var(--text-muted);font-size:.82rem;width:50px">@item.CategoryId</td>
-
+                                <td class="row-num">@item.CategoryId</td>
                                 <td>
                                     <div class="cat-name">@item.CategoryName</div>
                                     @if (!string.IsNullOrWhiteSpace(item.CategoryDescription))
@@ -103,47 +334,41 @@
                                         <div class="cat-desc">@item.CategoryDescription</div>
                                     }
                                 </td>
-
                                 <td>
                                     @if (item.ParentCategoryName != null)
                                     {
                                         <span class="parent-tag">
-                                            <i class="bi bi-diagram-2 me-1"></i>@item.ParentCategoryName
+                                            <i class="bi bi-diagram-2"></i>@item.ParentCategoryName
                                         </span>
                                     }
                                     else
                                     {
-                                        <span style="color:var(--text-muted);font-size:.82rem">—</span>
+                                        <span class="text-muted">—</span>
                                     }
                                 </td>
-
                                 <td>
-                                    <div class="form-check form-switch mb-0 toggle-switch">
-                                        <input class="form-check-input"
-                                               type="checkbox"
-                                               role="switch"
-                                               id="toggle-@item.CategoryId"
-                                               @(item.IsActive ? "checked" : null)
-                                               onchange="toggleActive(@item.CategoryId, this)" />
-                                        <label class="form-check-label" for="toggle-@item.CategoryId"
-                                               style="font-size:.8rem;color:var(--text-muted)">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button id="toggle-btn-@item.CategoryId"
+                                                class="cat-toggle @(item.IsActive ? "checked" : "")"
+                                                onclick="toggleActive(@item.CategoryId, this)"
+                                                aria-label="Toggle status">
+                                        </button>
+                                        <span class="cat-toggle-label @(item.IsActive ? "text-success" : "text-muted")">
                                             @(item.IsActive ? "Active" : "Inactive")
-                                        </label>
+                                        </span>
                                     </div>
                                 </td>
-
                                 <td class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary me-1"
-                                            onclick="openEditModal(@item.CategoryId)">
-                                        <i class="bi bi-pencil me-1"></i>Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#confirmDeleteModal"
-                                            data-entity-name="@item.CategoryName"
-                                            data-delete-url="/Staff/Categories/Delete/@item.CategoryId">
-                                        <i class="bi bi-trash me-1"></i>Delete
-                                    </button>
+                                    <a class="cat-btn cat-btn-edit me-1" onclick="openEditModal(@item.CategoryId)">
+                                        <i class="bi bi-pencil"></i>Edit
+                                    </a>
+                                    <a class="cat-btn cat-btn-delete"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#confirmDeleteModal"
+                                       data-entity-name="@item.CategoryName"
+                                       data-delete-url="/Staff/Categories/Delete/@item.CategoryId">
+                                        <i class="bi bi-trash"></i>Delete
+                                    </a>
                                 </td>
                             </tr>
                         }
@@ -168,8 +393,8 @@
             </div>
             <div id="modalBodyContainer" class="modal-body"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="btnSaveCategory" class="btn btn-success">
+                <button type="button" class="btn fintech-btn-outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnSaveCategory" class="btn fintech-btn-primary">
                     <span id="saveSpinner" class="spinner-border spinner-border-sm d-none me-1"></span>
                     <i class="bi bi-check-lg me-1"></i>Save
                 </button>
