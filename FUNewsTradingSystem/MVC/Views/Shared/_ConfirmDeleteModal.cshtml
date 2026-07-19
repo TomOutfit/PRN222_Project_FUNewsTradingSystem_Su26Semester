@@ -1,36 +1,43 @@
-@* Partial View: Modal xác nhận xóa dùng chung cho toàn hệ thống (Categories, Tags, Accounts...) *@
+@* Confirm Delete Modal — shared across Categories, Tags, Accounts *@
 
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="confirmDeleteModalLabel">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="border-radius:18px;overflow:hidden;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15)">
+            <div class="modal-header" style="background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:18px 18px 0 0">
+                <h5 class="modal-title text-white fw-bold" id="confirmDeleteModalLabel">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Deletion
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete <strong id="deleteEntityName" class="text-break"></strong>?</p>
-                <p class="text-danger mb-0"><small><i class="bi bi-info-circle me-1"></i>This action cannot be undone.</small></p>
-
-                @* Lưu trữ URL xóa tạm thời *@
+            <div class="modal-body" style="background:var(--surface-card)">
+                <div class="text-center mb-3">
+                    <div style="width:52px;height:52px;border-radius:50%;background:rgba(239,68,68,.08);display:flex;align-items:center;justify-content:center;margin:0 auto .875rem">
+                        <i class="bi bi-trash3-fill" style="font-size:1.4rem;color:#dc2626"></i>
+                    </div>
+                    <p class="mb-1 fw-semibold" style="font-size:.9rem">Delete this item permanently?</p>
+                    <p class="text-muted mb-0" style="font-size:.82rem">
+                        You are about to delete <strong id="deleteEntityName" class="text-break" style="color:var(--text-main)"></strong>.
+                    </p>
+                </div>
+                <div class="alert alert-danger py-2 px-3 d-none" id="deleteErrors" style="font-size:.82rem;border-radius:10px"></div>
+                <div class="d-flex align-items-start gap-2 mt-2" style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:.6rem .75rem">
+                    <i class="bi bi-info-circle-fill" style="color:#dc2626;font-size:.85rem;flex-shrink:0;margin-top:1px"></i>
+                    <span style="font-size:.78rem;color:#dc2626;font-weight:500">This action cannot be undone.</span>
+                </div>
                 <input type="hidden" id="deleteUrl" />
-
-                @* Nơi hiển thị thông báo lỗi nếu AJAX Server trả về thất bại *@
-                <div id="deleteErrors" class="alert alert-danger d-none mt-3"></div>
             </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="btnConfirmDelete" onclick="executeDelete()">
-                    <span id="deleteSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                    Delete
+            <div class="modal-footer" style="background:var(--surface);border-top:1px solid var(--border);border-radius:0 0 18px 18px">
+                <button type="button" class="btn fintech-btn-outline" data-bs-dismiss="modal" style="border-radius:10px">Cancel</button>
+                <button type="button" class="btn" id="btnConfirmDelete" onclick="executeDelete()"
+                        style="background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:none;border-radius:10px;font-weight:700;box-shadow:0 4px 14px rgba(220,38,38,.3);transition:all .2s">
+                    <span id="deleteSpinner" class="spinner-border spinner-border-sm d-none me-1" role="status" aria-hidden="true"></span>
+                    <i class="bi bi-trash me-1"></i>Delete
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-@* Form ẩn sinh Anti-Forgery Token để nhúng vào tiêu đề AJAX Request nhằm chống tấn công CSRF *@
 <form id="antiForgeryForm" method="post">
     @Html.AntiForgeryToken()
 </form>
@@ -38,81 +45,69 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var modalElement = document.getElementById('confirmDeleteModal');
-        if (modalElement) {
-            // Lắng nghe sự kiện trước khi hiển thị Modal của Bootstrap 5
-            modalElement.addEventListener('show.bs.modal', function (event) {
-                // Nút kích hoạt mở modal
-                var button = event.relatedTarget;
+        if (!modalElement) return;
 
-                // Trích xuất thông tin từ các thuộc tính data-entity-name và data-delete-url
-                var entityName = button.getAttribute('data-entity-name');
-                var deleteUrl = button.getAttribute('data-delete-url');
+        modalElement.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var entityName = button.getAttribute('data-entity-name');
+            var deleteUrl = button.getAttribute('data-delete-url');
 
-                // Điền dữ liệu vào các thẻ bên trong modal
-                document.getElementById('deleteEntityName').textContent = entityName;
-                document.getElementById('deleteUrl').value = deleteUrl;
+            document.getElementById('deleteEntityName').textContent = entityName || '';
+            document.getElementById('deleteUrl').value = deleteUrl || '';
 
-                // Reset lại trạng thái lỗi và nút bấm cũ
-                var errorDiv = document.getElementById('deleteErrors');
-                errorDiv.classList.add('d-none');
-                errorDiv.textContent = '';
+            var errorDiv = document.getElementById('deleteErrors');
+            errorDiv.classList.add('d-none');
+            errorDiv.textContent = '';
 
-                document.getElementById('btnConfirmDelete').removeAttribute('disabled');
-                document.getElementById('deleteSpinner').classList.add('d-none');
-            });
-        }
+            var btn = document.getElementById('btnConfirmDelete');
+            btn.removeAttribute('disabled');
+            btn.style.opacity = '1';
+        });
     });
 
     function executeDelete() {
         var deleteUrl = document.getElementById('deleteUrl').value;
-        var errorDiv = document.getElementById('deleteErrors');
+        var errorDiv  = document.getElementById('deleteErrors');
         var btnDelete = document.getElementById('btnConfirmDelete');
-        var spinner = document.getElementById('deleteSpinner');
+        var spinner   = document.getElementById('deleteSpinner');
+        var token     = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]')?.value;
 
-        // Thu thập Anti-Forgery Token bảo mật từ Form ẩn bên trên
-        var token = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]').value;
+        if (!deleteUrl || !token) return;
 
-        if (!deleteUrl) return;
-
-        // Trạng thái đang xử lý (Loading UI)
         btnDelete.setAttribute('disabled', 'true');
+        btnDelete.style.opacity = '0.7';
         spinner.classList.remove('d-none');
         errorDiv.classList.add('d-none');
 
-        // Gửi yêu cầu xóa bất đồng bộ qua AJAX POST (An toàn hơn GET)
         fetch(deleteUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'RequestVerificationToken': token // Truyền Token bảo mật lên Server
+                'RequestVerificationToken': token
             }
         })
-        .then(response => {
+        .then(function(response) {
             if (response.ok) {
-                var modalElement = document.getElementById('confirmDeleteModal');
-                var modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) modalInstance.hide();
-
+                var modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+                if (modal) modal.hide();
                 if (typeof window.refreshPageContentRealtime === 'function') {
                     window.refreshPageContentRealtime();
                 } else {
                     window.location.reload();
                 }
             } else {
-                return response.json().then(data => {
-                    throw new Error(data.message || "An error occurred while trying to delete this item.");
-                }).catch(() => {
-                    throw new Error("Server returned an error status code: " + response.status);
+                return response.json().then(function(data) {
+                    throw new Error(data.message || "An error occurred.");
+                }).catch(function(e) {
+                    throw new Error("Server returned status: " + response.status);
                 });
             }
         })
-        .catch(error => {
-            // Hiển thị lỗi lên giao diện modal nếu thất bại
+        .catch(function(error) {
             errorDiv.textContent = error.message;
             errorDiv.classList.remove('d-none');
-
-            // Trả lại trạng thái nút bấm cho phép thao tác lại
             btnDelete.removeAttribute('disabled');
+            btnDelete.style.opacity = '1';
             spinner.classList.add('d-none');
         });
     }

@@ -4,489 +4,1350 @@
     ViewData["Title"] = "Sign In — FUNewsTradingSystem";
 }
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Sign in to FUNewsTradingSystem — AI-powered market news & trading analysis." />
     <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
 
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-secondary-fixed": "#002113",
-                        "surface-container-lowest": "#ffffff",
-                        "inverse-on-surface": "#eff1f3",
-                        "surface-variant": "#e0e3e5",
-                        "surface-dim": "#d8dadc",
-                        "on-secondary-fixed-variant": "#005236",
-                        "primary-fixed-dim": "#bec6e0",
-                        "tertiary": "#000000",
-                        "tertiary-container": "#0d1c2f",
-                        "surface-bright": "#f7f9fb",
-                        "tertiary-fixed-dim": "#b9c7e0",
-                        "error-container": "#ffdad6",
-                        "surface-tint": "#565e74",
-                        "on-surface": "#191c1e",
-                        "secondary-fixed-dim": "#4edea3",
-                        "tertiary-fixed": "#d5e3fd",
-                        "outline-variant": "#c6c6cd",
-                        "on-primary-fixed": "#131b2e",
-                        "on-tertiary-fixed": "#0d1c2f",
-                        "error": "#ba1a1a",
-                        "inverse-surface": "#2d3133",
-                        "primary-fixed": "#dae2fd",
-                        "on-secondary": "#ffffff",
-                        "on-tertiary-container": "#76859b",
-                        "inverse-primary": "#bec6e0",
-                        "surface-container-highest": "#e0e3e5",
-                        "surface-container-high": "#e6e8ea",
-                        "on-tertiary": "#ffffff",
-                        "on-surface-variant": "#45464d",
-                        "on-tertiary-fixed-variant": "#3a485c",
-                        "surface-container-low": "#f2f4f6",
-                        "outline": "#76777d",
-                        "background": "#f7f9fb",
-                        "secondary-container": "#6cf8bb",
-                        "surface-container": "#eceef0",
-                        "on-primary-container": "#7c839b",
-                        "on-error": "#ffffff",
-                        "secondary": "#006c49",
-                        "on-primary-fixed-variant": "#3f465c",
-                        "secondary-fixed": "#6ffbbe",
-                        "primary-container": "#131b2e",
-                        "on-secondary-container": "#00714d",
-                        "on-primary": "#ffffff",
-                        "primary": "#000000",
-                        "on-error-container": "#93000a",
-                        "surface": "#f7f9fb",
-                        "on-background": "#191c1e"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
-                    },
-                    "spacing": {
-                        "gutter": "24px",
-                        "margin-mobile": "16px",
-                        "margin-desktop": "40px",
-                        "base": "8px",
-                        "container-max": "1440px"
-                    },
-                    "fontFamily": {
-                        "display-lg": ["Inter"],
-                        "body-sm": ["Inter"],
-                        "body-lg": ["Inter"],
-                        "title-md": ["Inter"],
-                        "headline-lg": ["Inter"],
-                        "label-caps": ["Inter"],
-                        "headline-lg-mobile": ["Inter"],
-                        "data-mono": ["Inter"]
-                    },
-                    "fontSize": {
-                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-                        "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
-                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
-                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
-                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
-                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
-                        "data-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "500" }]
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #070b14;
+            --surface:   #0d1424;
+            --card:      #111827;
+            --border:    rgba(255,255,255,0.08);
+            --emerald:   #10b981;
+            --emerald2:  #059669;
+            --blue:      #3b82f6;
+            --red:       #ef4444;
+            --amber:     #f59e0b;
+            --text:      #f9fafb;
+            --muted:     #9ca3af;
+            --faint:     #4b5563;
+            --glow:      rgba(16,185,129,0.15);
         }
-        [data-bs-theme="dark"] body {
-            background-color: #0f0f1a;
+
+        /* ── Light theme ── */
+        body.theme-light {
+            --bg:        #f5f6fa;
+            --surface:   #ffffff;
+            --card:      #f0f1f5;
+            --border:    rgba(0,0,0,0.08);
+            --emerald:   #059669;
+            --emerald2:  #047857;
+            --blue:      #2563eb;
+            --text:      #111827;
+            --muted:     #6b7280;
+            --faint:     #9ca3af;
+            --glow:      rgba(5,150,105,0.12);
         }
-        
-        /* ── Entry Keyframes ── */
+
+        /* ── Blue theme ── */
+        body.theme-blue {
+            --bg:        #050a18;
+            --surface:   #07122b;
+            --card:      #0a1830;
+            --border:    rgba(59,130,246,0.12);
+            --emerald:   #3b82f6;
+            --emerald2:  #2563eb;
+            --blue:      #60a5fa;
+            --text:      #e0f2fe;
+            --muted:     #7dd3fc;
+            --faint:     #38bdf8;
+            --glow:      rgba(59,130,246,0.15);
+        }
+
+        body.theme-blue .form-title .accent,
+        body.theme-blue .logo-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        body.theme-blue .fnts-input:focus ~ .fnts-label,
+        body.theme-blue .fnts-input:not(:placeholder-shown) ~ .fnts-label { color: #3b82f6; }
+        body.theme-blue .fnts-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.12); background: rgba(59,130,246,0.05); }
+        body.theme-blue .submit-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
+        }
+        body.theme-blue .submit-btn:hover { box-shadow: 0 8px 25px rgba(59,130,246,0.3); }
+        body.theme-blue .live-badge { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.25); color: #60a5fa; }
+        body.theme-blue .live-dot { background: #3b82f6; }
+        body.theme-blue .validity-dot .material-symbols-outlined { color: #3b82f6; }
+        body.theme-blue .fnts-input.is-valid { border-color: rgba(59,130,246,0.5); }
+        body.theme-blue .chart-card::after { background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent); }
+        body.theme-blue .right-panel::before {
+            background-image:
+                linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* ── Layout ── */
+        .page {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        /* ════════════════════════════════════
+           LEFT PANEL
+           ════════════════════════════════════ */
+        .left-panel {
+            display: none;
+            width: 50%;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg);
+            flex-shrink: 0;
+        }
+        @@media (min-width: 992px) { .left-panel { display: flex; } }
+
+        /* Ambient glows */
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: -200px; left: -150px;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            animation: orbFloat 8s ease-in-out infinite;
+        }
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -150px; right: -100px;
+            width: 400px; height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%);
+            pointer-events: none;
+            animation: orbFloat 10s ease-in-out infinite reverse;
+        }
+        @@keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50%       { transform: translate(20px, -20px) scale(1.05); }
+        }
+
+        /* Header bar */
+        .l-header {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 28px 32px 0;
+            animation: slideInLeft 0.9s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--emerald), var(--emerald2));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(16,185,129,0.35);
+        }
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo-version {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--faint);
+            margin-left: 2px;
+        }
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.25);
+            color: var(--emerald);
+            animation: fadeIn 1s ease 0.3s both;
+        }
+        .live-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--emerald);
+            animation: pulseDot 1.5s ease-in-out infinite;
+        }
+        @@keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(1.5); }
+        }
+
+        /* Ticker tape */
+        .ticker-wrap {
+            position: relative;
+            z-index: 10;
+            margin-top: 24px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: fadeIn 1s ease 0.4s both;
+        }
+        .ticker-inner {
+            display: flex;
+            width: max-content;
+            animation: tickerScroll 40s linear infinite;
+        }
+        .ticker-wrap:hover .ticker-inner { animation-play-state: paused; }
+        @@keyframes tickerScroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+        .ticker-sym  { color: var(--muted); }
+        .ticker-val  { color: var(--text); font-weight: 600; }
+        .ticker-up    { color: var(--emerald); }
+        .ticker-down  { color: var(--red); }
+
+        /* Main content */
+        .l-content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            padding: 20px 32px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Hero text */
+        .l-hero {
+            animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.5s both;
+        }
+        .l-hero-eyebrow {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #34d399;
+            margin-bottom: 10px;
+        }
+        .l-hero-title {
+            font-size: clamp(1.6rem, 3vw, 2.1rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .l-hero-title .accent {
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .l-hero-desc {
+            font-size: 0.82rem;
+            line-height: 1.65;
+            color: var(--muted);
+            max-width: 420px;
+        }
+
+        /* Charts grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.6s both;
+        }
+        .chart-card {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .chart-card::after {
+            content: '';
+            position: absolute;
+            left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(16,185,129,0.5), transparent);
+            animation: scanLine 4s linear infinite;
+            pointer-events: none;
+        }
+        @@keyframes scanLine {
+            0%   { top: 0; }
+            100% { top: 100%; }
+        }
+        .chart-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 12px 14px 6px;
+        }
+        .chart-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .chart-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 2px;
+        }
+        .chart-change {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--emerald);
+            margin-top: 1px;
+        }
+        .chart-canvas-wrap { padding: 0 14px 10px; }
+
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.7s both;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            background: rgba(16,185,129,0.05);
+            border-color: rgba(16,185,129,0.2);
+            transform: translateY(-2px);
+        }
+        .stat-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.62rem;
+            color: var(--faint);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+        .stat-label .material-symbols-outlined { font-size: 12px; }
+        .stat-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+        .stat-chg {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--emerald);
+        }
+        .stat-chg.neg { color: var(--red); }
+
+        /* Index row */
+        .index-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.8s both;
+        }
+        .index-card {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .index-card:hover {
+            background: rgba(16,185,129,0.04);
+            border-color: rgba(16,185,129,0.15);
+        }
+        .index-sym {
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--faint);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+        .index-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+        .index-chg {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+        }
+        .index-chg.up   { color: var(--emerald); }
+        .index-chg.down { color: var(--red); }
+
+        /* Bottom bar */
+        .l-footer {
+            position: relative;
+            z-index: 10;
+            padding: 16px 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.9s both;
+        }
+        .l-footer p {
+            font-size: 0.7rem;
+            color: var(--faint);
+        }
+        .l-footer-live {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: var(--faint);
+        }
+
+        /* ════════════════════════════════════
+           RIGHT PANEL
+           ════════════════════════════════════ */
+        .right-panel {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface);
+            position: relative;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        @@media (min-width: 992px) { .right-panel { width: 50%; } }
+
+        /* Spotlight */
+        .spotlight {
+            position: absolute;
+            pointer-events: none;
+            width: 450px; height: 450px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: left 0.12s, top 0.12s;
+            z-index: 0;
+        }
+
+        /* Grid background pattern */
+        .right-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        /* Radial fade from edges */
+        .right-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, transparent 30%, var(--surface) 100%);
+            pointer-events: none;
+        }
+
+        .form-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 540px;
+            padding: 48px 40px 32px;
+            animation: slideInRight 0.9s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        /* Mobile logo */
+        .mobile-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 32px;
+            animation: fadeIn 0.6s ease both;
+        }
+        @@media (min-width: 992px) { .mobile-logo { display: none; } }
+        .mobile-logo .logo-icon { width: 34px; height: 34px; }
+        .mobile-logo .logo-text { font-size: 1.1rem; }
+        .mobile-live-tag {
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.2);
+            color: var(--emerald);
+            letter-spacing: 0.08em;
+        }
+
+        /* Form header */
+        .form-header {
+            margin-bottom: 28px;
+            animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both;
+        }
+        .form-header-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both;
+        }
+        .form-title-group { flex: 1; }
+        .form-title {
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .form-subtitle {
+            font-size: 0.88rem;
+            color: var(--faint);
+        }
+
+        /* Theme switcher */
+        .theme-switcher {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .theme-switcher:hover {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .theme-switcher .material-symbols-outlined { font-size: 20px; color: var(--faint); transition: color 0.3s; }
+        .theme-switcher span:last-child { font-size: 0.55rem; color: var(--faint); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.3s; }
+        .theme-switcher:hover .material-symbols-outlined { color: var(--muted); }
+        .theme-switcher:hover span:last-child { color: var(--muted); }
+
+        /* Theme definitions */
+        .theme-switcher[data-theme="dark"]  { }
+        .theme-switcher[data-theme="light"] { }
+        .theme-switcher[data-theme="blue"]  { }
+
+        /* Alert */
+        .form-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.25);
+            animation: shakeAnim 0.4s ease both;
+        }
+        @@keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-5px); }
+            40%       { transform: translateX(5px); }
+            60%       { transform: translateX(-3px); }
+            80%       { transform: translateX(3px); }
+        }
+        .form-alert .material-symbols-outlined { color: var(--red); font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+        .form-alert .validation { font-size: 0.82rem; color: #fca5a5; }
+
+        /* Field groups */
+        .field-group {
+            margin-bottom: 22px;
+            animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .field-group:nth-child(2) { animation-delay: 0.18s; }
+        .field-group:nth-child(3) { animation-delay: 0.26s; }
+        .field-group:nth-child(4) { animation-delay: 0.34s; }
+        .field-group:nth-child(5) { animation-delay: 0.42s; }
+
+        .field-row-end {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 4px;
+        }
+        .forgot-link {
+            font-size: 0.75rem;
+            color: var(--blue);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .forgot-link:hover { color: #60a5fa; text-decoration: underline; }
+
+        /* Floating input */
+        .input-wrap {
+            position: relative;
+        }
+        .fnts-input {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 28px 48px 10px 18px;
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+            -webkit-appearance: none;
+            line-height: 1;
+        }
+        .fnts-input:focus {
+            border-color: var(--emerald);
+            background: rgba(16,185,129,0.05);
+            box-shadow: 0 0 0 4px rgba(16,185,129,0.12);
+        }
+        .fnts-input:hover:not(:focus) { border-color: rgba(255,255,255,0.22); }
+        .fnts-input.is-valid { border-color: rgba(16,185,129,0.5); }
+
+        .fnts-label {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--faint);
+            font-size: 1rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            pointer-events: none;
+            transition: all 0.22s ease;
+        }
+        .fnts-input:focus ~ .fnts-label,
+        .fnts-input:not(:placeholder-shown) ~ .fnts-label {
+            top: 12px;
+            transform: translateY(0);
+            font-size: 0.65rem;
+            color: var(--emerald);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .pw-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--faint);
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+        }
+        .pw-toggle:hover { color: var(--muted); }
+        .pw-toggle .material-symbols-outlined { font-size: 20px; }
+
+        .validity-dot {
+            position: absolute;
+            right: 44px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .fnts-input:focus ~ .validity-dot,
+        .fnts-input.is-valid ~ .validity-dot { opacity: 1; }
+        .validity-dot .material-symbols-outlined { font-size: 18px; color: var(--emerald); }
+
+        .field-error {
+            font-size: 0.72rem;
+            color: var(--red);
+            margin-top: 4px;
+            padding-left: 4px;
+            display: block;
+        }
+
+        /* Checkbox */
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .fnts-checkbox {
+            width: 16px; height: 16px;
+            accent-color: var(--emerald);
+            cursor: pointer;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .checkbox-label {
+            font-size: 0.82rem;
+            color: var(--muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Submit button */
+        .submit-btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald2) 60%, #047857 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.88rem;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 50px;
+            margin-top: 4px;
+        }
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s ease;
+        }
+        .submit-btn:hover::before { left: 100%; }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16,185,129,0.3);
+        }
+        .submit-btn:active { transform: translateY(0); }
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: wait;
+            transform: none;
+        }
+        .submit-btn .btn-content { display: flex; align-items: center; gap: 8px; }
+        .submit-btn .spinner {
+            display: none;
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .submit-btn .spinner.show { display: block; }
+        .submit-btn .btn-content.hidden { display: none; }
+        @@keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Form footer */
+        .form-footer {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .form-footer p {
+            font-size: 0.82rem;
+            color: var(--faint);
+        }
+        .form-footer a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .form-footer a:hover { text-decoration: underline; }
+
+        /* Mobile market strip */
+        .mobile-market {
+            display: block;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        @@media (min-width: 992px) { .mobile-market { display: none; } }
+        .mobile-market-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .mobile-market-header span {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--faint);
+        }
+        .mobile-market-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .mobile-market-scroll::-webkit-scrollbar { height: 3px; }
+        .mobile-market-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+        .mm-card {
+            flex-shrink: 0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+        }
+        .mm-sym { font-size: 0.62rem; color: var(--faint); margin-bottom: 2px; }
+        .mm-val { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 600; color: var(--text); }
+        .mm-chg { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; }
+        .mm-chg.up   { color: var(--emerald); }
+        .mm-chg.down { color: var(--red); }
+
+        /* ── Shared animations ── */
         @@keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
         @@keyframes fadeIn {
             from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @@keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(45px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            to   { opacity: 1; }
         }
         @@keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-45px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(-40px); }
+            to   { opacity: 1; transform: translateX(0); }
         }
-        @@keyframes panZoom {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.12) translate(-1%, -1%); }
+        @@keyframes slideInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to   { opacity: 1; transform: translateX(0); }
         }
-        @@keyframes shakeIn {
-            0%, 100% { transform: translateX(0); }
-            20%       { transform: translateX(-6px); }
-            40%       { transform: translateX(6px); }
-            60%       { transform: translateX(-4px); }
-            80%       { transform: translateX(4px); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .animate-fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .animate-slide-in-right {
-            animation: slideInRight 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .animate-slide-in-left {
-            animation: slideInLeft 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        .delay-1 { animation-delay: 0.12s; }
-        .delay-2 { animation-delay: 0.22s; }
-        .delay-3 { animation-delay: 0.32s; }
-        .delay-4 { animation-delay: 0.42s; }
-        .delay-5 { animation-delay: 0.52s; }
     </style>
 </head>
-<body class="h-screen w-full flex overflow-hidden bg-background dark:bg-surface text-on-surface">
+<body>
+    <div class="page">
 
-    <!-- Left Side: Hero / Brand Area -->
-    <div class="hidden lg:flex lg:w-1/2 relative bg-primary-container text-on-primary overflow-hidden">
-        <!-- Background Image with Overlay -->
-        <div class="absolute inset-0">
-            <img alt="FNTS Global Trading Network" class="w-full h-full object-cover animate-[panZoom_25s_ease_infinite_alternate]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGxyMW8k8-uJQR66A7s_mG7wJrXh3jLpeBF1CdWkSTgHjKV1Q0MFKLgIb3DGky2lvqKLyNcNNrYzPdi81r16XRjycMVpba8vVmQDtFuFe8FN3-SALRixpAw79cuMjf6jSWrwf5YEn1R2ZWOxtlrRrSTLj6M9J4LFAEvyQ0YG-XpYRJLQHuSthe3lqx27YOCiQQ4b838BshPoUoxtSkB7FzRVf31vjR1wFhG6NT7kVSA5bOCCEDQQ15"/>
-            <div class="absolute inset-0 bg-primary-container/85 backdrop-blur-sm mix-blend-multiply"></div>
-            <!-- Additional gradient for depth -->
-            <div class="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent opacity-95"></div>
-        </div>
+        <!-- ═══════════════ LEFT PANEL ═══════════════ -->
+        <div class="left-panel">
 
-        <!-- Canvas for live ticking line chart -->
-        <canvas id="hero-chart-canvas" class="absolute inset-0 w-full h-full opacity-50 mix-blend-screen pointer-events-none"></canvas>
-
-        <!-- Content -->
-        <div class="relative z-10 p-margin-desktop flex flex-col justify-between h-full w-full animate-slide-in-left">
-            <!-- Logo -->
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary-fixed-dim" style="font-size: 32px; font-variation-settings: 'FILL' 1;">
-                    monitoring
-                </span>
-                <span class="font-title-md text-title-md text-on-primary tracking-tight">FNTS</span>
-            </div>
-            <!-- Value Prop -->
-            <div class="max-w-md">
-                <h1 class="font-display-lg text-display-lg text-on-primary mb-6">
-                    AI-Powered<br/>Financial Insights
-                </h1>
-                <p class="font-body-lg text-body-lg text-primary-fixed-dim opacity-90">
-                    Real-time market news analysis and automated trading signals engineered for high-stakes decision-making.
-                </p>
-                <!-- Stylized data visualization element -->
-                <div class="mt-12 flex gap-4 opacity-75">
-                    <div class="flex flex-col gap-1">
-                        <div class="h-1 w-8 bg-secondary-fixed-dim rounded-full"></div>
-                        <span class="font-label-caps text-label-caps text-primary-fixed-dim uppercase">Latency</span>
-                        <span class="font-data-mono text-data-mono text-on-primary">&lt; 5ms</span>
+            <div class="l-header">
+                <div class="logo-wrap">
+                    <div class="logo-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path d="M3 17L9 11L13 15L21 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M17 7H21V11" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                     </div>
-                    <div class="w-px bg-on-primary-fixed-variant mx-4"></div>
-                    <div class="flex flex-col gap-1">
-                        <div class="h-1 w-12 bg-secondary-fixed-dim rounded-full"></div>
-                        <span class="font-label-caps text-label-caps text-primary-fixed-dim uppercase">Sources</span>
-                        <span class="font-data-mono text-data-mono text-on-primary">150+ Global</span>
-                    </div>
+                    <span class="logo-text">FU NEWS TRADING SYSTEM</span>
+                    <span class="logo-version">v1.0</span>
+                </div>
+                <div class="live-badge">
+                    <span class="live-dot"></span>
+                    LIVE DATA
                 </div>
             </div>
-            <!-- Minimal footer note -->
-            <div class="font-body-sm text-body-sm text-primary-fixed-dim opacity-80">
-                &copy; @DateTime.Now.Year FU News Trading System. Secure Institutional Access.
-            </div>
-        </div>
-    </div>
 
-    <!-- Right Side: Login Form -->
-    <div id="right-panel-wrapper" class="w-full lg:w-1/2 flex items-center justify-center bg-surface-container-lowest dark:bg-inverse-surface/10 p-margin-mobile md:p-margin-desktop relative z-20 shadow-[-4px_0_24px_rgba(0,0,0,0.05)] overflow-y-auto group">
-        
-        <!-- Interactive Spotlight Glow -->
-        <div id="mouse-glow" class="absolute pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 w-[450px] h-[450px] rounded-full bg-secondary/[0.04] dark:bg-secondary-fixed-dim/[0.04] blur-[80px]" style="transform: translate(-50%, -50%); top: 0; left: 0;"></div>
-
-        <!-- Theme Toggle & Logo top bar -->
-        <div class="absolute top-margin-mobile left-margin-mobile right-margin-mobile flex justify-between items-center z-30 animate-fade-in">
-            <!-- Mobile Logo (visible only on small screens) -->
-            <div class="flex items-center gap-2 lg:hidden">
-                <span class="material-symbols-outlined text-secondary dark:text-secondary-fixed-dim" style="font-size: 24px; font-variation-settings: 'FILL' 1;">
-                    monitoring
-                </span>
-                <span class="font-title-md text-title-md text-on-surface dark:text-white tracking-tight">FNTS</span>
-            </div>
-            <div class="lg:hidden"></div>
-            <!-- Theme Toggle Button -->
-            <button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-outline-variant bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all cursor-pointer dark:bg-white/5 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white active:scale-95 shadow-sm" id="themeToggle" type="button" aria-label="Toggle theme">
-                <span id="themeIcon">🌙</span>
-                <span>Theme</span>
-            </button>
-        </div>
-
-        <div class="w-full max-w-[400px] flex flex-col mt-12 lg:mt-0 animate-slide-in-right relative z-10">
-            <div class="mb-8 text-center lg:text-left">
-                <h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface dark:text-white mb-2">
-                    System Access
-                </h2>
-                <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/60">
-                    Authenticate to enter the terminal environment.
-                </p>
-            </div>
-
-            @* Server-side validation alert *@
-            @if (!ViewData.ModelState.IsValid)
-            {
-                <div class="flex items-start gap-2.5 p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-600 dark:bg-red-950/20 dark:border-red-900/50 dark:text-red-400 text-sm mb-5 animate-[shakeIn_0.4s_ease_both]" role="alert" id="validation-summary">
-                    <span class="material-symbols-outlined text-red-500 dark:text-red-400" style="font-size: 20px;">error</span>
-                    <div asp-validation-summary="ModelOnly" class="font-medium"></div>
+            <!-- Ticker Tape -->
+            <div class="ticker-wrap">
+                <div class="ticker-inner">
+                    @{
+                        var tickers = new[] {
+                            ("S&P 500",  "5,234.18",  "+0.83%",  true),
+                            ("NASDAQ",   "16,428.82", "+1.12%",  true),
+                            ("DOW JONES","39,127.14", "-0.21%",  false),
+                            ("BTC/USD",  "67,842.50", "+2.34%",  true),
+                            ("EUR/USD",  "1.0847",    "+0.15%",  true),
+                            ("GOLD",     "2,381.40",  "-0.48%",  false),
+                            ("VIX",      "13.42",     "+1.87%",  true),
+                            ("AAPL",     "189.30",    "+0.92%",  true),
+                            ("NVDA",     "877.35",    "+3.15%",  true),
+                            ("TSLA",     "177.58",    "-1.23%",  false),
+                            ("S&P 500",  "5,234.18",  "+0.83%",  true),
+                            ("NASDAQ",   "16,428.82", "+1.12%",  true),
+                            ("DOW JONES","39,127.14", "-0.21%",  false),
+                            ("BTC/USD",  "67,842.50", "+2.34%",  true),
+                            ("EUR/USD",  "1.0847",    "+0.15%",  true),
+                            ("GOLD",     "2,381.40",  "-0.48%",  false),
+                            ("VIX",      "13.42",     "+1.87%",  true),
+                            ("AAPL",     "189.30",    "+0.92%",  true),
+                            ("NVDA",     "877.35",    "+3.15%",  true),
+                            ("TSLA",     "177.58",    "-1.23%",  false),
+                        };
+                    }
+                    @for (int i = 0; i < 2; i++) {
+                        foreach (var t in tickers) {
+                            <div class="ticker-item">
+                                <span class="ticker-sym">@t.Item1</span>
+                                <span class="ticker-val">@t.Item2</span>
+                                <span class="@(t.Item4 ? "ticker-up" : "ticker-down")">@t.Item3</span>
+                            </div>
+                        }
+                    }
                 </div>
-            }
+            </div>
 
-            <form id="login-form" asp-controller="Account" asp-action="Login" method="post" class="space-y-5" novalidate>
-                @Html.AntiForgeryToken()
+            <!-- Content -->
+            <div class="l-content">
+                <div class="l-hero">
+                    <div class="l-hero-eyebrow">Consumer Finance Hub</div>
+                    <h1 class="l-hero-title">
+                        Real-Time<br/>
+                        <span class="accent">Financial Intelligence</span>
+                    </h1>
+                    <p class="l-hero-desc">
+                        Access AI-synthesized financial reports, live sector analysis, and structured asset indicators built for modern market monitoring and investor decision support.
+                    </p>
+                </div>
 
-                @if (ViewData["ReturnUrl"] is string returnUrl && !string.IsNullOrEmpty(returnUrl))
-                {
-                    <input type="hidden" name="returnUrl" value="@returnUrl" />
-                }
-
-                <!-- Email Field (Floating Label & Glow) -->
-                <div class="space-y-1.5 animate-fade-in-up delay-1">
-                    <div class="relative group/input flex items-center">
-                        <span class="material-symbols-outlined absolute left-4 text-outline dark:text-white/40 group-focus-within/input:text-secondary dark:group-focus-within/input:text-secondary-fixed-dim transition-colors" style="font-size: 20px;">
-                            mail
-                        </span>
-                        <input asp-for="Email" class="peer block w-full pl-12 pr-10 pt-6 pb-2 border border-outline-variant dark:border-white/10 rounded-xl bg-surface-container-lowest dark:bg-white/5 text-on-surface dark:text-white font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/15 focus:border-secondary dark:focus:ring-secondary-fixed-dim/20 dark:focus:border-secondary-fixed-dim hover:border-outline dark:hover:border-white/20 transition-all placeholder=" " required="" type="email" autocomplete="email" autofocus/>
-                        <label for="Email" class="absolute left-12 top-4 text-on-surface-variant/70 dark:text-white/50 pointer-events-none transition-all duration-300 origin-left transform scale-100 translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-secondary dark:peer-focus:text-secondary-fixed-dim font-medium uppercase text-[10px] tracking-wider select-none peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-3">
-                            Email Address
-                        </label>
-                        <!-- Active Pulsing Dot Indicator -->
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300">
-                            <span class="relative flex h-2 w-2">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
-                            </span>
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div>
+                                <div class="chart-label">Portfolio Value</div>
+                                <div class="chart-value">$284,931</div>
+                                <div class="chart-change">+1.24% today</div>
+                            </div>
+                            <span class="live-dot" style="margin-top:4px;"></span>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="main-chart" style="width:100%;height:100px;display:block;"></canvas>
                         </div>
                     </div>
-                    <span asp-validation-for="Email" class="text-xs text-red-500 dark:text-red-400 block mt-1 pl-1"></span>
-                </div>
-
-                <!-- Password Field (Floating Label & Glow) -->
-                <div class="space-y-1.5 animate-fade-in-up delay-2">
-                    <div class="flex justify-between items-center px-1">
-                        <div class="h-1"></div>
-                        <a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:underline transition-colors" href="#">
-                            Forgot Password?
-                        </a>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div>
+                                <div class="chart-label">Sector Performance</div>
+                                <div class="chart-value">+3.8%</div>
+                                <div class="chart-change">vs last week</div>
+                            </div>
+                            <span class="live-dot" style="margin-top:4px;"></span>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="bar-chart" style="width:100%;height:100px;display:block;"></canvas>
+                        </div>
                     </div>
-                    <div class="relative group/input flex items-center">
-                        <span class="material-symbols-outlined absolute left-4 text-outline dark:text-white/40 group-focus-within/input:text-secondary dark:group-focus-within/input:text-secondary-fixed-dim transition-colors" style="font-size: 20px;">
-                            lock
-                        </span>
-                        <input asp-for="Password" class="peer block w-full pl-12 pr-12 pt-6 pb-2 border border-outline-variant dark:border-white/10 rounded-xl bg-surface-container-lowest dark:bg-white/5 text-on-surface dark:text-white font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/15 focus:border-secondary dark:focus:ring-secondary-fixed-dim/20 dark:focus:border-secondary-fixed-dim hover:border-outline dark:hover:border-white/20 transition-all placeholder=" " required="" type="password" autocomplete="current-password"/>
-                        <label for="Password" class="absolute left-12 top-4 text-on-surface-variant/70 dark:text-white/50 pointer-events-none transition-all duration-300 origin-left transform scale-100 translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-secondary dark:peer-focus:text-secondary-fixed-dim font-medium uppercase text-[10px] tracking-wider select-none peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-3">
-                            Password
-                        </label>
-                        <button id="pwToggle" aria-label="Toggle password visibility" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-outline dark:text-white/40 hover:text-on-surface dark:hover:text-white transition-colors focus:outline-none" type="button">
-                            <span id="pwToggleIcon" class="material-symbols-outlined" style="font-size: 20px;">
-                                visibility_off
-                            </span>
-                        </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            <span class="material-symbols-outlined">account_balance</span>
+                            Market Cap
+                        </div>
+                        <div class="stat-val">$47.2T</div>
+                        <div class="stat-chg">+0.9%</div>
                     </div>
-                    <span asp-validation-for="Password" class="text-xs text-red-500 dark:text-red-400 block mt-1 pl-1"></span>
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            <span class="material-symbols-outlined">analytics</span>
+                            Active Signals
+                        </div>
+                        <div class="stat-val">1,284</div>
+                        <div class="stat-chg">+127 today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            <span class="material-symbols-outlined">description</span>
+                            Reports/Day
+                        </div>
+                        <div class="stat-val">3,891</div>
+                        <div class="stat-chg">+412 today</div>
+                    </div>
                 </div>
 
-                <!-- Remember Me -->
-                <div class="flex items-center animate-fade-in-up delay-3 px-1">
-                    <input class="h-4.5 w-4.5 text-secondary focus:ring-secondary/30 border-outline-variant dark:border-white/10 rounded bg-surface-container-lowest dark:bg-white/5 cursor-pointer transition-colors" id="remember-me" name="remember-me" type="checkbox"/>
-                    <label class="ml-2 block font-body-sm text-body-sm text-on-surface-variant dark:text-white/60 cursor-pointer select-none" for="remember-me">
-                        Remember terminal session
-                    </label>
+                <!-- Index cards -->
+                <div class="index-row">
+                    @{
+                        var indices = new[] {
+                            ("S&P 500","5,234.18", 0.83,  true),
+                            ("NASDAQ", "16,428.82", 1.12,  true),
+                            ("DOW",    "39,127.14", -0.21, false),
+                            ("VIX",    "13.42",     1.87,  true),
+                        };
+                    }
+                    @foreach (var ix in indices) {
+                        <div class="index-card">
+                            <div class="index-sym">@ix.Item1</div>
+                            <div class="index-val">@ix.Item2</div>
+                            <div class="index-chg @(ix.Item4 ? "up" : "down")">
+                                @(ix.Item4 ? "+" : "")@ix.Item3%
+                            </div>
+                        </div>
+                    }
                 </div>
+            </div>
 
-                <!-- Submit Button -->
-                <div class="animate-fade-in-up delay-4">
-                    <button type="submit" id="login-submit" class="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm font-title-md text-title-md text-on-secondary bg-secondary hover:bg-on-secondary-container dark:bg-secondary dark:hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer" style="min-height: 52px;">
-                        <span id="btn-text" class="flex items-center gap-2">
-                            <span class="material-symbols-outlined animate-pulse" style="font-size: 20px;">login</span>
-                            Sign In
-                        </span>
-                        <div class="hidden w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" id="btn-spinner"></div>
-                    </button>
+            <!-- Footer -->
+            <div class="l-footer">
+                <p>&copy; @DateTime.Now.Year FU News Trading System</p>
+                <div class="l-footer-live">
+                    <span class="live-dot"></span>
+                    Secure Institutional Access
                 </div>
-            </form>
-
-            <div class="mt-8 pt-6 border-t border-surface-variant dark:border-white/10 text-center animate-fade-in-up delay-5">
-                <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/60">
-                    Need technical assistance? <a class="text-secondary dark:text-secondary-fixed-dim hover:underline underline-offset-2 font-medium" href="#">Contact Support</a>
-                </p>
             </div>
         </div>
-    </div>
 
+        <!-- ═══════════════ RIGHT PANEL ═══════════════ -->
+        <div class="right-panel" id="right-panel">
+            <div class="spotlight" id="spotlight"></div>
+
+            <div class="form-container">
+
+                <!-- Mobile logo -->
+                <div class="mobile-logo">
+                    <div class="logo-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M3 17L9 11L13 15L21 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M17 7H21V11" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="logo-text">FNTS</span>
+                    <span class="mobile-live-tag">LIVE</span>
+                </div>
+
+                <!-- Header -->
+                <div class="form-header-row">
+                    <div class="form-title-group">
+                        <h2 class="form-title">System Access</h2>
+                        <p class="form-subtitle">Authenticate to enter the terminal environment.</p>
+                    </div>
+                    <button type="button" class="theme-switcher" id="themeSwitcher" title="Change theme" aria-label="Switch theme">
+                        <span class="material-symbols-outlined" id="themeIcon">dark_mode</span>
+                        <span id="themeLabel">Theme</span>
+                    </button>
+                </div>
+
+                <!-- Validation error -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="form-alert">
+                        <span class="material-symbols-outlined">error</span>
+                        <div asp-validation-summary="ModelOnly" class="validation"></div>
+                    </div>
+                }
+
+                <!-- Form -->
+                <form id="login-form" asp-controller="Account" asp-action="Login" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+
+                    @if (ViewData["ReturnUrl"] is string returnUrl && !string.IsNullOrEmpty(returnUrl))
+                    {
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    }
+
+                    <!-- Email -->
+                    <div class="field-group">
+                        <div class="input-wrap">
+                            <input id="Email" asp-for="Email" type="email"
+                                   class="fnts-input" placeholder=" "/>
+                            <label for="Email" class="fnts-label">Email Address</label>
+                            <div class="validity-dot">
+                                <span class="material-symbols-outlined">check_circle</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Email" class="field-error"></span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="field-group">
+                        <div class="field-row-end">
+                            <a class="forgot-link" href="#">Forgot Password?</a>
+                        </div>
+                        <div class="input-wrap">
+                            <input id="Password" asp-for="Password" type="password"
+                                   class="fnts-input" placeholder=" "/>
+                            <label for="Password" class="fnts-label">Password</label>
+                            <button type="button" class="pw-toggle" id="pwToggle" aria-label="Toggle password">
+                                <span class="material-symbols-outlined" id="pwIcon">visibility_off</span>
+                            </button>
+                            <div class="validity-dot">
+                                <span class="material-symbols-outlined">check_circle</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Password" class="field-error"></span>
+                    </div>
+
+                    <!-- Remember me -->
+                    <div class="field-group">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="remember-me" class="fnts-checkbox"/>
+                            <label for="remember-me" class="checkbox-label">Remember terminal session</label>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="field-group">
+                        <button type="submit" id="login-submit" class="submit-btn">
+                            <span class="btn-content" id="btn-content">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                                    <path d="M15 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M10 17L15 12L10 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M15 12H3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Sign In
+                            </span>
+                            <div class="spinner" id="btn-spinner"></div>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Footer -->
+                <div class="form-footer">
+                    <p>Need technical assistance? <a href="#">Contact Support</a></p>
+                </div>
+
+                <!-- Mobile market strip -->
+                <div class="mobile-market">
+                    <div class="mobile-market-header">
+                        <span class="live-dot"></span>
+                        <span>Live Markets</span>
+                    </div>
+                    <div class="mobile-market-scroll">
+                        <div class="mm-card">
+                            <div class="mm-sym">S&P 500</div>
+                            <div class="mm-val">5,234.18</div>
+                            <div class="mm-chg up">+0.83%</div>
+                        </div>
+                        <div class="mm-card">
+                            <div class="mm-sym">BTC/USD</div>
+                            <div class="mm-val">67,842</div>
+                            <div class="mm-chg up">+2.34%</div>
+                        </div>
+                        <div class="mm-card">
+                            <div class="mm-sym">EUR/USD</div>
+                            <div class="mm-val">1.0847</div>
+                            <div class="mm-chg up">+0.15%</div>
+                        </div>
+                        <div class="mm-card">
+                            <div class="mm-sym">GOLD</div>
+                            <div class="mm-val">2,381</div>
+                            <div class="mm-chg down">-0.48%</div>
+                        </div>
+                        <div class="mm-card">
+                            <div class="mm-sym">NVDA</div>
+                            <div class="mm-val">877.35</div>
+                            <div class="mm-chg up">+3.15%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.page -->
+
+    <!-- Validation -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 
     <script>
-        // ── Canvas Live Ticking Chart
-        (function() {
-            const canvas = document.getElementById('hero-chart-canvas');
+        /* ════════ MAIN CHART ════════ */
+        (function () {
+            const canvas = document.getElementById('main-chart');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            let width = canvas.width = canvas.offsetWidth;
-            let height = canvas.height = canvas.offsetHeight;
+            let W = 0, H = 100;
 
-            window.addEventListener('resize', () => {
-                if (!canvas) return;
-                width = canvas.width = canvas.offsetWidth;
-                height = canvas.height = canvas.offsetHeight;
-            });
+            function resize() {
+                W = canvas.offsetWidth * (window.devicePixelRatio || 1);
+                canvas.width = W;
+                canvas.height = H * (window.devicePixelRatio || 1);
+                ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+            }
+            resize();
+            window.addEventListener('resize', resize);
 
-            let points = [];
-            const maxPoints = 40;
-            let lastVal = height * 0.55;
-
-            // Initialize points
-            for (let i = 0; i < maxPoints; i++) {
-                lastVal += (Math.random() - 0.5) * 15;
-                if (lastVal < height * 0.3) lastVal = height * 0.3;
-                if (lastVal > height * 0.8) lastVal = height * 0.8;
-                points.push(lastVal);
+            let points = [], base = H * 0.6;
+            for (let i = 0; i < 60; i++) {
+                base += (Math.random() - 0.48) * 6;
+                base = Math.max(H * 0.3, Math.min(H * 0.75, base));
+                points.push(base);
             }
 
             function draw() {
                 if (!canvas) return;
-                ctx.clearRect(0, 0, width, height);
+                const cw = canvas.offsetWidth, ch = H;
+                ctx.clearRect(0, 0, cw, ch);
 
-                // Draw grid
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
-                ctx.lineWidth = 1;
-                const gridSize = 45;
-                for (let x = 0; x < width; x += gridSize) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, 0);
-                    ctx.lineTo(x, height);
-                    ctx.stroke();
-                }
-                for (let y = 0; y < height; y += gridSize) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(width, y);
-                    ctx.stroke();
-                }
-
-                // Update chart values
-                points.shift();
-                lastVal += (Math.random() - 0.5) * 12;
-                if (lastVal < height * 0.35) lastVal = height * 0.35;
-                if (lastVal > height * 0.75) lastVal = height * 0.75;
-                points.push(lastVal);
-
-                // Draw area under chart
+                const grad = ctx.createLinearGradient(0, 0, 0, ch);
+                grad.addColorStop(0, 'rgba(16,185,129,0.25)');
+                grad.addColorStop(1, 'rgba(16,185,129,0)');
                 ctx.beginPath();
-                ctx.moveTo(0, height);
-                for (let i = 0; i < points.length; i++) {
-                    const x = (i / (points.length - 1)) * width;
-                    ctx.lineTo(x, points[i]);
-                }
-                ctx.lineTo(width, height);
+                ctx.moveTo(0, ch);
+                points.forEach((p, i) => ctx.lineTo((i / (points.length - 1)) * cw, p));
+                ctx.lineTo(cw, ch);
                 ctx.closePath();
-                let areaGrd = ctx.createLinearGradient(0, height * 0.3, 0, height);
-                areaGrd.addColorStop(0, 'rgba(16, 185, 129, 0.06)');
-                areaGrd.addColorStop(1, 'rgba(16, 185, 129, 0)');
-                ctx.fillStyle = areaGrd;
+                ctx.fillStyle = grad;
                 ctx.fill();
 
-                // Draw line
                 ctx.beginPath();
-                ctx.moveTo(0, points[0]);
-                for (let i = 1; i < points.length; i++) {
-                    const x = (i / (points.length - 1)) * width;
-                    ctx.lineTo(x, points[i]);
-                }
-                ctx.strokeStyle = 'rgba(16, 185, 129, 0.3)';
-                ctx.lineWidth = 2.5;
+                points.forEach((p, i) => i === 0 ? ctx.moveTo(0, p) : ctx.lineTo((i / (points.length - 1)) * cw, p));
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(16,185,129,0.5)';
                 ctx.stroke();
+                ctx.shadowBlur = 0;
 
-                // Draw glowing point at current price
-                const lastX = width;
-                const lastY = points[points.length - 1];
+                const lastX = cw - 2, lastY = points[points.length - 1];
                 ctx.beginPath();
-                ctx.arc(lastX - 2, lastY, 5, 0, Math.PI * 2);
+                ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
                 ctx.fillStyle = '#10b981';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#10b981';
                 ctx.fill();
-                ctx.beginPath();
-                ctx.arc(lastX - 2, lastY, 14, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
-                ctx.fill();
+                ctx.shadowBlur = 0;
 
-                setTimeout(() => requestAnimationFrame(draw), 100);
+                points.shift();
+                base += (Math.random() - 0.48) * 5;
+                base = Math.max(ch * 0.3, Math.min(ch * 0.75, base));
+                points.push(base);
+
+                setTimeout(() => requestAnimationFrame(draw), 120);
             }
             draw();
         })();
 
-        // ── Cursor Spotlight Parallax Effect
+        /* ════════ BAR CHART ════════ */
         (function () {
-            const panel = document.getElementById('right-panel-wrapper');
-            const glow = document.getElementById('mouse-glow');
-            if (!panel || !glow) return;
+            const canvas = document.getElementById('bar-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let W = 0, H = 100;
 
-            panel.addEventListener('mousemove', function (e) {
-                const rect = panel.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                glow.style.left = x + 'px';
-                glow.style.top = y + 'px';
-                glow.style.opacity = '1';
-            });
+            function resize() {
+                W = canvas.offsetWidth * (window.devicePixelRatio || 1);
+                canvas.width = W;
+                canvas.height = H * (window.devicePixelRatio || 1);
+                ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+            }
+            resize();
+            window.addEventListener('resize', resize);
 
-            panel.addEventListener('mouseleave', function () {
-                glow.style.opacity = '0';
+            const sectors = ['Tech', 'Fin', 'Ener', 'Hlth', 'Ret', 'Util'];
+            const colors  = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+            let values = sectors.map(() => Math.random() * 0.6 + 0.2);
+
+            function draw() {
+                if (!canvas) return;
+                const cw = canvas.offsetWidth, ch = H;
+                ctx.clearRect(0, 0, cw, ch);
+                const bw = cw / sectors.length - 4;
+
+                sectors.forEach((s, i) => {
+                    const x = i * (bw + 4) + 2;
+                    const bh = values[i] * (ch - 8);
+                    const y = ch - bh;
+
+                    const grad = ctx.createLinearGradient(x, y, x, ch);
+                    grad.addColorStop(0, colors[i] + 'cc');
+                    grad.addColorStop(1, colors[i] + '33');
+
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, bw, bh, [3, 3, 0, 0]);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    ctx.strokeStyle = colors[i] + '88';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    values[i] += (Math.random() - 0.48) * 0.07;
+                    values[i] = Math.max(0.1, Math.min(0.9, values[i]));
+                });
+
+                setTimeout(() => requestAnimationFrame(draw), 800);
+            }
+            draw();
+        })();
+
+        /* ════════ SPOTLIGHT ════════ */
+        (function () {
+            const panel = document.getElementById('right-panel');
+            const spot  = document.getElementById('spotlight');
+            if (!panel || !spot) return;
+            panel.addEventListener('mousemove', e => {
+                const r = panel.getBoundingClientRect();
+                spot.style.left = (e.clientX - r.left) + 'px';
+                spot.style.top  = (e.clientY - r.top)  + 'px';
             });
         })();
 
-        // ── Password toggle
+        /* ════════ THEME SWITCHER ════════ */
+        (function () {
+            const themes = [
+                { key: 'dark',  label: 'Dark',  icon: 'dark_mode' },
+                { key: 'light', label: 'Light', icon: 'light_mode' },
+                { key: 'blue',  label: 'Blue',  icon: 'water_drop' },
+            ];
+            let idx = 0;
+
+            function applyTheme(i) {
+                document.body.className = '';
+                if (themes[i].key !== 'dark') document.body.classList.add('theme-' + themes[i].key);
+                document.getElementById('themeIcon').textContent  = themes[i].icon;
+                document.getElementById('themeLabel').textContent = themes[i].label;
+                localStorage.setItem('fnts-theme', i);
+            }
+
+            const saved = localStorage.getItem('fnts-theme');
+            if (saved !== null) { idx = parseInt(saved); applyTheme(idx); }
+            else applyTheme(0);
+
+            document.getElementById('themeSwitcher').addEventListener('click', function () {
+                idx = (idx + 1) % themes.length;
+                applyTheme(idx);
+            });
+        })();
+
+        /* ════════ PASSWORD TOGGLE ════════ */
         document.getElementById('pwToggle').addEventListener('click', function () {
             const input = document.getElementById('Password');
-            const icon = document.getElementById('pwToggleIcon');
+            const icon  = document.getElementById('pwIcon');
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.textContent = 'visibility';
@@ -496,45 +1357,24 @@
             }
         });
 
-        // ── Submit loading state
-        document.getElementById('login-form').addEventListener('submit', function (e) {
-            if (!$(this).valid()) return;
-
-            const btn = document.getElementById('login-submit');
-            const text = document.getElementById('btn-text');
-            const spinner = document.getElementById('btn-spinner');
-            
-            btn.disabled = true;
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
-            text.classList.add('hidden');
-            spinner.classList.remove('hidden');
+        /* ════════ VALIDITY INDICATOR ════════ */
+        document.querySelectorAll('.fnts-input').forEach(input => {
+            input.addEventListener('blur', function () {
+                if (this.value && this.checkValidity()) this.classList.add('is-valid');
+                else this.classList.remove('is-valid');
+            });
         });
 
-        // ── Theme toggle
-        (function () {
-            const getStored = () => localStorage.getItem('theme');
-            const setStored = t => localStorage.setItem('theme', t);
-            const preferred = () => getStored() || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-
-            const apply = t => {
-                document.documentElement.setAttribute('data-bs-theme', t);
-                if (t === 'dark') {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
-                document.getElementById('themeIcon').textContent = t === 'dark' ? '☀️' : '🌙';
-            };
-
-            apply(preferred());
-
-            document.getElementById('themeToggle').addEventListener('click', function () {
-                const cur = document.documentElement.getAttribute('data-bs-theme');
-                const next = cur === 'dark' ? 'light' : 'dark';
-                setStored(next);
-                apply(next);
-            });
-        })();
+        /* ════════ SUBMIT LOADER ════════ */
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            if (!$(this).valid()) return;
+            const btn      = document.getElementById('login-submit');
+            const content  = document.getElementById('btn-content');
+            const spinner  = document.getElementById('btn-spinner');
+            btn.disabled = true;
+            content.classList.add('hidden');
+            spinner.classList.add('show');
+        });
     </script>
 </body>
 </html>

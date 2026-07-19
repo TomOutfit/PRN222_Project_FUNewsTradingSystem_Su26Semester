@@ -282,7 +282,7 @@
         .custom-toast-close {
             background: none;
             border: none;
-            color: #94a3b8;
+            color: #6b7280;
             cursor: pointer;
             font-size: 1.5rem;
             line-height: 0.8;
@@ -290,7 +290,7 @@
             margin-left: 10px;
         }
         .custom-toast-close:hover {
-            color: #475569;
+            color: #374151;
         }
 
         @@keyframes slideInToast {
@@ -321,9 +321,10 @@
             <nav class="navbar navbar-expand-sm">
                 <div class="container-fluid px-4">
 
-                    <a class="navbar-brand d-flex align-items-center gap-1.5" asp-area="" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-graph-up-arrow-fill me-1"></i>
-                        <span>FNTS</span>
+                    <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                        <img src="/images/fnts_transition_logo.png" alt="FNTS Logo" style="height:32px;width:auto;object-fit:contain;" />
+                        <span class="ms-2 fw-bold" style="font-size:1.05rem;letter-spacing:.04em">FNTS</span>
+                        <span class="d-none d-md-inline text-muted fs-6 fw-normal border-start border-secondary border-opacity-30 ps-2 ms-2">Consumer Finance & Business Portal</span>
                     </a>
 
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -386,15 +387,21 @@
                                 @if (User.IsInRole("3"))
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminAccount" ? "active" : "")"
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminAccount" && ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")"
+                                           asp-controller="AdminAccount" asp-action="Dashboard">
+                                            <i class="bi bi-grid-1x2-fill me-1"></i>Dashboard
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminAccount" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
                                            asp-controller="AdminAccount" asp-action="Index">
-                                            <i class="bi bi-people me-1"></i>Accounts
+                                            <i class="bi bi-people-fill me-1"></i>Accounts
                                         </a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminStatistics" ? "active" : "")"
                                            asp-controller="AdminStatistics" asp-action="Index">
-                                            <i class="bi bi-bar-chart-line me-1"></i>Statistics
+                                            <i class="bi bi-bar-chart-line-fill me-1"></i>Statistics
                                         </a>
                                     </li>
                                 }
@@ -455,35 +462,85 @@
         <footer class="footer mt-auto py-5">
             <div class="container">
                 <div class="row g-4 text-start">
-                    <div class="col-md-5">
-                        <h5 class="fw-bold mb-3"><span class="gradient-text"><i class="bi bi-graph-up-arrow-fill me-1"></i>FNTS</span></h5>
-                        <p class="text-white-50 mb-3" style="max-width: 380px; font-size: 0.85rem; line-height: 1.6;">
-                            FUNews Trading System (FNTS) synthesizes global stock and cryptocurrency news to output real-time sentiment triggers and alerts. Powered by advanced AI model analysis.
+                    <!-- Branding & Description -->
+                    <div class="col-12 col-md-4">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <img src="/images/fnts_transition_logo.png" alt="FNTS Logo" style="height:24px;width:auto;object-fit:contain;" />
+                            <span class="gradient-text">FNTS</span>
+                        </h5>
+                        <p class="text-white-50 mb-3" style="max-width: 340px; font-size: 0.85rem; line-height: 1.6; font-weight:bold; color: #fff;">
+                            FNTS Consumer Finance Platform delivers real-time AI-powered sentiment analysis, news correlations, and business performance metrics, allowing investors and educators to trace target stock and index trends.
                         </p>
-                        <p class="small text-muted mb-0" style="font-size: 0.75rem;">
-                            &copy; @DateTime.Now.Year FNTS Inc. All rights reserved.
+                        <!-- Social/Platform Links -->
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="#" class="btn btn-sm btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;padding:0;" title="Twitter/X">
+                                <i class="bi bi-twitter-x"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;padding:0;" title="GitHub">
+                                <i class="bi bi-github"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;padding:0;" title="LinkedIn">
+                                <i class="bi bi-linkedin"></i>
+                            </a>
+                        </div>
+                        <p class="small text-secondary mb-0 mt-3" style="font-size: 0.75rem; font-weight:bold; color:white;">
+                            &copy; @DateTime.Now.Year FU NEWS TRADING SYSTEM. All rights reserved.
                         </p>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <h6 class="text-uppercase fw-bold text-white small mb-3 tracking-wider">Quick Links</h6>
+
+                    <!-- Consumer Services -->
+                    <div class="col-6 col-md-2">
+                        <h6 class="text-uppercase fw-bold text-white small mb-3 tracking-wider">Consumer Services</h6>
                         <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
                             <li>
-                                <a asp-controller="Report" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
-                                    <i class="bi bi-chevron-right small me-1"></i> Analysis Reports
+                                <a asp-controller="Home" asp-action="About" class="text-white-50 text-decoration-none footer-link">
+                                    <i class="bi bi-chevron-right small me-1"></i>About Us
                                 </a>
                             </li>
+                            <li>
+                                <a asp-controller="Home" asp-action="FAQ" class="text-white-50 text-decoration-none footer-link">
+                                    <i class="bi bi-chevron-right small me-1"></i>FAQ
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Home" asp-action="Contact" class="text-white-50 text-decoration-none footer-link">
+                                    <i class="bi bi-chevron-right small me-1"></i>Contact Support
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Report" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
+                                    <i class="bi bi-chevron-right small me-1"></i>Analysis Reports
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Business Portal -->
+                    <div class="col-6 col-md-2">
+                        <h6 class="text-uppercase fw-bold text-white small mb-3 tracking-wider">Business Portal</h6>
+                        <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
                             @if (User.Identity?.IsAuthenticated == true)
                             {
                                 @if (User.IsInRole("1"))
                                 {
                                     <li>
                                         <a asp-controller="RunAnalysis" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
-                                            <i class="bi bi-chevron-right small me-1"></i> Run Analysis
+                                            <i class="bi bi-chevron-right small me-1"></i>Run Analysis
                                         </a>
                                     </li>
                                     <li>
                                         <a asp-controller="Staff" asp-action="MyReports" class="text-white-50 text-decoration-none footer-link">
-                                            <i class="bi bi-chevron-right small me-1"></i> My Reports
+                                            <i class="bi bi-chevron-right small me-1"></i>My Reports
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Category" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
+                                            <i class="bi bi-chevron-right small me-1"></i>Categories
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Tag" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
+                                            <i class="bi bi-chevron-right small me-1"></i>Tags
                                         </a>
                                     </li>
                                 }
@@ -491,12 +548,12 @@
                                 {
                                     <li>
                                         <a asp-controller="AdminAccount" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
-                                            <i class="bi bi-chevron-right small me-1"></i> Manage Accounts
+                                            <i class="bi bi-chevron-right small me-1"></i>Manage Accounts
                                         </a>
                                     </li>
                                     <li>
                                         <a asp-controller="AdminStatistics" asp-action="Index" class="text-white-50 text-decoration-none footer-link">
-                                            <i class="bi bi-chevron-right small me-1"></i> View Statistics
+                                            <i class="bi bi-chevron-right small me-1"></i>View Statistics
                                         </a>
                                     </li>
                                 }
@@ -505,16 +562,35 @@
                             {
                                 <li>
                                     <a asp-controller="Account" asp-action="Login" class="text-white-50 text-decoration-none footer-link">
-                                        <i class="bi bi-chevron-right small me-1"></i> Login to Portal
+                                        <i class="bi bi-chevron-right small me-1"></i>Login to Portal
                                     </a>
                                 </li>
                             }
                         </ul>
                     </div>
-                    <div class="col-6 col-md-4">
+
+                    <!-- Compliance & Legal -->
+                    <div class="col-6 col-md-2">
+                        <h6 class="text-uppercase fw-bold text-white small mb-3 tracking-wider">Compliance & Legal</h6>
+                        <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                            <li>
+                                <a asp-controller="Home" asp-action="Terms" class="text-white-50 text-decoration-none footer-link">
+                                    <i class="bi bi-chevron-right small me-1"></i>Terms of Service
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Home" asp-action="Privacy" class="text-white-50 text-decoration-none footer-link">
+                                    <i class="bi bi-chevron-right small me-1"></i>Privacy Policy
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Disclaimer -->
+                    <div class="col-12 col-md-2">
                         <h6 class="text-uppercase fw-bold text-white small mb-3 tracking-wider">Disclaimer</h6>
-                        <p class="text-muted mb-0" style="font-size: 0.78rem; line-height: 1.5; text-align: justify;">
-                            Trading assets involves substantial risk. Synthesized news reports, sentiment triggers, and decision signals generated by this system are for educational and informational purposes only. Do not treat any signals as financial advice.
+                        <p class="text-muted mb-0" style="font-size: 0.78rem; line-height: 1.5; text-align:left; font-weight:bold; color: #fff">
+                            Trading assets involves substantial risk. Synthesized reports, sentiment triggers, and decision signals generated by this system are for educational and informational purposes only. Do not treat any signals as financial advice.
                         </p>
                     </div>
                 </div>
