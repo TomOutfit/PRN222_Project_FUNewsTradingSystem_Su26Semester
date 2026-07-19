@@ -70,15 +70,16 @@
     // ─────────────────────────────────────────
     function initFaqTransitions() {
         const faqItems = document.querySelectorAll('.faq-item');
-        faqItems.forEach(item => {
-            const header = item.querySelector('.faq-header');
+        faqItems.forEach(function(item) {
+            // Support both .faq-header and .faq-question for compatibility
+            var header = item.querySelector('.faq-question, .faq-header');
             if (!header) return;
 
-            header.addEventListener('click', () => {
-                const isOpen = item.classList.contains('open');
-                
-                // Đóng tất cả các FAQ khác
-                faqItems.forEach(other => {
+            header.addEventListener('click', function() {
+                var isOpen = item.classList.contains('open');
+
+                // Close all other FAQ items (accordion mode)
+                faqItems.forEach(function(other) {
                     other.classList.remove('open');
                 });
 
