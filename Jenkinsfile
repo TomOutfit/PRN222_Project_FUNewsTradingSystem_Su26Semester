@@ -99,22 +99,12 @@ pipeline {
                         def noTests = true
                         def trxPath = ''
 
-                        if (isUnix()) {
-                            def shellOut = sh(script: 'if [ -d TestResults ]; then find TestResults -name "*.trx" | head -n 1; fi', returnStdout: true).trim()
-                            if (shellOut) {
-                                trxPath = shellOut
-                                noTests = false
-                            }
-                        } else {
-                            // Use plain dir – no Unix `head` on Windows
-                            def dirOut = bat(
-                                script: '@if exist TestResults\\NUL (dir /s /b TestResults\\*.trx 2>nul)',
-                                returnStdout: true
-                            ).trim()
-                            if (dirOut) {
-                                def first = dirOut.split(/\r?\n/).find { it.trim().endsWith('.trx') }?.trim()
-                                if (first) { trxPath = first; noTests = false }
-                            }
+                        // TRX path is deterministic: dotnet test writes to TestResults/test-results.trx
+                        // Use fileExists() — always available, no extra plugin needed
+                        def fixedTrxPath = 'TestResults/test-results.trx'
+                        if (fileExists(fixedTrxPath)) {
+                            trxPath = fixedTrxPath
+                            noTests = false
                         }
 
                         // --- Summary Stats ---
