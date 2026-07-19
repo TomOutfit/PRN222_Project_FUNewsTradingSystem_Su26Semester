@@ -1,229 +1,199 @@
-# FUNewsTradingSystem
+# 📰 FUNewsTradingSystem
 
-An automated, AI-powered trading analysis web application built with **ASP.NET Core MVC** (.NET 10). The system fetches real-time market news via NewsAPI and uses OpenAI LLMs to perform sentiment and fundamental analysis, ultimately producing actionable portfolio decisions — **BUY**, **SELL**, or **HOLD**.
+<div align="center">
+  
+  [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](#cicd-pipeline)
+  [![Platform](https://img.shields.io/badge/.NET-10.0-blue.svg?style=for-the-badge)](https://dotnet.microsoft.com/)
+  [![Database](https://img.shields.io/badge/Database-SQL%20Server%20%7C%20PostgreSQL-indigo.svg?style=for-the-badge)](#database-setup)
+  [![AI Powered](https://img.shields.io/badge/AI-OpenAI%20GPT--4o-orange.svg?style=for-the-badge)](#ai-trading-pipeline)
+  [![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](#license)
 
-**Live Application:** 
-https://funewstradingsystem.onrender.com
----
+  **An automated, AI-powered financial market news analysis and trading decision web application.**
+  
+  *Built with ASP.NET Core MVC (.NET 10), EF Core, and OpenAI GPT-4o.*
 
-## Table of Contents
-
-1. [Prerequisites](#prerequisites)
-2. [Architecture](#architecture)
-3. [Tech Stack](#tech-stack)
-4. [Features & Roles](#features--roles)
-5. [Folder Structure](#folder-structure)
-6. [Getting Started](#getting-started)
-7. [Default Credentials](#default-credentials)
-8. [Deployment](#deployment)
-9. [Known Limitations](#known-limitations)
+  🌐 **Live Deployment:** [funewstradingsystem.onrender.com](https://funewstradingsystem.onrender.com)
+</div>
 
 ---
 
-## Prerequisites
-
-| Tool | Version / Notes |
-|------|-----------------|
-| **.NET SDK** | .NET 10 ([download](https://dotnet.microsoft.com/download)) |
-| **SQL Server** | SQL Server Express LocalDB *(or any SQL Server instance)* |
-| **Visual Studio** | 2022 or newer (recommended) |
-| **NewsAPI.org** | Free API key at [newsapi.org](https://newsapi.org) |
-| **OpenAI API** | API key with GPT-4o access at [platform.openai.com](https://platform.openai.com) |
+## 📌 Table of Contents
+- [System Architecture](#-system-architecture)
+- [Tech Stack](#-tech-stack)
+- [Key Features & Role-Based Access](#-key-features--role-based-access)
+- [Interactive CI/CD Pipeline](#-interactive-cicd-pipeline)
+- [Folder Structure](#-folder-structure)
+- [Getting Started](#-getting-started)
+- [Database Setup](#-database-setup)
+- [Docker & Containerized Deployment](#-docker--containerized-deployment)
+- [Default System Credentials](#-default-system-credentials)
+- [Disclaimers & Limitations](#-disclaimers--limitations)
 
 ---
 
-## Architecture
+## 🏗️ System Architecture
 
-The project follows a strict **3-tier layered architecture** to enforce separation of concerns:
+The project follows a strict **3-Tier Layered Architecture** pattern to isolate concerns and make the codebase modular:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     FUNewsTradingSystem.sln                     │
-├──────────────┬──────────────────────┬───────────────────────────┤
-│     MVC      │   BusinessLayer      │   DataAccessLayer          │
-│  (Presentation) │  (Business Logic)  │  (Data Access)             │
-├──────────────┼──────────────────────┼───────────────────────────┤
-│ Controllers  │ Repositories         │ Entity Models              │
-│ Views         │ Services             │ DbContext                  │
-│ ViewModels    │ TradingAgentService  │ DTOs                       │
-│ wwwroot       │                      │ EF Core Migrations         │
-└──────────────┴──────────────────────┴───────────────────────────┘
-```
+```mermaid
+graph TD
+    subgraph Client Tier
+        A[Browser / Razor Views] -->|HTTP Request| B[MVC Controller]
+    end
 
-- **MVC** — HTTP pipeline, routing, authentication middleware, Razor views
-- **BusinessLayer** — Repository pattern + Service layer + AI Trading Pipeline (NewsAPI + OpenAI)
-- **DataAccessLayer** — Entity models, `FUNewsManagementContext`, EF Core migrations
+    subgraph Business Logic Tier
+        B -->|Service Calls| C[Service Layer]
+        C -->|AI Pipeline Requests| D[TradingAgentService]
+        D -->|Fetch News| E[NewsAPI.org]
+        D -->|Analyze Sentiment| F[OpenAI API]
+    end
 
-### Authentication & Authorization
-
-Cookie-based authentication with **Claims-based Role Authorization**:
-
-| Role ID | Role Name | Description |
-|---------|-----------|-------------|
-| `1` | **Staff** | Can run AI analysis, manage categories/tags, view personal report history |
-| `2` | **Lecturer/Guest** | Read-only public report viewer |
-| `3` | **Admin** | Full account management + statistical reporting |
-
-Policies wired in `Program.cs`:
-
-```csharp
-"StaffOnly"      → Role = "1"
-"AdminOnly"     → Role = "3"
-"StaffOrLecturer" → Role = "1" or "2"
+    subgraph Data Access Tier
+        C -->|Repository Operations| G[Repository Layer]
+        G -->|DbContext| H[EF Core Provider]
+        H -->|Queries/Updates| I[(Database)]
+    end
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+    style I fill:#f96,stroke:#333,stroke-width:2px
 ```
 
----
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Framework | ASP.NET Core MVC (.NET 10) |
-| ORM | Entity Framework Core 10 |
-| Database | Microsoft SQL Server (LocalDB for dev) |
-| Frontend | HTML5, CSS3, Bootstrap 5.3 |
-| External APIs | NewsAPI.org, OpenAI API (GPT-4o) |
-| Auth | ASP.NET Core Cookie Authentication |
-| Config | `appsettings.json` (secrets via env or `appsettings.Development.json`) |
+- **Presentation Layer (MVC)**: Implements HTTP pipeline processing, Razor views, routing, form validation, and session/cookie-based claims auth.
+- **Business Logic Layer (BLL)**: Controls the core orchestration, repository interfaces, and the **AI Trading Pipeline** which fetches news and executes OpenAI reasoning.
+- **Data Access Layer (DAL)**: Exposes entities, migrations, and `FUNewsManagementContext` mapping C# classes to physical DB tables.
 
 ---
 
-## Features & Roles
+## 🛠️ Tech Stack
 
-### Admin (Role 3)
-
-- **Account Management** — Full CRUD for all system accounts (create, edit, delete). Self-deletion is blocked.
-- **Statistical Reporting** — Filter generated trading reports by custom UTC date range; results sorted descending by creation date.
-
-### Staff (Role 1)
-
-- **Run AI Analysis** — Select a sector (Category) and ticker (Tag) to trigger the full AI trading pipeline; view the resulting BUY/SELL/HOLD report.
-- **Category Management** — Create, edit, soft-delete, and toggle active status of news categories. Supports parent-child hierarchy.
-- **Tag Management** — Create and manage ticker symbols. Names are normalized to uppercase; duplicates are rejected.
-- **Report History** — View personal reports only; toggle report status (active / archived).
-- **Profile Management** — Update display name; change password (current password verification required).
-
-### Lecturer / Guest (Role 2)
-
-- **Public Report Viewer** — Browse all active (published) AI trading reports. No management controls.
+* **Runtime & Framework**: `.NET 10.0`, `ASP.NET Core MVC`
+* **Object-Relational Mapping (ORM)**: `Entity Framework Core 10`
+* **Relational Database Management (RDBMS)**:
+  * **Development**: SQL Server (LocalDB / Express)
+  * **Production**: PostgreSQL (Optimized for Onrender)
+* **AI & API Providers**:
+  * **OpenAI API**: Chat Completions with `gpt-4o`
+  * **NewsAPI**: Financial headline aggregator
+* **Front-end Technologies**: HTML5, CSS3 (Custom Glassmorphism design tokens), Bootstrap 5.3, JavaScript
+* **Continuous Integration**: Jenkins Pipeline using PowerShell/Python XML TRX test parsers
 
 ---
 
-## Folder Structure
+## 👥 Key Features & Role-Based Access
+
+The system enforces strict role-based access control (RBAC) using ASP.NET Core Policy Authentication:
+
+```mermaid
+gantt
+    title System Access Matrix
+    dateFormat  X
+    axisFormat %s
+    section Lecturer / Guest
+    Public Feed Reports           :active, 0, 10
+    section Staff
+    Run AI Sector Analysis        :active, 0, 20
+    Category & Parent Categories  :active, 0, 20
+    Ticker Tag Normalization      :active, 0, 20
+    Personal Reports Archive      :active, 0, 20
+    Profile Management            :active, 0, 20
+    section Admin
+    Full Account Management       :active, 0, 30
+    Statistical Reporting Tools   :active, 0, 30
+```
+
+### 🛡️ Admin (Role 3)
+* **Account Management**: Manage all user records. Built-in server-side prevention of self-deletion.
+* **Statistical Audits**: Filter and export report analytics based on date ranges (sorted in reverse chronological order).
+
+### ✍️ Staff (Role 1)
+* **AI Analysis Agent**: Trigger news fetches for a Category/Tag combination. Prompt OpenAI for analysis and save recommendations.
+* **Category Tree Management**: Configure sectors, toggle active status, and soft-delete nodes.
+* **Tag Management**: Normalizes tickers to uppercase to avoid duplication.
+* **Personal Dashboard**: View and toggle personal reports between active and archived.
+
+### 🎓 Lecturer (Role 2)
+* **Read-Only Access**: View published analyses. No editing or pipeline control rights.
+
+---
+
+## 🔄 Interactive CI/CD Pipeline
+
+The project features a **Jenkins** automation pipeline designed for secure, sandbox-compliant test reporting on both Windows and Unix build nodes:
+
+```mermaid
+flowchart TD
+    subgraph Jenkins Build Runner
+        J1[Start Pipeline] --> J2[dotnet build]
+        J2 --> J3[dotnet test]
+        J3 -->|Generates| J4[TestResults/test-results.trx]
+    end
+
+    subgraph External Parser Scripts
+        J4 -->|Windows| P1[parse_trx.ps1]
+        J4 -->|Unix / Linux| P2[parse_trx.py]
+        
+        P1 -->|Creates| O1[summary.txt]
+        P1 -->|Creates| O2[test-results.html]
+        P2 -->|Creates| O1
+        P2 -->|Creates| O2
+    end
+
+    subgraph Jenkins Post-Actions
+        O1 -->|Read values| K1[Console Output & Build Result]
+        O2 -->|publishHTML| K2[Sidebar UI Dashboard]
+    end
+
+    style O2 fill:#dfd,stroke:#333,stroke-width:2px
+    style O1 fill:#ffd,stroke:#333,stroke-width:2px
+```
+
+1. **Test Stage**: Runs standard unit tests (`dotnet test`) and outputs results in Microsoft XML format (`.trx`).
+2. **Parser Stage**: Standard sandbox-restricted Groovy code cannot easily parse XML in Jenkins without security approval. To resolve this, the pipeline delegates XML processing to OS-level PowerShell or Python scripts.
+3. **Output Generation**:
+   - **`summary.txt`**: Plain key-value statistics (`total=115\npassed=115...`) used by Jenkins to dynamically update build status.
+   - **`test-results.html`**: A fully responsive, dark-themed HTML report displaying test case execution, error logs, search bars, and status filters.
+
+---
+
+## 📁 Folder Structure
 
 ```
-FUNewsTradingSystem/
-│
-├── FUNewsTradingSystem.sln
-├── Dockerfile
-├── README.md
-├── prn222_su26_project.sql               # Database creation script
+PRN222_Project_FUNewsTradingSystem/
+├── FUNewsTradingSystem.sln            # Solution Entry File
+├── Dockerfile                         # Production Multi-stage Build configuration
+├── Jenkinsfile                        # Jenkins Pipeline script
+├── parse_trx.ps1                      # Windows test parser
+├── parse_trx.py                       # Linux / MacOS test parser
 │
 ├── FUNewsTradingSystem/
-│   ├── DataAccessLayer/
-│   │   ├── DataAccessLayer.csproj
+│   ├── DataAccessLayer/               # Database Context, Migrations, and Models
 │   │   ├── Models/
-│   │   │   ├── DTOs/                    # NewsApiArticle, OpenAiRequest/Response, etc.
-│   │   │   ├── Category.cs
-│   │   │   ├── FUNewsManagementContext.cs
-│   │   │   ├── NewsArticle.cs
-│   │   │   ├── NewsTag.cs
-│   │   │   ├── SystemAccount.cs
-│   │   │   └── Tag.cs
-│   │   └── Migrations/                  # EF Core migrations
+│   │   └── Migrations/
 │   │
-│   ├── BusinessLayer/
-│   │   ├── BusinessLayer.csproj
-│   │   ├── Exceptions/
-│   │   │   └── PipelineException.cs     # Thrown by TradingAgentService steps
+│   ├── BusinessLayer/                 # Repository implementations and AI pipeline service
 │   │   ├── Repositories/
-│   │   │   ├── Interfaces/             # ISystemAccountRepository, ICategoryRepository, etc.
-│   │   │   └── Implements/              # Repository implementations
 │   │   └── Services/
-│   │       ├── Interfaces/              # IAccountService, ICategoryService, ITagService, etc.
-│   │       └── Implements/              # Service implementations
-│   │                                       + TradingAgentService (AI pipeline)
 │   │
-│   └── MVC/
-│       ├── MVC.csproj
-│       ├── Program.cs                   # DI, Auth, Middleware, Auto-migration
-│       ├── appsettings.json             # Local secrets (gitignored)
-│       ├── appsettings.json.example     # Safe to commit — placeholder values
-│       ├── appsettings.Development.json # Dev overrides
+│   └── MVC/                           # UI Controller, Razor Views, static files
 │       ├── Controllers/
-│       │   ├── AccountController.cs     # Login / Logout
-│       │   ├── Admin/
-│       │   │   ├── AdminAccountController.cs
-│       │   │   └── AdminStatisticsController.cs
-│       │   ├── NewsController.cs       # Public report viewer
-│       │   └── Staff/
-│       │       ├── CategoryController.cs
-│       │       ├── StaffController.cs   # Dashboard, Profile, MyReports
-│       │       ├── TagController.cs
-│       │       └── RunAnalysisController.cs
-│       ├── Extensions/
-│       │   └── ClaimsPrincipalExtensions.cs
-│       ├── Filters/
-│       │   └── RoleAuthorizeAttribute.cs
 │       ├── ViewModels/
-│       │   ├── Account*.cs             # Login, Create, Edit ViewModels
-│       │   ├── Category*.cs
-│       │   ├── Tag*.cs
-│       │   ├── Statistics*.cs
-│       │   └── Profile*.cs
 │       ├── Views/
-│       │   ├── Account/Login.cshtml
-│       │   ├── Admin/
-│       │   │   ├── Accounts/
-│       │   │   └── Statistics/
-│       │   ├── News/
-│       │   │   ├── Index.cshtml        # Public report list
-│       │   │   └── Detail.cshtml       # Public report detail
-│       │   ├── Shared/
-│       │   │   ├── _Layout.cshtml      # Bootstrap 5 navbar, role-gated nav
-│       │   │   ├── _ConfirmDeleteModal.cshtml
-│       │   │   └── _ValidationScripts.cshtml
-│       │   └── Staff/
-│       │       ├── Categories/
-│       │       ├── Dashboard/
-│       │       ├── MyReports/
-│       │       ├── Profile/
-│       │       ├── RunAnalysis/
-│       │       └── Tags/
 │       └── wwwroot/
-│           ├── css/
-│           │   └── site.css            # Decision badges, modal fixes, card hover
-│           └── js/
-│               ├── accounts.js
-│               ├── categories.js
-│               ├── modal-helpers.js     # openModal, submitModalForm, confirmDelete
-│               ├── run-analysis.js      # Pipeline trigger + spinner + result display
-│               ├── tags.js
-│               ├── toast-helpers.js     # showSuccess, showError
-│               └── validate-extensions.js # dateRange, notSelf, passwordMatch validators
 ```
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
-### Step 1 — Clone the repository
-
+### 1. Clone the project
 ```bash
-git clone https://github.com/your-username/FUNewsTradingSystem.git
-cd FUNewsTradingSystem
+git clone https://github.com/your-username/PRN222_Project_FUNewsTradingSystem.git
+cd PRN222_Project_FUNewsTradingSystem
 ```
 
-### Step 2 — Fill in `appsettings.json`
-
-Copy the example file and populate your secrets:
-
-```bash
-copy FUNewsTradingSystem\MVC\appsettings.json.example FUNewsTradingSystem\MVC\appsettings.json
-```
-
-Open `appsettings.json` and replace the placeholder values:
-
+### 2. Configure appsettings.json
+Copy `appsettings.json.example` into a new file named `appsettings.json`:
 ```json
 {
   "ConnectionStrings": {
@@ -231,108 +201,96 @@ Open `appsettings.json` and replace the placeholder values:
   },
   "AdminAccount": {
     "Email": "admin@FUNewsTradingSystem.org",
-    "Password": "@@abc123@@",
-    "Name": "System Admin"
+    "Password": "@@abc123@@"
   },
   "NewsApi": {
-    "ApiKey": "YOUR_NEWSAPI_KEY_HERE",
-    "BaseUrl": "https://newsapi.org/v2/everything"
+    "ApiKey": "YOUR_NEWSAPI_KEY_HERE"
   },
   "OpenAI": {
-    "ApiKey": "YOUR_OPENAI_API_KEY_HERE",
-    "BaseUrl": "https://api.openai.com/v1/chat/completions",
-    "Model": "gpt-4o"
+    "ApiKey": "YOUR_OPENAI_API_KEY_HERE"
   }
 }
 ```
+*Note: `appsettings.json` is ignored by git to keep your private API tokens secure.*
 
-> **Security note:** `appsettings.json` is gitignored. Never commit your actual API keys.
-> For development, you can also override secrets in `appsettings.Development.json`.
-
-### Step 3 — Apply database migrations
-
-From the repository root, run:
-
+### 3. Run EF Core Migrations
 ```bash
 dotnet ef database update --project FUNewsTradingSystem/DataAccessLayer --startup-project FUNewsTradingSystem/MVC
 ```
 
-The application also **auto-applies pending migrations on startup** (wrapped in a try/catch so it won't crash if the DB is unreachable from the startup shell). Running the command above explicitly is recommended for a clean, verified setup.
-
-### Step 4 — Run the application
-
+### 4. Boot the project
 ```bash
 dotnet run --project FUNewsTradingSystem/MVC
 ```
-
-The application starts at `https://localhost:5001` (or `http://localhost:5000`).
-
-### Step 5 — Seed data verification
-
-On first run, the admin account is seeded automatically. Log in with the credentials below and verify:
-
-- The navbar shows Staff links (Run Analysis, Categories, Tags, My Reports, Profile)
-- The Admin section is accessible at `/Admin/Dashboard`
-- Seed Categories (Technology, Healthcare, Finance, Energy, Cryptocurrencies, Consumer Goods) appear in the Category dropdown
-- Seed Tags (AAPL, NVDA, MSFT, GOOGL, TSLA, BTC, ETH, AMZN) appear in the Tag dropdown
+*Navigate to `https://localhost:5001` or `http://localhost:5000` to interact with the system.*
 
 ---
 
-## Default Credentials
+## 🗄️ Database Setup
 
-| Role | Email | Password |
-|------|-------|----------|
-| **Admin** | `admin@FUNewsTradingSystem.org` | `@@abc123@@` |
+The data layer supports dual configurations for local development and cloud production:
 
-Additional accounts can be created by the Admin via `/Admin/Accounts`.
+### 1. Microsoft SQL Server (Development)
+- Default context configuration.
+- Startup logic auto-seeds default news categories and tags (e.g., AAPL, NVDA, TSLA) to verify operation immediately.
+
+### 2. PostgreSQL (Production)
+- Production uses PostgreSQL via the `Npgsql.EntityFrameworkCore.PostgreSQL` driver.
+- The `NewsArticle` model maps the `ConfidenceScore` column directly to support numeric predictive confidence.
+- Schema setup can be run manually using `prn222_su26_project_pg.sql` or automatically using Startup migrations.
 
 ---
 
-## Deployment
+## 🐳 Docker & Containerized Deployment
 
-### Docker (recommended)
-
-A multi-stage `Dockerfile` is included at the repository root:
+A multi-stage build is configured to compile and package the application into a lightweight runtime image:
 
 ```dockerfile
-# Build stage — restore and publish all 3 projects
+# Build image
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY . .
-RUN dotnet publish FUNewsTradingSystem/MVC -c Release -o /app/publish
+COPY FUNewsTradingSystem.sln .
+COPY FUNewsTradingSystem/DataAccessLayer/DataAccessLayer.csproj FUNewsTradingSystem/DataAccessLayer/
+COPY FUNewsTradingSystem/BusinessLayer/BusinessLayer.csproj FUNewsTradingSystem/BusinessLayer/
+COPY FUNewsTradingSystem/MVC/MVC.csproj FUNewsTradingSystem/MVC/
 
-# Runtime stage
+RUN dotnet restore FUNewsTradingSystem/MVC/MVC.csproj
+COPY . .
+WORKDIR /src/FUNewsTradingSystem/MVC
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "FUNewsTradingSystem_MVC.dll"]
+EXPOSE 8080
+ENV ASPNETCORE_HTTP_PORTS=8080
+ENTRYPOINT ["dotnet", "MVC.dll"]
 ```
 
+Build and execute container:
 ```bash
-docker build -t funewstradingsystem .
-docker run -p 8080:8080 funewstradingsystem
+docker build -t funewstradingsystem:latest .
+docker run -p 8080:8080 --env ConnectionStrings__DefaultConnection="YOUR_DB_CONNECTION" funewstradingsystem:latest
 ```
-
-### Cloud platforms (Render, Railway, Azure App Service)
-
-1. Set the runtime to **Docker** or **.NET 10**.
-2. Provide the database connection string via the `ConnectionStrings__DefaultConnection` environment variable.
-3. Provide API keys via environment variables:
-   - `NewsApi__ApiKey`
-   - `OpenAI__ApiKey`
-
-> **Note:** On cloud platforms the `appsettings.json` values can be fully replaced by environment variables following the ASP.NET Core configuration binding convention (`Section__Key`).
 
 ---
 
-## Known Limitations
+## 🔑 Default System Credentials
 
-- **NewsAPI Free Tier Restrictions** — The free NewsAPI tier limits queries to articles published within the last 30 days and may block requests from certain cloud providers (e.g., some cloud hosting IPs). If no news is found for a ticker, the pipeline throws `PipelineException("NO_NEWS")` and returns an error message to the UI.
+| Role | Username / Email | Password |
+|---|---|---|
+| **System Administrator** | `admin@FUNewsTradingSystem.org` | `@@abc123@@` |
 
-- **LLM Output Variability** — AI trading decisions are generated by GPT-4o based on fetched headlines. The output quality depends on the volume and relevance of available news. The pipeline validates that the response contains a valid `decision` field (`BUY`, `SELL`, or `HOLD`); invalid responses throw `PipelineException("INVALID_DECISION")`.
+---
 
-- **Financial Disclaimer** — All generated analysis is for **demonstration and educational purposes only**. It must not be interpreted as financial advice or used for actual trading.
+## ⚠️ Disclaimers & Limitations
 
-- **Self-deletion Blocked** — Admin accounts cannot delete their own account via `/Admin/Accounts/Delete/{id}`. This guard is enforced server-side in `AccountService.DeleteAccountAsync()`.
+* **NewsAPI Restriction**: The developer key limits queries to the last 30 days of articles.
+* **LLM Consistency**: OpenAI results are dependent on parameters and headlines fetched. Response formats are verified by structural validations to prevent incorrect decision states.
+* **Financial Disclaimer**: **All analyses, ratings, and portfolio updates are mock data created for demo purposes.** This is not financial advice.
 
-- **No Email Service** — The system does not include an email service for password reset or account notifications.
+---
+
+## 📄 License
+This project is licensed under the MIT License.

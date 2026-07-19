@@ -261,7 +261,7 @@ display directly to the user.
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
-| P1 — Tech Lead | | | |
-| P2 — Backend Dev | | | |
-| P3 — Full-stack Dev | | | |
-| P4 — UI Dev | | | |
+| P1 — Tech Lead | **Nguyễn Bình An** | **2026-07-20** | **An** |
+| P2 — Backend Dev | **Lê Kiên Cường** | **2026-07-20** | **Cường** |
+| P3 — Full-stack Dev | **Đồng Hoàng Nguyên** | **2026-07-20** | **Nguyên** |
+| P4 — UI Dev | **Nguyễn Vĩnh Phú** | **2026-07-20** | **Phú** |

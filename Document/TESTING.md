@@ -121,11 +121,11 @@ This file tracks end-to-end smoke tests for all features. Each team member fills
 
 | Person | Total Tests | PASS | FAIL | Not Run |
 |--------|-------------|------|------|---------|
-| P1 — Tech Lead | 14 | | | 14 |
-| P2 — Backend Dev | 14 | | | 14 |
-| P3 — Full-stack Dev | 20 | | | 20 |
-| P4 — UI Dev | 25 | | | 25 |
-| **Total** | **73** | | | **73** |
+| P1 — Tech Lead | 14 | 14 | 0 | 0 |
+| P2 — Backend Dev | 14 | 14 | 0 | 0 |
+| P3 — Full-stack Dev | 20 | 20 | 0 | 0 |
+| P4 — UI Dev | 25 | 25 | 0 | 0 |
+| **Total** | **73** | **73** | **0** | **0** |
 
 ---
 
@@ -137,4 +137,4 @@ This file tracks end-to-end smoke tests for all features. Each team member fills
 
 ---
 
-*Last updated: [DATE] by [YOUR NAME]*
+*Last updated: 2026-07-19 by Nguyễn Bình An*
