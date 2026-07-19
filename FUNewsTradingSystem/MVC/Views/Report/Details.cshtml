@@ -6,30 +6,30 @@
     // Style variables depending on recommendation
     string recGradient = Model.Decision switch
     {
-        "BUY" => "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-        "SELL" => "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
-        _ => "linear-gradient(135deg, #64748b 0%, #475569 100%)"
+        "BUY" => "linear-gradient(135deg, #10b981 0%, #047857 100%)",
+        "SELL" => "linear-gradient(135deg, #f43f5e 0%, #be123c 100%)",
+        _ => "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)"
     };
 
     string recShadow = Model.Decision switch
     {
         "BUY" => "rgba(16, 185, 129, 0.3)",
-        "SELL" => "rgba(239, 68, 68, 0.3)",
-        _ => "rgba(100, 116, 139, 0.3)"
+        "SELL" => "rgba(244, 63, 94, 0.3)",
+        _ => "rgba(245, 158, 11, 0.3)"
     };
 
     string recShadowPulse = Model.Decision switch
     {
         "BUY" => "rgba(16, 185, 129, 0.4)",
-        "SELL" => "rgba(239, 68, 68, 0.4)",
-        _ => "rgba(100, 116, 139, 0.4)"
+        "SELL" => "rgba(244, 63, 94, 0.4)",
+        _ => "rgba(245, 158, 11, 0.4)"
     };
 
     string sectionColor = Model.Decision switch
     {
         "BUY" => "#10b981",
-        "SELL" => "#ef4444",
-        _ => "#64748b"
+        "SELL" => "#f43f5e",
+        _ => "#f59e0b"
     };
 
     string decisionIcon = Model.Decision switch
@@ -141,9 +141,9 @@
     }
 
     .ticker-pill:hover {
-        border-color: var(--accent);
-        background: rgba(124, 58, 237, 0.08);
-        color: var(--accent);
+        border-color: var(--brand-1);
+        background: rgba(37, 99, 235, 0.08);
+        color: var(--brand-1);
         transform: translateY(-1px);
     }
 
@@ -199,7 +199,7 @@
 <div class="container px-0 report-detail-container">
     <!-- Navigation Back Button -->
     <div class="mb-4">
-        <a asp-controller="Report" asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3 back-btn">
+        <a asp-controller="Report" asp-action="Index" class="btn fintech-btn-outline btn-sm rounded-pill px-3 back-btn">
             <i class="bi bi-arrow-left me-1"></i> Back to Analysis Reports
         </a>
     </div>
@@ -208,7 +208,7 @@
     <div class="row g-4">
         <!-- LEFT: Main Article details -->
         <div class="col-lg-8">
-            <article class="card border-0 shadow-sm p-4 p-md-5 mb-4">
+            <article class="card fintech-card p-4 p-md-5 mb-4 border-0">
                 <!-- Title Header -->
                 <header class="mb-4">
                     <div class="d-flex align-items-center gap-2 mb-2">
@@ -248,7 +248,7 @@
                                     </span>
                                     Market Sentiment View
                                 </h4>
-                                <p class="mb-0 text-secondary" style="text-align: justify; line-height: 1.6;">
+                                <p class="mb-0 text-main" style="text-align: justify; line-height: 1.6;">
                                     @sentimentContent
                                 </p>
                             </div>
@@ -261,7 +261,7 @@
                                     </span>
                                     Fundamental Indicators
                                 </h4>
-                                <p class="mb-0 text-secondary" style="text-align: justify; line-height: 1.6;">
+                                <p class="mb-0 text-main" style="text-align: justify; line-height: 1.6;">
                                     @fundamentalContent
                                 </p>
                             </div>
@@ -274,7 +274,7 @@
                                     </span>
                                     Key Risk Warnings
                                 </h4>
-                                <p class="mb-0 text-secondary" style="text-align: justify; line-height: 1.6;">
+                                <p class="mb-0 text-main" style="text-align: justify; line-height: 1.6;">
                                     @riskContent
                                 </p>
                             </div>
@@ -288,7 +288,7 @@
                             var paragraphs = Model.NewsContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (var para in paragraphs)
                             {
-                                <p class="text-secondary lh-lg mb-3" style="text-align: justify; font-size: 1rem;">@para</p>
+                                <p class="text-main lh-lg mb-3" style="text-align: justify; font-size: 1rem;">@para</p>
                             }
                         }
                         else
@@ -308,14 +308,14 @@
                 }
             </article>
 
-            <!-- Simulated Price Chart Card -->
-            <div class="card border-0 shadow-sm p-4 p-md-5 mb-4">
+            <!-- Price Chart Card -->
+            <div class="card fintech-card p-4 p-md-5 mb-4 border-0">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h4 class="fw-bold m-0 text-main" style="font-size: 1.25rem;">
                         <i class="bi bi-activity text-primary me-2"></i>
-                        @(Model.Tags.Any() ? $"{Model.Tags.First()} Price Trend (Simulated)" : "FNTS Index Composite Trend")
+                        @(Model.Tags != null && Model.Tags.Any() ? $"{Model.Tags.First()} Price Trend" : "FNTS Index Composite Trend")
                     </h4>
-                    <span class="badge @(Model.Decision == "BUY" ? "bg-success" : Model.Decision == "SELL" ? "bg-danger" : "bg-secondary") text-white px-3 py-1">
+                    <span class="badge @(Model.Decision == "BUY" ? "fintech-badge-buy" : Model.Decision == "SELL" ? "fintech-badge-sell" : "fintech-badge-hold") px-3 py-1">
                         Signal: @Model.Decision
                     </span>
                 </div>
@@ -323,7 +323,7 @@
                     <canvas id="tradingChart"></canvas>
                 </div>
                 <div class="text-muted small mt-3">
-                    <i class="bi bi-info-circle me-1"></i> Modeled dynamically according to recommendation type: <strong>@Model.Decision</strong>.
+                    <i class="bi bi-info-circle me-1"></i> Market trend data powered by Yahoo Finance API proxy.
                 </div>
             </div>
         </div>
@@ -347,7 +347,7 @@
                 </div>
 
                 <!-- Metadata / Author info Card -->
-                <div class="card border-0 shadow-sm p-4">
+                <div class="card fintech-card p-4 border-0">
                     <h5 class="fw-bold mb-3 text-main"><i class="bi bi-info-circle-fill me-2 text-primary"></i>Report Information</h5>
 
                     <!-- Author -->
@@ -386,7 +386,7 @@
                 <!-- Related Tickers / Tags -->
                 @if (Model.Tags != null && Model.Tags.Any())
                 {
-                    <div class="card border-0 shadow-sm p-4">
+                    <div class="card fintech-card p-4 border-0">
                         <h5 class="fw-bold mb-3 text-main"><i class="bi bi-tags-fill me-2 text-primary"></i>Analyzed Assets</h5>
                         <div class="d-flex flex-wrap gap-2">
                             @foreach (var tag in Model.Tags)
@@ -405,127 +405,166 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
         (function() {
             const ctx = document.getElementById('tradingChart');
             if (!ctx) return;
 
-            // Generate mock stock price series based on Recommendation
             const decision = "@Model.Decision";
-            const ticker = "@(Model.Tags.Any() ? Model.Tags.First() : "FNTS")";
+            const ticker = "@(Model.Tags != null && Model.Tags.Any() ? Model.Tags.First() : "FNTS")";
 
-            const labels = [];
-            const data = [];
-            const daysCount = 30;
+            let chartInstance = null;
 
-            // Seed initial values
-            let currentPrice = Math.random() * 200 + 80; // random start price between 80 and 280
-            
-            // Generate historical dates
-            const today = new Date();
-            for (let i = daysCount - 1; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(today.getDate() - i);
-                labels.push(date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+            function getChartColors(isDark) {
+                let strokeColor = '#374151';
+                let fillColor = 'rgba(55, 65, 81, 0.08)';
+                if (decision === "BUY")      { strokeColor = '#10b981'; fillColor = 'rgba(16, 185, 129, 0.08)'; }
+                else if (decision === "SELL") { strokeColor = '#ef4444'; fillColor = 'rgba(239, 68, 68, 0.08)'; }
+                const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
+                const textColor = isDark ? '#cbd5e1' : '#64748b';
+                return { strokeColor, fillColor, gridColor, textColor };
             }
 
-            // Generate trend logic
-            let trendFactor = 0;
-            if (decision === "BUY") {
-                trendFactor = 1.8; // strong positive drift
-            } else if (decision === "SELL") {
-                trendFactor = -1.8; // negative drift
-            } else {
-                trendFactor = 0.1; // flat/consolidating
-            }
+            function renderChart(labels, data, source) {
+                const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                const { strokeColor, fillColor, gridColor, textColor } = getChartColors(isDark);
 
-            for (let i = 0; i < daysCount; i++) {
-                // random walk with drift
-                const dailyChange = (Math.random() - 0.5) * 6 + trendFactor;
-                currentPrice = Math.max(10, currentPrice + dailyChange); // keep price above 10
-                data.push(currentPrice.toFixed(2));
-            }
+                // Update source badge
+                const cardHeader = ctx.closest('.card').querySelector('h4');
+                if (cardHeader && !cardHeader.querySelector('.source-badge')) {
+                    cardHeader.innerHTML += ` <span class="badge bg-secondary bg-opacity-10 text-secondary source-badge" style="font-size:0.7rem;font-weight:500;margin-left:6px;"><i class="bi bi-broadcast me-1"></i>${source}</span>`;
+                }
 
-            // Dynamic Chart.js colors matching recommendation
-            let strokeColor = '#64748b'; // HOLD
-            let fillColor = 'rgba(100, 116, 139, 0.08)';
+                if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
 
-            if (decision === "BUY") {
-                strokeColor = '#10b981';
-                fillColor = 'rgba(16, 185, 129, 0.08)';
-            } else if (decision === "SELL") {
-                strokeColor = '#ef4444';
-                fillColor = 'rgba(239, 68, 68, 0.08)';
-            }
-
-            // Detect theme
-            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
-            const textColor = isDark ? '#94a3b8' : '#64748b';
-
-            const config = {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: ticker + ' (USD)',
-                        data: data,
-                        borderColor: strokeColor,
-                        borderWidth: 2.5,
-                        fill: true,
-                        backgroundColor: fillColor,
-                        tension: 0.35,
-                        pointRadius: 2,
-                        pointHoverRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: isDark ? '#1e1b4b' : '#ffffff',
-                            titleColor: isDark ? '#ffffff' : '#1e1b4b',
-                            bodyColor: isDark ? '#e2e8f0' : '#1e1b4b',
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: ticker + ' (USD)',
+                            data: data,
                             borderColor: strokeColor,
-                            borderWidth: 1
-                        }
+                            borderWidth: 2.5,
+                            fill: true,
+                            backgroundColor: fillColor,
+                            tension: 0.35,
+                            pointRadius: 1.5,
+                            pointHoverRadius: 5
+                        }]
                     },
-                    scales: {
-                        x: {
-                            grid: { color: gridColor },
-                            ticks: { color: textColor, font: { family: 'Inter', size: 10 } }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 0 },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                mode: 'index', intersect: false,
+                                backgroundColor: isDark ? '#1e1b4b' : '#ffffff',
+                                titleColor: isDark ? '#fff' : '#1e1b4b',
+                                bodyColor: isDark ? '#e2e8f0' : '#1e1b4b',
+                                borderColor: strokeColor, borderWidth: 1
+                            }
                         },
-                        y: {
-                            grid: { color: gridColor },
-                            ticks: { color: textColor, font: { family: 'Inter', size: 10 } }
+                        scales: {
+                            x: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor, font: { family: 'Inter', size: 10 }, maxTicksLimit: 8 }
+                            },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor, font: { family: 'Inter', size: 10 } }
+                            }
                         }
                     }
-                }
-            };
+                });
 
-            let chart = new Chart(ctx, config);
+                // Re-render chart colors when theme toggles
+                const themeObserver = new MutationObserver(() => {
+                    const currentDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                    const { strokeColor: sc, fillColor: fc, gridColor: gc, textColor: tc } = getChartColors(currentDark);
+                    chartInstance.options.scales.x.grid.color = gc;
+                    chartInstance.options.scales.y.grid.color = gc;
+                    chartInstance.options.scales.x.ticks.color = tc;
+                    chartInstance.options.scales.y.ticks.color = tc;
+                    chartInstance.options.plugins.tooltip.backgroundColor = currentDark ? '#1e1b4b' : '#ffffff';
+                    chartInstance.options.plugins.tooltip.titleColor = currentDark ? '#fff' : '#1e1b4b';
+                    chartInstance.options.plugins.tooltip.bodyColor = currentDark ? '#e2e8f0' : '#1e1b4b';
+                    chartInstance.data.datasets[0].borderColor = sc;
+                    chartInstance.data.datasets[0].backgroundColor = fc;
+                    chartInstance.update();
+                });
+                themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
+            }
 
-            // Re-render chart colors when theme toggles
-            const themeObserver = new MutationObserver(() => {
-                const currentDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                const updatedGrid = currentDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
-                const updatedText = currentDark ? '#94a3b8' : '#64748b';
-                
-                chart.options.scales.x.grid.color = updatedGrid;
-                chart.options.scales.y.grid.color = updatedGrid;
-                chart.options.scales.x.ticks.color = updatedText;
-                chart.options.scales.y.ticks.color = updatedText;
-                chart.options.plugins.tooltip.backgroundColor = currentDark ? '#1e1b4b' : '#ffffff';
-                chart.options.plugins.tooltip.titleColor = currentDark ? '#ffffff' : '#1e1b4b';
-                chart.options.plugins.tooltip.bodyColor = currentDark ? '#e2e8f0' : '#1e1b4b';
-                chart.update();
-            });
+            // ── 1. Fetch initial data from MarketDataService (live tick history) ──
+            fetch(`/api/market/chart/${encodeURIComponent(ticker)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.success && data.prices && data.prices.length > 0) {
+                        renderChart(data.labels, data.prices, data.source || 'Live Market Data');
+                        initSignalR();
+                    } else {
+                        throw new Error('No live data available yet.');
+                    }
+                })
+                .catch(() => {
+                    // MarketDataService has no history yet (app just started).
+                    // Live ticking will build the chart in real-time.
+                    const emptyLabels = Array.from({ length: 30 }, () => '');
+                    const emptyPrices = Array.from({ length: 30 }, () => null);
+                    renderChart(emptyLabels, emptyPrices, 'Awaiting Live Data…');
+                    initSignalR();
+                });
 
-            themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
+            // ── 2. SignalR: connect to MarketTickerHub for real-time price updates ──
+            function initSignalR() {
+                const sourceBadge = document.querySelector('.source-badge');
+                if (sourceBadge) sourceBadge.textContent = '⏳ Connecting…';
+
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl('/hubs/marketTicker')
+                    .configureLogging(signalR.LogLevel.Warning)
+                    .build();
+
+                connection.on('ReceiveMarketTicks', function(ticks) {
+                    const tick = ticks.find(t => t.symbol === ticker);
+                    if (!tick || !chartInstance) return;
+
+                    const now = new Date();
+                    const label = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                    chartInstance.data.labels.push(label);
+                    chartInstance.data.datasets[0].data.push(tick.price);
+
+                    // Keep max 120 points visible (~6 min of 3-second ticks)
+                    const MAX_POINTS = 120;
+                    if (chartInstance.data.datasets[0].data.length > MAX_POINTS) {
+                        chartInstance.data.labels.shift();
+                        chartInstance.data.datasets[0].data.shift();
+                    }
+
+                    chartInstance.update('none');
+
+                    // Update source badge to confirm live
+                    const badge = document.querySelector('.source-badge');
+                    if (badge && !badge.textContent.includes('Live')) {
+                        badge.innerHTML = `<i class="bi bi-broadcast me-1"></i>Live (SignalR)`;
+                    }
+                });
+
+                connection.start()
+                    .then(() => {
+                        const badge = document.querySelector('.source-badge');
+                        if (badge) badge.innerHTML = `<i class="bi bi-broadcast me-1" style="font-weight:bold"></i>Live Market Data`;
+                    })
+                    .catch(() => {
+                        const badge = document.querySelector('.source-badge');
+                        if (badge) badge.innerHTML = `<i class="bi bi-wifi-off me-1"></i>Reconnecting…`;
+                    });
+            }
         })();
     </script>
 }
