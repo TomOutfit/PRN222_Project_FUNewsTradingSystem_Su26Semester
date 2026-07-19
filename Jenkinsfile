@@ -106,10 +106,14 @@ pipeline {
                                 noTests = false
                             }
                         } else {
-                            def shellOut = bat(script: "if exist TestResults\\NUL (dir /s /b TestResults\\*.trx 2>nul | findstr /r /c:\".trx\" | head -n 1)", returnStdout: true).trim()
-                            if (shellOut) {
-                                trxPath = shellOut.split(/\r?\n/)[0].trim()
-                                noTests = false
+                            // Use plain dir – no Unix `head` on Windows
+                            def dirOut = bat(
+                                script: '@if exist TestResults\\NUL (dir /s /b TestResults\\*.trx 2>nul)',
+                                returnStdout: true
+                            ).trim()
+                            if (dirOut) {
+                                def first = dirOut.split(/\r?\n/).find { it.trim().endsWith('.trx') }?.trim()
+                                if (first) { trxPath = first; noTests = false }
                             }
                         }
 
@@ -848,13 +852,24 @@ function applyFilters() {
 </html>
 """
 
-                        // Write the HTML report and archive it so it is always produced
+                        // Write the HTML report and publish it
                         if (isUnix()) {
                             sh 'mkdir -p TestResults'
                         } else {
                             bat 'if not exist TestResults mkdir TestResults'
                         }
                         writeFile file: 'TestResults/test-results.html', text: reportHtmlContent
+
+                        // Publish as Jenkins HTML report (shows in build sidebar)
+                        publishHTML(target: [
+                            allowMissing         : true,
+                            alwaysLinkToLastBuild: true,
+                            keepAll              : true,
+                            reportDir            : 'TestResults',
+                            reportFiles          : 'test-results.html',
+                            reportName           : 'Test Report',
+                            reportTitles         : 'CI / Test Report'
+                        ])
                         archiveArtifacts artifacts: 'TestResults/test-results.html', allowEmptyArchive: true
 
                         // --- TRX / MSTest ---
