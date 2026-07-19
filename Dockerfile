@@ -9,14 +9,14 @@ COPY FUNewsTradingSystem/BusinessLayer/BusinessLayer.csproj FUNewsTradingSystem/
 COPY FUNewsTradingSystem/MVC/MVC.csproj FUNewsTradingSystem/MVC/
 
 # Restore all NuGet packages
-RUN dotnet restore FUNewsTradingSystem.sln
+RUN dotnet restore FUNewsTradingSystem/MVC/MVC.csproj
 
 # Copy the rest of the source code
 COPY . .
 
 # Build and Publish the MVC project (the main executable)
 WORKDIR /src/FUNewsTradingSystem/MVC
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # Use the lightweight ASP.NET Core runtime image to run the app
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
