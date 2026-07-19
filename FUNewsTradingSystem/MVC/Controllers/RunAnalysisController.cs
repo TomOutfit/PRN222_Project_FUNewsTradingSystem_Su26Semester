@@ -130,5 +130,5 @@ public class RunAnalysisRequest
 {
     public int SelectedTagId { get; set; }
     public int SelectedCategoryId { get; set; }
-    public string ConnectionId { get; set; }
+    public string? ConnectionId { get; set; }
 }
