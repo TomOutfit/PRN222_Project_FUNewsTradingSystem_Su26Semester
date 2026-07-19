@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using FUNewsTradingSystem_DataAccessLayer.Models;
+using FUNewsTradingSystem_MVC.Services;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
@@ -105,7 +106,8 @@ builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ITagService, FUNewsTradingSystem_BusinessLayer.Services.Implements.TagService>();
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.INewsArticleService, FUNewsTradingSystem_BusinessLayer.Services.Implements.NewsArticleService>();
 
-// TradingAgentService — Singleton (reuses HttpClient, thread-safe)
+// MarketDataService — singleton shared between BackgroundService and API
+builder.Services.AddSingleton<IMarketDataService, MarketDataService>();
 builder.Services.AddSingleton<HttpClient>(sp => new HttpClient { Timeout = TimeSpan.FromSeconds(10) });
 builder.Services.AddSingleton<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ITradingAgentService, FUNewsTradingSystem_BusinessLayer.Services.Implements.TradingAgentService>();
 
