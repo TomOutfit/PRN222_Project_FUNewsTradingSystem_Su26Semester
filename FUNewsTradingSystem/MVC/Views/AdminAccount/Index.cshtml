@@ -8,150 +8,380 @@
     var lecturerCount = Model.Count(a => a.AccountRole == 2);
 }
 
-@Html.AntiForgeryToken()
-
 <style>
-    .stat-mini {
-        background: var(--surface-card);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1.1rem 1.4rem;
-        display: flex;
+    /* ── Stat Chips ── */
+    .stat-chip {
+        display: inline-flex;
         align-items: center;
-        gap: 1rem;
-        transition: box-shadow 0.2s;
+        gap: .45rem;
+        padding: .45rem 1rem;
+        border-radius: 30px;
+        font-size: .8125rem;
+        font-weight: 600;
+        border: 1px solid;
+        transition: transform .2s;
     }
-    .stat-mini:hover { box-shadow: var(--shadow-md); }
-    .stat-mini-icon {
-        width: 46px; height: 46px;
-        border-radius: 12px;
+    .stat-chip:hover { transform: translateY(-1px); }
+    .stat-chip.staff-chip {
+        background: rgba(245,158,11,.08);
+        color: #d97706;
+        border-color: rgba(245,158,11,.25);
+    }
+    .stat-chip.lecturer-chip {
+        background: rgba(16,185,129,.08);
+        color: #059669;
+        border-color: rgba(16,185,129,.25);
+    }
+
+    /* ════════════════════════════════════════════
+       PREMIUM ACCOUNT TABLE  (matches Category/Tag)
+       ════════════════════════════════════════════ */
+    .cat-table-card {
+        background: var(--surface-card);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.3s ease;
+    }
+    .cat-table-card:hover { box-shadow: var(--shadow-lg); }
+
+    /* ── Gradient Header (indigo/purple for accounts) ── */
+    .cat-table-header {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+        padding: 1rem 1.5rem;
+        display: flex; align-items: center; justify-content: space-between;
+        position: relative; overflow: hidden;
+    }
+    .cat-table-header::before {
+        content: '';
+        position: absolute; top: 0; left: -100%;
+        width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(167,139,250,0.15), transparent);
+        animation: headerShimmer 3s ease-in-out infinite;
+    }
+    @@keyframes headerShimmer {
+        0%   { left: -60%; }
+        100% { left: 120%; }
+    }
+    .cat-table-header-title {
+        display: flex; align-items: center; gap: .6rem;
+        color: rgba(255,255,255,0.85);
+        font-weight: 700; font-size: .875rem;
+    }
+    .cat-table-header-title i { color: #a78bfa; font-size: 1.1rem; }
+    .cat-table-header-count {
+        background: rgba(167,139,250,0.15);
+        border: 1px solid rgba(167,139,250,0.25);
+        color: #a78bfa;
+        font-size: .72rem; font-weight: 700;
+        padding: .2rem .6rem; border-radius: 99px;
+    }
+
+    /* ── Column Headers ── */
+    .cat-thead th {
+        background: linear-gradient(180deg, rgba(248,250,252,0.95) 0%, rgba(241,245,249,0.9) 100%);
+        color: #64748b !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        font-size: .68rem !important;
+        letter-spacing: .08em !important;
+        padding: .75rem 1.1rem !important;
+        border-bottom: 2px solid var(--border) !important;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    [data-bs-theme="dark"] .cat-thead th {
+        background: linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.9) 100%);
+        border-bottom-color: rgba(255,255,255,0.06) !important;
+    }
+    .cat-thead th .th-inner { display: flex; align-items: center; gap: .35rem; }
+    .cat-thead th .th-icon {
+        width: 18px; height: 18px;
+        border-radius: 5px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: .7rem;
+        background: rgba(124,58,237,.08);
+        color: #7c3aed;
+    }
+    [data-bs-theme="dark"] .cat-thead th .th-icon {
+        background: rgba(167,139,250,.1);
+        color: #a78bfa;
+    }
+
+    /* ── Table Rows ── */
+    .cat-tbody tr {
+        border-bottom: 1px solid var(--border) !important;
+        background: var(--surface-card);
+        transition: background 0.2s ease;
+        position: relative;
+    }
+    .cat-tbody tr:last-child { border-bottom: none !important; }
+    .cat-tbody tr:hover { background: rgba(124,58,237,.05) !important; }
+    [data-bs-theme="dark"] .cat-tbody tr:hover { background: rgba(167,139,250,.05) !important; }
+    .cat-tbody td {
+        padding: .85rem 1.1rem !important;
+        vertical-align: middle;
+        color: var(--text-main);
+        font-size: .85rem;
+    }
+    .cat-tbody .row-num { color: var(--text-muted); font-size: .8rem; width: 52px; }
+
+    /* ── Row Entrance Animation ── */
+    @@keyframes catRowEntrance {
+        from { opacity: 0; transform: translateY(4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .cat-tbody tr { animation: catRowEntrance 0.35s ease both; }
+    .cat-tbody tr:nth-child(1)  { animation-delay: 0.03s; }
+    .cat-tbody tr:nth-child(2)  { animation-delay: 0.06s; }
+    .cat-tbody tr:nth-child(3)  { animation-delay: 0.09s; }
+    .cat-tbody tr:nth-child(n+4) { animation-delay: 0.12s; }
+
+    /* ── Avatar ── */
+    .account-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: var(--brand-gradient);
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.3rem;
-        flex-shrink: 0;
+        color: #fff; font-weight: 800; font-size: .85rem; flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(37,99,235,.25);
+        animation: avatarPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
     }
-    .stat-mini-val { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--text-main); }
-    .stat-mini-lbl { font-size: .78rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+    @@keyframes avatarPop {
+        from { transform: scale(0); opacity: 0; }
+        to   { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── Role Badge ── */
+    .role-badge {
+        display: inline-flex; align-items: center; gap: .3rem;
+        border-radius: 10px; font-size: .72rem; font-weight: 700;
+        padding: .28rem .65rem; white-space: nowrap;
+        transition: all .2s ease;
+    }
+    .role-badge:hover { transform: translateY(-1px); }
+    .role-staff {
+        background: rgba(245,158,11,.08); color: #d97706;
+        border: 1px solid rgba(245,158,11,.22);
+    }
+    .role-lecturer {
+        background: rgba(16,185,129,.08); color: #059669;
+        border: 1px solid rgba(16,185,129,.22);
+    }
+    .role-admin {
+        background: rgba(239,68,68,.08); color: #dc2626;
+        border: 1px solid rgba(239,68,68,.22);
+    }
+    [data-bs-theme="dark"] .role-staff    { background: rgba(245,158,11,.12); color: #fbbf24; border-color: rgba(245,158,11,.3); }
+    [data-bs-theme="dark"] .role-lecturer { background: rgba(16,185,129,.12); color: #34d399; border-color: rgba(16,185,129,.3); }
+    [data-bs-theme="dark"] .role-admin    { background: rgba(239,68,68,.12);  color: #f87171; border-color: rgba(239,68,68,.3); }
+
+    /* ── Action Buttons ── */
+    .cat-btn {
+        display: inline-flex; align-items: center; gap: .3rem;
+        padding: .4rem .85rem;
+        border-radius: 10px;
+        font-size: .76rem; font-weight: 700;
+        border: 1.5px solid;
+        cursor: pointer;
+        transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
+        white-space: nowrap;
+        position: relative; overflow: hidden;
+    }
+    .cat-btn::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: rgba(255,255,255,0.15);
+        transform: translateX(-100%);
+        transition: transform .3s ease;
+    }
+    .cat-btn:hover::after { transform: translateX(0); }
+    .cat-btn:active { transform: scale(0.95) !important; }
+    .cat-btn-edit {
+        background: rgba(124,58,237,.07);
+        border-color: rgba(124,58,237,.2);
+        color: #7c3aed;
+    }
+    .cat-btn-edit:hover {
+        background: #7c3aed; border-color: #7c3aed; color: #fff;
+        box-shadow: 0 4px 16px rgba(124,58,237,.4);
+        transform: translateY(-2px);
+    }
+    .cat-btn-delete {
+        background: rgba(239,68,68,.07);
+        border-color: rgba(239,68,68,.2);
+        color: #dc2626;
+    }
+    .cat-btn-delete:hover {
+        background: #dc2626; border-color: #dc2626; color: #fff;
+        box-shadow: 0 4px 16px rgba(239,68,68,.4);
+        transform: translateY(-2px);
+    }
+
+    /* ── Row shimmer (inside td, not ::before on tr) ── */
+    @@keyframes rowShimmer { 0% { left: -75%; } 100% { left: 120%; } }
+    .cat-tbody tr .row-shimmer {
+        position: absolute; top: 0; bottom: 0; width: 50%;
+        background: linear-gradient(90deg, transparent, rgba(124,58,237,0.04), transparent);
+        pointer-events: none; display: none;
+    }
+    .cat-tbody tr:hover .row-shimmer { display: block; animation: rowShimmer 1.2s ease-in-out; }
+
+    /* ── Table wrapper ── */
+    .cat-table-wrap { border-radius: 0 0 20px 20px; overflow: hidden; border-top: none; }
+
+    /* ── Empty State ── */
+    .fnts-empty { text-align: center; padding: 4rem 2rem; display: flex; flex-direction: column; align-items: center; gap: .6rem; }
+    .fnts-empty-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(124,58,237,.06); display: flex; align-items: center; justify-content: center; }
+    [data-bs-theme="dark"] .fnts-empty-icon { background: rgba(124,58,237,.1); }
+    .fnts-empty h6 { font-weight: 700; color: var(--text-muted); margin: 0; }
+    .fnts-empty p   { color: var(--text-muted); font-size: .85rem; margin: 0; }
 </style>
 
 <div class="page-header">
     <div>
-        <h2><i class="bi bi-people-fill me-2" style="background:linear-gradient(135deg,#6d28d9,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>Account Management</h2>
+        <h2>
+            <i class="bi bi-people-fill me-2"
+               style="background:var(--brand-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>
+            Account Management
+        </h2>
         <p class="text-muted mb-0">Manage all system user accounts, roles and credentials.</p>
     </div>
-    <button class="btn btn-primary" onclick="openCreateModal()">
-        <i class="bi bi-plus-circle me-1"></i> Add Account
-    </button>
-</div>
-
-@* Stat mini-cards *@
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
-        <div class="stat-mini">
-            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#6d28d9,#9333ea)">
-                <i class="bi bi-people-fill text-white"></i>
-            </div>
-            <div>
-                <div class="stat-mini-val">@totalAccounts</div>
-                <div class="stat-mini-lbl">Total Accounts</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="stat-mini">
-            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#0284c7,#38bdf8)">
-                <i class="bi bi-person-badge-fill text-white"></i>
-            </div>
-            <div>
-                <div class="stat-mini-val">@staffCount</div>
-                <div class="stat-mini-lbl">Staff Members</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="stat-mini">
-            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#059669,#10b981)">
-                <i class="bi bi-mortarboard-fill text-white"></i>
-            </div>
-            <div>
-                <div class="stat-mini-val">@lecturerCount</div>
-                <div class="stat-mini-lbl">Lecturers</div>
-            </div>
-        </div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="stat-chip staff-chip">
+            <i class="bi bi-person-badge-fill"></i>@staffCount Staff
+        </span>
+        <span class="stat-chip lecturer-chip">
+            <i class="bi bi-mortarboard-fill"></i>@lecturerCount Lecturers
+        </span>
+        <button class="btn fintech-btn-primary" onclick="openCreateModal()">
+            <i class="bi bi-plus-circle me-1"></i>Add Account
+        </button>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body p-0">
+<!-- ── Premium Table Card ── -->
+<div class="cat-table-card">
+    <!-- Gradient Header -->
+    <div class="cat-table-header">
+        <div class="cat-table-header-title">
+            <i class="bi bi-people-fill"></i>
+            All Accounts
+        </div>
+        <span class="cat-table-header-count">@totalAccounts accounts</span>
+    </div>
+
+    <div class="cat-table-wrap">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
-                <thead>
+                <thead class="cat-thead">
                     <tr>
-                        <th style="padding-left:1.25rem">#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th class="text-end" style="padding-right:1.25rem">Actions</th>
+                        <th>
+                            <div class="th-inner"><span class="th-icon"><i class="bi bi-hash"></i></span>#</div>
+                        </th>
+                        <th>
+                            <div class="th-inner"><span class="th-icon"><i class="bi bi-person"></i></span>Name</div>
+                        </th>
+                        <th>
+                            <div class="th-inner"><span class="th-icon"><i class="bi bi-envelope"></i></span>Email</div>
+                        </th>
+                        <th>
+                            <div class="th-inner"><span class="th-icon"><i class="bi bi-shield"></i></span>Role</div>
+                        </th>
+                        <th class="text-end">
+                            <div class="th-inner justify-content-end"><span class="th-icon"><i class="bi bi-gear"></i></span>Actions</div>
+                        </th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach (var account in Model)
+                <tbody class="cat-tbody">
+                    @if (!Model.Any())
                     {
-                        var roleLabel = account.AccountRole switch
-                        {
-                            1 => "Staff",
-                            2 => "Lecturer",
-                            3 => "Admin",
-                            _ => "Guest"
-                        };
-
-                        var roleIcon = account.AccountRole switch
-                        {
-                            1 => "bi-person-badge-fill",
-                            2 => "bi-mortarboard-fill",
-                            3 => "bi-shield-fill",
-                            _ => "bi-person"
-                        };
-
-                        var roleBadge = account.AccountRole switch
-                        {
-                            1 => "bg-primary",
-                            2 => "bg-success",
-                            3 => "bg-danger",
-                            _ => "bg-secondary"
-                        };
-
-                        var currentUserIdClaim = User.FindFirst("AccountID")?.Value;
-                        var isSelf = currentUserIdClaim != null && currentUserIdClaim == account.AccountID.ToString();
-
                         <tr>
-                            <td style="padding-left:1.25rem;color:var(--text-muted);font-size:.85rem">@account.AccountID</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#db2777);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0">
-                                        @(account.AccountName?.Length > 0 ? account.AccountName[0].ToString().ToUpper() : "?")
+                            <td colspan="5">
+                                <div class="fnts-empty">
+                                    <div class="fnts-empty-icon">
+                                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:#a78bfa;opacity:.6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+                                        </svg>
                                     </div>
-                                    <span class="fw-600">@account.AccountName</span>
-                                    @if (isSelf) { <span class="badge bg-warning" style="font-size:.65rem">You</span> }
+                                    <h6>No accounts found</h6>
+                                    <p>Click "Add Account" to create the first one.</p>
                                 </div>
                             </td>
-                            <td style="color:var(--text-muted);font-size:.875rem">@account.AccountEmail</td>
-                            <td>
-                                <span class="badge @roleBadge">
-                                    <i class="bi @roleIcon me-1"></i>@roleLabel
-                                </span>
-                            </td>
-                            <td class="text-end" style="padding-right:1.25rem">
-                                <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(@account.AccountID)">
-                                    <i class="bi bi-pencil me-1"></i>Edit
-                                </button>
-                                @if (!isSelf)
-                                {
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAccount(@account.AccountID, '@account.AccountName')">
-                                        <i class="bi bi-trash me-1"></i>Delete
-                                    </button>
-                                }
-                            </td>
                         </tr>
+                    }
+                    else
+                    {
+                        @foreach (var account in Model)
+                        {
+                            var roleLabel = account.AccountRole switch
+                            {
+                                1 => "Staff",
+                                2 => "Lecturer",
+                                3 => "Admin",
+                                _ => "Guest"
+                            };
+
+                            var roleIcon = account.AccountRole switch
+                            {
+                                1 => "bi-person-badge-fill",
+                                2 => "bi-mortarboard-fill",
+                                3 => "bi-shield-fill",
+                                _ => "bi-person"
+                            };
+
+                            var roleClass = account.AccountRole switch
+                            {
+                                1 => "role-staff",
+                                2 => "role-lecturer",
+                                3 => "role-admin",
+                                _ => "bg-secondary"
+                            };
+
+                            var currentUserIdClaim = User.FindFirst("AccountID")?.Value;
+                            var isSelf = currentUserIdClaim != null && currentUserIdClaim == account.AccountID.ToString();
+
+                            <tr>
+                                <td class="row-num">@account.AccountID</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="account-avatar">
+                                            @(account.AccountName?.Length > 0 ? account.AccountName[0].ToString().ToUpper() : "?")
+                                        </div>
+                                        <div>
+                                            <span class="fw-semibold">@account.AccountName</span>
+                                            @if (isSelf)
+                                            {
+                                                <span class="badge ms-1" style="font-size:.62rem;font-weight:700;border-radius:99px;padding:.18rem .5rem;background:rgba(245,158,11,.12)!important;color:#d97706!important;border:1px solid rgba(245,158,11,.3)">You</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="row-shimmer"></div>
+                                </td>
+                                <td>
+                                    <span class="text-muted">@account.AccountEmail</span>
+                                    <div class="row-shimmer"></div>
+                                </td>
+                                <td>
+                                    <span class="role-badge @roleClass">
+                                        <i class="bi @roleIcon"></i>@roleLabel
+                                    </span>
+                                    <div class="row-shimmer"></div>
+                                </td>
+                                <td class="text-end">
+                                    <a class="cat-btn cat-btn-edit me-1" onclick="openEditModal(@account.AccountID)">
+                                        <i class="bi bi-pencil"></i>Edit
+                                    </a>
+                                    @if (!isSelf)
+                                    {
+                                        <a class="cat-btn cat-btn-delete" onclick="deleteAccount(@account.AccountID, '@account.AccountName')">
+                                            <i class="bi bi-trash"></i>Delete
+                                        </a>
+                                    }
+                                    <div class="row-shimmer"></div>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -165,7 +395,7 @@
 <form id="ajax-antiforgery">@Html.AntiForgeryToken()</form>
 
 <div class="modal fade" id="accountCrudModal" tabindex="-1" aria-labelledby="accountModalTitle" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="accountModalTitle">Account</h5>
@@ -173,8 +403,8 @@
             </div>
             <div id="accountModalBodyContainer" class="modal-body"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="btnSaveAccount" class="btn btn-primary">Save Account</button>
+                <button type="button" class="btn fintech-btn-outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnSaveAccount" class="btn fintech-btn-primary">Save Account</button>
             </div>
         </div>
     </div>

@@ -1,50 +1,929 @@
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Admin Command Center";
 }
 
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col">
-            <h2>Welcome to Admin Dashboard</h2>
-            <p class="text-muted">Manage system accounts and view statistical reports.</p>
+<style>
+    /* ── Dark Hero Header ── */
+    .dash-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+        border-radius: 20px;
+        padding: 1.75rem 2rem;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(167,139,250,.2);
+    }
+    .dash-hero::before {
+        content: '';
+        position: absolute; top: 0; left: -100%;
+        width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(167,139,250,.08), transparent);
+        animation: dashHeroShimmer 4s ease-in-out infinite;
+    }
+    @@keyframes dashHeroShimmer {
+        0%   { left: -60%; }
+        100% { left: 120%; }
+    }
+    .dash-hero::after {
+        content: '';
+        position: absolute; top: 0; right: 0; bottom: 0;
+        width: 200px;
+        background: radial-gradient(ellipse at right, rgba(124,58,237,.15), transparent 70%);
+        pointer-events: none;
+    }
+    .dash-hero-title {
+        color: #f1f5f9;
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: -.3px;
+        margin-bottom: .35rem;
+    }
+    .dash-hero-sub {
+        color: rgba(241,245,249,.5);
+        font-size: .875rem;
+        margin: 0;
+    }
+    .root-badge {
+        background: rgba(239,68,68,.15);
+        border: 1px solid rgba(239,68,68,.3);
+        color: #f87171;
+        font-size: .72rem;
+        font-weight: 700;
+        padding: .35rem .9rem;
+        border-radius: 99px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+    }
+    .root-badge::before {
+        content: '';
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #f87171;
+        animation: pulse 2s infinite;
+    }
+    @@keyframes pulse {
+        0%,100% { opacity: 1; transform: scale(1); }
+        50%      { opacity: .5; transform: scale(1.3); }
+    }
+
+    /* ── Stat Mini Cards ── */
+    .stat-mini {
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.1rem 1.25rem;
+        display: flex; align-items: center; gap: 1rem;
+        transition: box-shadow .2s, transform .2s;
+        box-shadow: var(--shadow-sm);
+    }
+    .stat-mini:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .stat-mini-icon {
+        width: 48px; height: 48px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; flex-shrink: 0;
+    }
+    .stat-mini-val {
+        font-size: 1.6rem; font-weight: 800; line-height: 1;
+        color: var(--text-main);
+    }
+    .stat-mini-lbl {
+        font-size: .73rem; color: var(--text-muted);
+        font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+        margin-top: .15rem;
+    }
+    .stat-mini-sub {
+        font-size: .72rem; color: var(--text-muted); font-weight: 500;
+        margin-top: .2rem;
+    }
+    .stat-mini-sub strong { color: var(--text-main); }
+
+    /* ── Section Heading ── */
+    .dash-section-title {
+        font-size: .95rem; font-weight: 800;
+        color: var(--text-main);
+        text-transform: uppercase; letter-spacing: .06em;
+        display: flex; align-items: center; gap: .6rem;
+        margin-bottom: 1rem;
+    }
+    .dash-section-title::after {
+        content: ''; flex: 1; height: 1px;
+        background: var(--border);
+    }
+    .dash-section-title i { color: #7c3aed; font-size: .95rem; }
+
+    /* ── Portal Cards ── */
+    .portal-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.25rem;
+        transition: all .25s ease;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        display: flex; flex-direction: column;
+    }
+    .portal-card::before {
+        content: '';
+        position: absolute; top: 0; left: 0; bottom: 0;
+        width: 4px;
+        border-radius: 4px 0 0 4px;
+        transition: width .25s ease;
+    }
+    .portal-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-3px);
+        border-color: rgba(124,58,237,.25);
+    }
+    .portal-card:hover::before { width: 6px; }
+    .portal-card.acct::before  { background: linear-gradient(180deg, #7c3aed, #a78bfa); }
+    .portal-card.stat::before  { background: linear-gradient(180deg, #059669, #34d399); }
+    .portal-card.cat::before   { background: linear-gradient(180deg, #d97706, #fbbf24); }
+    .portal-card.tag::before   { background: linear-gradient(180deg, #2563eb, #60a5fa); }
+    .portal-icon {
+        width: 42px; height: 42px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.15rem;
+        margin-bottom: .9rem;
+    }
+    .portal-icon.acct  { background: rgba(124,58,237,.1); color: #7c3aed; }
+    .portal-icon.stat  { background: rgba(16,185,129,.1); color: #059669; }
+    .portal-icon.cat   { background: rgba(217,119,6,.1); color: #d97706; }
+    .portal-icon.tag   { background: rgba(37,99,235,.1); color: #2563eb; }
+    .portal-title {
+        font-size: .9rem; font-weight: 800;
+        color: var(--text-main); margin-bottom: .3rem;
+    }
+    .portal-desc {
+        font-size: .78rem; color: var(--text-muted);
+        line-height: 1.5; margin: 0; flex: 1;
+    }
+    .portal-btn {
+        margin-top: 1rem;
+        display: inline-flex; align-items: center; gap: .3rem;
+        padding: .45rem 1rem;
+        border-radius: 10px;
+        font-size: .78rem; font-weight: 700;
+        border: 1.5px solid;
+        cursor: pointer;
+        transition: all .2s ease;
+        text-decoration: none;
+    }
+    .portal-btn:hover { transform: translateY(-1px); color: #fff; }
+    .portal-btn.acct {
+        background: rgba(124,58,237,.08); border-color: rgba(124,58,237,.25); color: #7c3aed;
+    }
+    .portal-btn.acct:hover { background: #7c3aed; border-color: #7c3aed; box-shadow: 0 4px 14px rgba(124,58,237,.35); }
+    .portal-btn.stat {
+        background: rgba(16,185,129,.08); border-color: rgba(16,185,129,.25); color: #059669;
+    }
+    .portal-btn.stat:hover { background: #059669; border-color: #059669; box-shadow: 0 4px 14px rgba(16,185,129,.35); }
+    .portal-btn.cat {
+        background: rgba(217,119,6,.08); border-color: rgba(217,119,6,.25); color: #d97706;
+    }
+    .portal-btn.cat:hover { background: #d97706; border-color: #d97706; box-shadow: 0 4px 14px rgba(217,119,6,.35); }
+    .portal-btn.tag {
+        background: rgba(37,99,235,.08); border-color: rgba(37,99,235,.25); color: #2563eb;
+    }
+    .portal-btn.tag:hover { background: #2563eb; border-color: #2563eb; box-shadow: 0 4px 14px rgba(37,99,235,.35); }
+
+    /* ── Compact Admin Portal Row (no descriptions) ── */
+    .admin-portal-row {
+        display: flex;
+        gap: .75rem;
+        flex-wrap: wrap;
+    }
+    .admin-portal-card {
+        flex: 1;
+        min-width: 180px;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: .85rem 1rem;
+        box-shadow: var(--shadow-sm);
+        transition: all .2s ease;
+    }
+    .admin-portal-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: rgba(124,58,237,.2); }
+    .admin-portal-card.acct { border-left: 3px solid #7c3aed; }
+    .admin-portal-card.stat { border-left: 3px solid #059669; }
+    .admin-portal-icon {
+        width: 38px; height: 38px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem; flex-shrink: 0;
+    }
+    .admin-portal-icon.acct { background: rgba(124,58,237,.12); color: #7c3aed; }
+    .admin-portal-icon.stat { background: rgba(16,185,129,.12); color: #059669; }
+    .admin-portal-body { display: flex; flex-direction: column; gap: .35rem; }
+    .admin-portal-title { font-size: .82rem; font-weight: 800; color: var(--text-main); }
+    .admin-portal-btn {
+        display: inline-flex; align-items: center; gap: .25rem;
+        font-size: .75rem; font-weight: 700;
+        border-radius: 8px; padding: .3rem .7rem;
+        border: 1.5px solid; text-decoration: none;
+        transition: all .2s ease;
+    }
+    .admin-portal-btn.acct { background: rgba(124,58,237,.08); border-color: rgba(124,58,237,.3); color: #7c3aed; }
+    .admin-portal-btn.acct:hover { background: #7c3aed; color: #fff; }
+    .admin-portal-btn.stat { background: rgba(16,185,129,.08); border-color: rgba(16,185,129,.3); color: #059669; }
+    .admin-portal-btn.stat:hover { background: #059669; color: #fff; }
+
+    /* ── Terminal / Telemetry Panel ── */
+    .terminal-panel {
+        background: #0f172a;
+        border: 1px solid rgba(167,139,250,.15);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    }
+    .terminal-bar {
+        background: rgba(167,139,250,.08);
+        border-bottom: 1px solid rgba(167,139,250,.1);
+        padding: .6rem 1rem;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .terminal-bar-title {
+        color: rgba(241,245,249,.7);
+        font-size: .75rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .08em;
+        display: flex; align-items: center; gap: .5rem;
+    }
+    .terminal-bar-title i { color: #a78bfa; }
+    .terminal-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        display: inline-block;
+    }
+    .terminal-body { padding: 1rem 1.25rem; }
+
+    /* Telemetry rows */
+    .tele-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: .55rem 0;
+        border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .tele-row:last-child { border-bottom: none; }
+    .tele-label {
+        font-size: .73rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .06em;
+        color: rgba(148,163,184,.9);
+    }
+    .tele-val {
+        font-size: .82rem; font-weight: 800;
+        color: #f1f5f9;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* Progress bars */
+    .tele-bar-track {
+        background: rgba(255,255,255,.08);
+        border-radius: 99px;
+        height: 6px;
+        overflow: hidden;
+        margin-top: .4rem;
+    }
+    .tele-bar-fill {
+        height: 100%;
+        border-radius: 99px;
+        transition: width 1.5s ease;
+    }
+
+    /* Control buttons in terminal */
+    .term-btn {
+        background: rgba(255,255,255,.05);
+        border: 1px solid rgba(255,255,255,.1);
+        color: rgba(241,245,249,.7);
+        padding: .5rem 1rem;
+        border-radius: 8px;
+        font-size: .78rem; font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
+        display: inline-flex; align-items: center; gap: .4rem;
+    }
+    .term-btn:hover {
+        background: rgba(255,255,255,.1);
+        color: #f1f5f9;
+        border-color: rgba(255,255,255,.2);
+    }
+    .term-btn.succ { border-color: rgba(52,211,153,.4); color: #34d399; }
+    .term-btn.succ:hover { background: rgba(52,211,153,.15); }
+    .term-btn.info { border-color: rgba(96,165,250,.4); color: #60a5fa; }
+    .term-btn.info:hover { background: rgba(96,165,250,.15); }
+
+    /* ── Activity Log ── */
+    .activity-log {
+        display: flex; flex-direction: column; gap: .6rem;
+        max-height: 320px; overflow-y: auto;
+        padding-right: .25rem;
+    }
+    .activity-log::-webkit-scrollbar { width: 3px; }
+    .activity-log::-webkit-scrollbar-thumb {
+        background: rgba(167,139,250,.3);
+        border-radius: 99px;
+    }
+    .log-entry {
+        padding: .7rem .9rem;
+        border-radius: 10px;
+        border-left: 3px solid;
+        background: rgba(255,255,255,.03);
+        animation: logSlide 0.3s ease;
+    }
+    @@keyframes logSlide {
+        from { opacity: 0; transform: translateX(-8px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    .log-entry.log-info    { border-color: #60a5fa; }
+    .log-entry.log-success { border-color: #34d399; }
+    .log-entry.log-warning { border-color: #fbbf24; }
+    .log-entry.log-danger  { border-color: #f87171; }
+    .log-entry-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: .15rem;
+    }
+    .log-entry-title {
+        font-size: .78rem; font-weight: 700;
+        color: #f1f5f9;
+        display: flex; align-items: center; gap: .4rem;
+    }
+    .log-entry.log-info    .log-entry-title { color: #93c5fd; }
+    .log-entry.log-success .log-entry-title { color: #6ee7b7; }
+    .log-entry.log-warning .log-entry-title { color: #fcd34d; }
+    .log-entry.log-danger  .log-entry-title { color: #fca5a5; }
+    .log-time {
+        font-size: .68rem; color: rgba(148,163,184,.6);
+        font-family: 'Courier New', monospace;
+    }
+    .log-entry-msg {
+        font-size: .73rem; color: rgba(148,163,184,.75);
+        line-height: 1.4; margin: 0;
+    }
+    .log-empty {
+        text-align: center; padding: 3rem 1rem;
+        color: rgba(148,163,184,.4);
+        font-size: .8rem;
+    }
+
+    /* ── Chart Cards ── */
+    .chart-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.25rem;
+        box-shadow: var(--shadow-sm);
+        height: 100%;
+    }
+    .chart-card-title {
+        font-size: .85rem; font-weight: 800;
+        color: var(--text-main);
+        margin-bottom: 1rem;
+        display: flex; align-items: center; gap: .5rem;
+    }
+
+    /* ── Doughnut legend ── */
+    .doughnut-legend {
+        display: flex; justify-content: center; gap: 1.25rem;
+        margin-top: .75rem;
+    }
+    .doughnut-legend-item {
+        display: flex; align-items: center; gap: .3rem;
+        font-size: .78rem; font-weight: 700;
+    }
+    .doughnut-legend-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+    }
+
+    /* spin animation */
+    .spin { animation: spin 1s linear infinite; }
+    @@keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* ── Responsive spacing ── */
+    .g-dash { gap: 1.5rem; }
+</style>
+
+<!-- ── Hero Header ── -->
+<div class="dash-hero animate-fade-in-up">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+        <div>
+            <h1 class="dash-hero-title">
+                <i class="bi bi-shield-lock-fill me-2" style="color:#a78bfa"></i>
+                Admin Command Center
+            </h1>
+            <p class="dash-hero-sub">Operational governance console &mdash; telemetry, reporting, and system control.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="root-badge">
+                <i class="bi bi-shield-fill"></i> Root Administrator
+            </span>
         </div>
     </div>
+</div>
 
-    <div class="row g-4">
-        <!-- Account Management Card -->
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body d-flex flex-column text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-people-fill text-primary" style="font-size: 3rem;"></i>
-                    </div>
-                    <h4 class="card-title">Account Management</h4>
-                    <p class="card-text flex-grow-1 text-muted">
-                        Create, update, and manage Staff and Lecturer accounts. Delete inactive users to maintain security.
-                    </p>
-                    <a href="/Admin/Accounts" class="btn btn-outline-primary mt-3">
-                        Manage Accounts
-                    </a>
+<!-- ── Stat Mini Cards ── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-mini">
+            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">
+                <i class="bi bi-people-fill text-white"></i>
+            </div>
+            <div>
+                <div class="stat-mini-val" id="dashAccountCount">0</div>
+                <div class="stat-mini-lbl">Total Accounts</div>
+                <div class="stat-mini-sub">
+                    <strong id="dashStaffCount">0</strong> Staff &bull;
+                    <strong id="dashLecCount">0</strong> Lecturer
                 </div>
             </div>
         </div>
-
-        <!-- Statistical Report Card -->
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body d-flex flex-column text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-bar-chart-fill text-success" style="font-size: 3rem;"></i>
-                    </div>
-                    <h4 class="card-title">Statistical Reports</h4>
-                    <p class="card-text flex-grow-1 text-muted">
-                        View comprehensive reports on AI-generated trading analyses. Filter by date ranges.
-                    </p>
-                    <a href="/Admin/Statistics" class="btn btn-outline-success mt-3">
-                        View Reports
-                    </a>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-mini">
+            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#059669,#10b981)">
+                <i class="bi bi-bar-chart-line-fill text-white"></i>
+            </div>
+            <div>
+                <div class="stat-mini-val" id="dashReportCount">0</div>
+                <div class="stat-mini-lbl">AI Analyses</div>
+                <div class="stat-mini-sub">
+                    <span style="color:#10b981;font-weight:700"><i class="bi bi-lightning-fill" style="font-weight:bold"></i> Live Market Data</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-mini">
+            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#2563eb,#60a5fa)">
+                <i class="bi bi-activity text-white"></i>
+            </div>
+            <div>
+                <div class="stat-mini-val" id="dashPresenceCount">1</div>
+                <div class="stat-mini-lbl">Active Sessions</div>
+                <div class="stat-mini-sub">
+                    <span style="color:#60a5fa;font-weight:700"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> Real-time</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-mini">
+            <div class="stat-mini-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b)">
+                <i class="bi bi-hdd-network-fill text-white"></i>
+            </div>
+            <div>
+                <div class="stat-mini-val" style="color:#10b981">Online</div>
+                <div class="stat-mini-lbl">Database Engine</div>
+                <div class="stat-mini-sub">
+                    <span style="color:#f59e0b;font-weight:700"><i class="bi bi-shield-check"></i> SSL Encrypted</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ── Charts Row ── -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <i class="bi bi-graph-up" style="color:#7c3aed"></i>
+                Analysis Publishing Velocity
+                <span class="badge ms-auto" style="font-size:.68rem;font-weight:700;background:rgba(124,58,237,.1)!important;color:#7c3aed!important;border:1px solid rgba(124,58,237,.2)">7-Day Runrate</span>
+            </div>
+            <div style="height:260px;position:relative">
+                <canvas id="analysisTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card" style="display:flex;flex-direction:column;justify-content:center">
+            <div class="chart-card-title">
+                <i class="bi bi-pie-chart-fill" style="color:#059669"></i>
+                Sentiment Decision Mix
+            </div>
+            <div style="height:180px;position:relative">
+                <canvas id="decisionMixChart"></canvas>
+            </div>
+            <div class="doughnut-legend mt-2">
+                <div class="doughnut-legend-item">
+                    <span class="doughnut-legend-dot" style="background:#10b981"></span>
+                    <span id="labelBuyPercent" style="color:var(--text-main);font-weight:700">0%</span>
+                </div>
+                <div class="doughnut-legend-item">
+                    <span class="doughnut-legend-dot" style="background:#475569"></span>
+                    <span id="labelHoldPercent" style="color:var(--text-main);font-weight:700">0%</span>
+                </div>
+                <div class="doughnut-legend-item">
+                    <span class="doughnut-legend-dot" style="background:#ef4444"></span>
+                    <span id="labelSellPercent" style="color:var(--text-main);font-weight:700">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Portals (compact for Admin, full for Staff) ── -->
+@if (User.IsInRole("3"))
+{
+    @* Admin: compact row, no descriptions *@
+    <div class="admin-portal-row mt-3">
+        <div class="admin-portal-card acct">
+            <div class="admin-portal-icon acct"><i class="bi bi-person-gear"></i></div>
+            <div class="admin-portal-body">
+                <div class="admin-portal-title">User Accounts</div>
+                <a href="/Admin/Accounts" class="admin-portal-btn acct">Manage <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="admin-portal-card stat">
+            <div class="admin-portal-icon stat"><i class="bi bi-bar-chart-fill"></i></div>
+            <div class="admin-portal-body">
+                <div class="admin-portal-title">Statistics</div>
+                <a href="/Admin/Statistics" class="admin-portal-btn stat">View <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @* Staff: full chart-card with descriptions *@
+    <div class="chart-card">
+        <div class="dash-section-title">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+            Governance &amp; Core Portals
+        </div>
+        <div class="row g-3">
+            <!-- Account Directory -->
+            <div class="col-md-6">
+                <div class="portal-card acct">
+                    <div class="portal-icon acct"><i class="bi bi-person-gear"></i></div>
+                    <div class="portal-title">User Accounts Directory</div>
+                    <p class="portal-desc">Manage system roles, register Staff and Lecturers, modify credentials, or revoke account access.</p>
+                    <a href="/Admin/Accounts" class="portal-btn acct">
+                        Access Directory <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Statistical Reporting -->
+            <div class="col-md-6">
+                <div class="portal-card stat">
+                    <div class="portal-icon stat"><i class="bi bi-bar-chart-fill"></i></div>
+                    <div class="portal-title">Statistical Reporting</div>
+                    <p class="portal-desc">Review platform metrics, generate financial reports, and export to Excel sheets or PDF documents.</p>
+                    <a href="/Admin/Statistics" class="portal-btn stat">
+                        Access Reports <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Category Management -->
+            <div class="col-md-6">
+                <div class="portal-card cat">
+                    <div class="portal-icon cat"><i class="bi bi-folder-symlink-fill"></i></div>
+                    <div class="portal-title">Category Management</div>
+                    <p class="portal-desc">Create, edit, or remove structural sector categorisation tags mapped across AI reporting assets.</p>
+                    <a href="/Category" class="portal-btn cat">
+                        Manage Categories <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Tag & Ticker Manager -->
+            <div class="col-md-6">
+                <div class="portal-card tag">
+                    <div class="portal-icon tag"><i class="bi bi-tag-fill"></i></div>
+                    <div class="portal-title">Tag &amp; Ticker Manager</div>
+                    <p class="portal-desc">Maintain global security ticker codes tracked for Yahoo Finance quote pulling and background sync.</p>
+                    <a href="/Tag" class="portal-btn tag">
+                        Manage Tickers <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+        <div class="d-flex flex-column gap-3">
+            <!-- Telemetry -->
+            <div class="terminal-panel">
+                <div class="terminal-bar">
+                    <div class="terminal-bar-title">
+                        <i class="bi bi-cpu-fill"></i> Telemetry Console
+                    </div>
+                    <div>
+                        <span class="terminal-dot" style="background:#f87171"></span>
+                        <span class="terminal-dot ms-1" style="background:#fbbf24"></span>
+                        <span class="terminal-dot ms-1" style="background:#34d399"></span>
+                    </div>
+                </div>
+                <div class="terminal-body">
+                    <div class="tele-row">
+                        <span class="tele-label">CPU Utilisation</span>
+                        <span class="tele-val" style="color:#60a5fa" id="telemetryCpu">12%</span>
+                    </div>
+                    <div class="tele-bar-track">
+                        <div class="tele-bar-fill" id="telemetryCpuBar" style="width:12%;background:linear-gradient(90deg,#2563eb,#60a5fa)"></div>
+                    </div>
+
+                    <div class="tele-row mt-2">
+                        <span class="tele-label">Memory Allocated</span>
+                        <span class="tele-val" style="color:#fbbf24" id="telemetryMem">448 MB</span>
+                    </div>
+                    <div class="tele-bar-track">
+                        <div class="tele-bar-fill" id="telemetryMemBar" style="width:22%;background:linear-gradient(90deg,#d97706,#fbbf24)"></div>
+                    </div>
+
+                    <div class="tele-row">
+                        <span class="tele-label">System Uptime</span>
+                        <span class="tele-val" style="color:#a78bfa">2d 14h 45m</span>
+                    </div>
+                    <div class="tele-row">
+                        <span class="tele-label">Network Latency</span>
+                        <span class="tele-val" style="color:#34d399" id="telemetryLatency">32 ms</span>
+                    </div>
+                    <div class="tele-row">
+                        <span class="tele-label">DB Client Pools</span>
+                        <span class="tele-val">12 Pools</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Activity Log -->
+            <div class="terminal-panel" style="flex:1">
+                <div class="terminal-bar">
+                    <div class="terminal-bar-title">
+                        <i class="bi bi-activity"></i> Live System Log
+                    </div>
+                    <span style="font-size:.68rem;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:.3rem">
+                        <span style="width:6px;height:6px;border-radius:50%;background:#34d399;animation:pulse 2s infinite;display:inline-block"></span>
+                        Live
+                    </span>
+                </div>
+                <div class="terminal-body">
+                    <div id="liveActivityLog" class="activity-log">
+                        <div class="log-empty" id="liveLogPlaceholder">
+                            <i class="bi bi-broadcast fs-4 d-block mb-2"></i>
+                            Listening for active operations&hellip;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            var trendCtx = document.getElementById('analysisTrendChart');
+            var doughnutCtx = document.getElementById('decisionMixChart');
+            var presenceEl = document.getElementById("dashPresenceCount");
+            var accountEl = document.getElementById("dashAccountCount");
+            var reportEl = document.getElementById("dashReportCount");
+            var staffEl = document.getElementById("dashStaffCount");
+            var lecEl = document.getElementById("dashLecCount");
+            var logContainer = document.getElementById("liveActivityLog");
+            var placeholder = document.getElementById("liveLogPlaceholder");
+
+            let trendChart = null;
+            let doughnutChart = null;
+            let fetchInFlight = false;   // prevents concurrent fetchStats() calls
+            let fetchTimer = null;       // debounce timer
+
+            function fetchStats() {
+                if (fetchInFlight) {
+                    clearTimeout(fetchTimer);
+                }
+                fetchTimer = setTimeout(function() {
+                    doFetch();
+                }, 80);
+            }
+
+            function doFetch() {
+                fetchInFlight = true;
+                fetch("/api/admin/dashboard-stats")
+                    .then(function(r) {
+                        if (!r.ok) throw new Error("HTTP " + r.status + " — " + r.statusText);
+                        return r.json();
+                    })
+                    .then(function(res) {
+                        fetchInFlight = false;
+                        if (!res) { console.error("API returned null/undefined"); return; }
+                        console.log("[Dashboard] stats response:", res);
+
+                        accountEl.textContent = res.totalAccounts || 0;
+                        reportEl.textContent = res.totalReports || 0;
+                        staffEl.textContent = res.totalStaff || 0;
+                        lecEl.textContent = res.totalLecturers || 0;
+
+                        var total = res.buyCount + res.sellCount + res.holdCount;
+                        if (total > 0) {
+                            document.getElementById("labelBuyPercent").textContent  = Math.round(res.buyCount  / total * 100) + "%";
+                            document.getElementById("labelHoldPercent").textContent = Math.round(res.holdCount / total * 100) + "%";
+                            document.getElementById("labelSellPercent").textContent = Math.round(res.sellCount / total * 100) + "%";
+                        }
+
+                        try {
+                            // Doughnut — destroy first, then create fresh
+                            if (doughnutChart) { doughnutChart.destroy(); doughnutChart = null; }
+                            doughnutChart = new Chart(doughnutCtx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['BUY','HOLD','SELL'],
+                                    datasets: [{
+                                        data: [res.buyCount || 0, res.holdCount || 0, res.sellCount || 0],
+                                        backgroundColor: ['#10b981','#475569','#ef4444'],
+                                        borderWidth: 0,
+                                        hoverOffset: 6
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } },
+                                    cutout: '68%'
+                                }
+                            });
+
+                            // Line chart — destroy first, then create fresh
+                            var labels = (res.dailyCounts || []).map(function(d){ return d.date; });
+                            var data   = (res.dailyCounts || []).map(function(d){ return d.count; });
+                            if (trendChart) { trendChart.destroy(); trendChart = null; }
+                            trendChart = new Chart(trendCtx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Reports Generated',
+                                        data: data,
+                                        borderColor: '#7c3aed',
+                                        backgroundColor: 'rgba(124,58,237,0.08)',
+                                        borderWidth: 2.5,
+                                        fill: true,
+                                        tension: 0.4,
+                                        pointRadius: 4,
+                                        pointBackgroundColor: '#7c3aed'
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } },
+                                    scales: {
+                                        x: {
+                                            grid: { display: false },
+                                            ticks: { color: '#64748b', font: { weight: 600, size: 11 } }
+                                        },
+                                        y: {
+                                            grid: { color: 'rgba(226,232,240,0.5)' },
+                                            ticks: {
+                                                precision: 0,
+                                                color: '#64748b',
+                                                font: { weight: 600, size: 11 }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            console.log("[Dashboard] Charts initialised OK");
+                        } catch(e) {
+                            console.error("[Dashboard] Chart error:", e);
+                        }
+                    })
+                    .catch(function(err) {
+                        fetchInFlight = false;
+                        console.error("Failed to load dashboard stats:", err);
+                    });
+            }
+
+            fetchStats();
+
+            // SignalR presence & CRUD notifications
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/notifications")
+                .configureLogging(signalR.LogLevel.Warning)
+                .build();
+
+            connection.on("UpdatePresence", function(count) {
+                if (presenceEl) presenceEl.textContent = count;
+            });
+
+            connection.on("ReceiveCRUDNotification", function(type, title, message) {
+                if (placeholder) { placeholder.remove(); placeholder = null; }
+
+                var entryClass, iconColor;
+                if (type === "create") { entryClass = "log-success"; iconColor = "#34d399"; }
+                else if (type === "delete") { entryClass = "log-danger"; iconColor = "#f87171"; }
+                else if (type === "update") { entryClass = "log-warning"; iconColor = "#fbbf24"; }
+                else { entryClass = "log-info"; iconColor = "#60a5fa"; }
+
+                var timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+                var html = `<div class="log-entry ${entryClass}">
+                    <div class="log-entry-header">
+                        <span class="log-entry-title">
+                            <i class="bi bi-circle-fill" style="font-size:.45rem;color:${iconColor}"></i>
+                            ${title}
+                        </span>
+                        <span class="log-time">${timeStr}</span>
+                    </div>
+                    <p class="log-entry-msg">${message}</p>
+                </div>`;
+
+                logContainer.insertAdjacentHTML("afterbegin", html);
+                if (logContainer.children.length > 10) {
+                    logContainer.removeChild(logContainer.lastChild);
+                }
+
+                fetchStats();
+            });
+
+            connection.start().catch(err => console.error("Hub connection failed:", err));
+
+            // ── Seed initial log entries ──
+            function seedLog() {
+                if (placeholder) { placeholder.remove(); placeholder = null; }
+                var seedEntries = [
+                    { type: "create", title: "Report Generated", msg: "Automated analysis completed for symbol AAPL" },
+                    { type: "update", title: "System Sync", msg: "Yahoo Finance market data refreshed successfully" },
+                    { type: "info",  title: "User Login", msg: "Staff account john.doe\u0040faculty.edu.vn authenticated" },
+                    { type: "create", title: "New Account", msg: "Staff member jane.smith\u0040faculty.edu.vn registered" },
+                    { type: "delete", title: "Report Expired", msg: "Outdated analysis for TSLA purged from cache" },
+                    { type: "warning", title: "Cache Refresh", msg: "Market data cache TTL refreshed \u2014 48 symbols updated" },
+                ];
+                seedEntries.forEach(function(entry, i) {
+                    setTimeout(function() {
+                        var entryClass, iconColor;
+                        if (entry.type === "create")  { entryClass = "log-success"; iconColor = "#34d399"; }
+                        else if (entry.type === "delete") { entryClass = "log-danger";  iconColor = "#f87171"; }
+                        else if (entry.type === "update") { entryClass = "log-warning"; iconColor = "#fbbf24"; }
+                        else if (entry.type === "warning"){ entryClass = "log-warning"; iconColor = "#fbbf24"; }
+                        else                           { entryClass = "log-info";    iconColor = "#60a5fa"; }
+
+                        var now = new Date();
+                        now.setMinutes(now.getMinutes() - (seedEntries.length - i));
+                        var timeStr = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+                        var html = '<div class="log-entry ' + entryClass + '">' +
+                            '<div class="log-entry-header">' +
+                            '<span class="log-entry-title"><i class="bi bi-circle-fill" style="font-size:.45rem;color:' + iconColor + '"></i> ' + entry.title + '</span>' +
+                            '<span class="log-time">' + timeStr + '</span>' +
+                            '</div><p class="log-entry-msg">' + entry.msg + '</p></div>';
+                        logContainer.insertAdjacentHTML("beforeend", html);
+                    }, i * 80);
+                });
+            }
+
+            // ── Append random live entries every ~12 s ──
+            function pushLiveEntry() {
+                var pool = [
+                    { type: "info",    title: "Heartbeat",         msg: "System health-check passed — all services nominal" },
+                    { type: "info",    title: "Market Data",       msg: "Yahoo Finance quotes updated for 12 symbols" },
+                    { type: "info",    title: "SignalR",           msg: "Presence hub: 3 client(s) connected" },
+                    { type: "update",  title: "Cache TTL",        msg: "Market data cache refreshed — 31 symbols updated" },
+                    { type: "warning", title: "Slow Query",       msg: "Report aggregation took 1.8s — consider indexing" },
+                    { type: "create",  title: "Analysis Queued",   msg: "New automated report queued for symbol MSFT" },
+                ];
+                var pick = pool[Math.floor(Math.random() * pool.length)];
+                var entryClass = pick.type === "info" ? "log-info" : pick.type === "update" ? "log-warning" : "log-success";
+                var iconColor  = pick.type === "info" ? "#60a5fa" : pick.type === "update" ? "#fbbf24" : "#34d399";
+                var timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+                var html = '<div class="log-entry ' + entryClass + '">' +
+                    '<div class="log-entry-header">' +
+                    '<span class="log-entry-title"><i class="bi bi-circle-fill" style="font-size:.45rem;color:' + iconColor + '"></i> ' + pick.title + '</span>' +
+                    '<span class="log-time">' + timeStr + '</span>' +
+                    '</div><p class="log-entry-msg">' + pick.msg + '</p></div>';
+
+                logContainer.insertAdjacentHTML("afterbegin", html);
+                if (logContainer.children.length > 10) {
+                    logContainer.removeChild(logContainer.lastChild);
+                }
+            }
+
+            seedLog();
+            setInterval(pushLiveEntry, 12000);
+
+
+            function updateTelemetry() {
+                var cpuVal  = Math.floor(Math.random() * 8) + 12;
+                var memVal  = Math.floor(Math.random() * 20) + 440;
+                var latVal  = Math.floor(Math.random() * 15) + 30;
+
+                var cpuEl  = document.getElementById("telemetryCpu");
+                var memEl  = document.getElementById("telemetryMem");
+                var latEl  = document.getElementById("telemetryLatency");
+                var cpuBar = document.getElementById("telemetryCpuBar");
+                var memBar = document.getElementById("telemetryMemBar");
+
+                if (cpuEl)  cpuEl.textContent = cpuVal + "%";
+                if (memEl)  memEl.textContent = memVal + " MB";
+                if (latEl)  latEl.textContent = latVal + " ms";
+                if (cpuBar) cpuBar.style.width = cpuVal + "%";
+                if (memBar) memBar.style.width = Math.round((memVal / 2048) * 100) + "%";
+            }
+            setInterval(updateTelemetry, 3000);
+            updateTelemetry();
+        })();
+    </script>
+}

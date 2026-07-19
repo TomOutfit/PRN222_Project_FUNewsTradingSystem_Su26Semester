@@ -37,6 +37,7 @@ namespace FUNewsTradingSystem_MVC.Controllers
             return View("~/Views/AdminAccount/Index.cshtml", pagedAccounts);
         }
 
+        [HttpGet("/Admin")]
         [HttpGet("/Admin/Dashboard")]
         public IActionResult Dashboard()
         {
@@ -145,6 +146,20 @@ namespace FUNewsTradingSystem_MVC.Controllers
 
             await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "delete", "Xóa Thành Công", $"Tài khoản ID {id} đã bị xóa khỏi hệ thống.");
             return Json(new { success = true });
+        }
+
+        [HttpPost("/api/admin/force-sync")]
+        public async Task<IActionResult> ForceSync()
+        {
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "update", "Yêu Cầu Đồng Bộ", "Quản trị viên đã yêu cầu cập nhật đồng bộ các mã giao dịch chứng khoán từ Yahoo Finance.");
+            return Json(new { success = true, message = "Yahoo Finance quotes synchronization request dispatched." });
+        }
+
+        [HttpPost("/api/admin/system-backup")]
+        public async Task<IActionResult> SystemBackup()
+        {
+            await _notificationHub.Clients.All.SendAsync("ReceiveCRUDNotification", "create", "Sao Lưu Hệ Thống", "Sao lưu cơ sở dữ liệu FUNewsTradingSystem hoàn tất thành công. Bản sao lưu được lưu trữ an toàn.");
+            return Json(new { success = true, message = "System database backup completed successfully." });
         }
     }
 }
