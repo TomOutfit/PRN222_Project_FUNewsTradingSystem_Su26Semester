@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Frequently Asked Questions";
+}
+
+<!-- FAQ accordion styles are now in wwwroot/css/site.css -->
+
+<div class="animate-fade-in-up">
+    <div class="page-header">
+        <div>
+            <h2><i class="bi bi-question-circle-fill me-2" style="background:linear-gradient(135deg,#6d28d9,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>@ViewData["Title"]</h2>
+            <p class="text-muted mb-0">Quick answers about FNTS analysis, updates, and support.</p>
+        </div>
+    </div>
+
+    <div class="faq-section reveal-item delay-100">
+        <div class="faq-item">
+            <button class="faq-question" type="button">
+                <span>How do sentiment signals work?</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+                FNTS analyzes multiple news sources, applies sentiment scoring, and maps outputs to BUY / SELL / HOLD guidance using weighted event clustering and headline severity.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" type="button">
+                <span>How often is data updated?</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+                Market sentiment updates are streamed in near-real time. Scheduled batch jobs refresh category definitions, tags, and historical snapshots at configurable intervals.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" type="button">
+                <span>Who manages the portfolios and reports?</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+                Staff authors create and manage reports. Admins oversee accounts and system-wide statistics. Lecturers can browse public reports and use review tools.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" type="button">
+                <span>Can I export results?</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+                Yes. Reports can be exported to Excel and PDF from the statistics view. This helps offline review and compliance documentation.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" type="button">
+                <span>How do I contact support?</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+                Use the Contact page for general support. For account issues, admins can be reached through the platform’s internal notifications and audit logs.
+            </div>
+        </div>
+    </div>
+</div>

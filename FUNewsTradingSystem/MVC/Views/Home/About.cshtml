@@ -1,0 +1,630 @@
+@{
+    ViewData["Title"] = "About FNTS";
+}
+
+<style>
+    .about-hero {
+        background: linear-gradient(135deg, rgba(30,27,75,0.95), rgba(15,15,26,0.98)), radial-gradient(circle at 80% 20%, rgba(124,58,237,0.18) 0%, transparent 55%);
+        border-radius: var(--radius-xl);
+        padding: 3.5rem 3rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-light);
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+    }
+
+    /* ── Layer Cards ── */
+    .layer-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+        overflow: hidden;
+        position: relative;
+    }
+    .layer-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+    }
+    .layer-card:hover {
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: var(--shadow-md), 0 0 28px rgba(37, 99, 235, 0.15);
+        border-color: var(--brand-1);
+    }
+    [data-bs-theme="dark"] .layer-card:hover {
+        border-color: var(--brand-3);
+        box-shadow: var(--shadow-md), 0 0 28px rgba(16, 185, 129, 0.25);
+    }
+    .layer-card:hover::after { opacity: 1; }
+
+    .layer-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    /* ── Tech Cards ── */
+    .tech-card {
+        background: var(--surface-card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 1.25rem 1rem;
+        text-align: center;
+        transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .tech-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--brand-gradient);
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        border-radius: inherit;
+    }
+    .tech-card:hover {
+        transform: translateY(-6px) scale(1.03);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.12), 0 0 0 1.5px var(--brand-1);
+        border-color: var(--brand-1);
+    }
+    [data-bs-theme="dark"] .tech-card:hover {
+        border-color: var(--brand-3);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 0 1.5px var(--brand-3);
+    }
+    .tech-card:hover::before { opacity: 0.06; }
+    .tech-card:hover .tech-icon { transform: scale(1.15); }
+    .tech-card:hover .tech-label { color: var(--brand-1); }
+    [data-bs-theme="dark"] .tech-card:hover .tech-label { color: var(--brand-3); }
+    .tech-card .card-body { position: relative; z-index: 1; }
+    .tech-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.5rem;
+        transition: transform 0.35s var(--ease-back-out);
+        background: var(--brand-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+    .tech-label {
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--text-main);
+        transition: color 0.3s ease;
+        letter-spacing: 0.02em;
+    }
+    .tech-badge {
+        font-size: 0.68rem;
+        background: rgba(37, 99, 235, 0.08);
+        color: #1e40af;
+        border-radius: 20px;
+        padding: 0.2em 0.65em;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    [data-bs-theme="dark"] .tech-badge {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    /* ── Team Cards ── */
+    .team-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem 1.25rem;
+        text-align: center;
+        transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .team-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--brand-gradient);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        border-radius: inherit;
+    }
+    .team-card:hover {
+        transform: translateY(-7px) scale(1.02);
+        border-color: var(--brand-1);
+        box-shadow: var(--shadow-md), 0 0 24px rgba(37, 99, 235, 0.15);
+    }
+    [data-bs-theme="dark"] .team-card:hover {
+        border-color: var(--brand-3);
+        box-shadow: var(--shadow-md), 0 0 24px rgba(16, 185, 129, 0.25);
+    }
+    .team-card:hover::before { opacity: 0.05; }
+    .team-card:hover .team-avatar { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.15); }
+    [data-bs-theme="dark"] .team-card:hover .team-avatar { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.25); }
+    .team-card .card-body { position: relative; z-index: 1; }
+    .team-avatar {
+        width: 76px; height: 76px;
+        border-radius: 50%;
+        margin: 0 auto 0.875rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.35rem;
+        background: linear-gradient(135deg,#6d28d9,#db2777);
+        box-shadow: 0 0 0 6px rgba(109,40,217,0.12);
+        transition: transform 0.35s var(--ease-back-out), box-shadow 0.35s ease;
+        position: relative;
+    }
+    .team-avatar::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 2px solid rgba(37, 99, 235, 0.3);
+        opacity: 0;
+        transform: scale(0.8);
+        transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    [data-bs-theme="dark"] .team-avatar::after {
+        border-color: rgba(16, 185, 129, 0.4);
+    }
+    .team-card:hover .team-avatar::after {
+        opacity: 1;
+        transform: scale(1);
+        animation: ringPulse 2s ease-in-out infinite;
+    }
+    @@keyframes ringPulse {
+        0%, 100% { opacity: 0.5; transform: scale(1); }
+        50% { opacity: 0.15; transform: scale(1.15); }
+    }
+
+    /* Architecture flow arrows */
+    .arch-flow {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    .arch-arrow {
+        color: var(--brand-1);
+        font-size: 1.1rem;
+        opacity: 0.5;
+    }
+    [data-bs-theme="dark"] .arch-arrow {
+        color: var(--brand-3);
+    }
+
+    .about-ticker-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        height: 380px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .spin {
+        animation: rotate 2s linear infinite;
+        display: inline-block;
+    }
+    @@keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .animate-pulse {
+        animation: pulse-glow 1.5s ease-in-out infinite;
+    }
+    @@keyframes pulse-glow {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+    }
+</style>
+
+<div class="animate-fade-in-up">
+    <!-- Hero -->
+    <div class="about-hero mb-5">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="badge bg-primary px-3 py-2 mb-3 text-uppercase tracking-wider">
+                    <i class="bi bi-cpu-fill me-1"></i>AI-Powered News Synthesis
+                </span>
+                <h1 class="fw-extrabold mb-3" style="letter-spacing:-1px;line-height:1.1;">
+                    FUNews Trading <span class="gradient-text">Analysis Portal</span>
+                </h1>
+                <p class="mb-4" style="max-width:640px;font-size:1.05rem;line-height:1.65;color:rgba(255,255,255,0.85);">
+                    FNTS transforms global financial news into structured sentiment triggers and BUY / SELL / HOLD recommendations for traders, researchers, and educators — all powered by a clean 3-layer architecture with real-time SignalR updates.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a asp-controller="Report" asp-action="Index" class="btn btn-primary px-4">
+                        <i class="bi bi-newspaper me-2"></i>Explore Reports
+                    </a>
+                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-light px-4">
+                        <i class="bi bi-chat-dots me-2"></i>Contact Support
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="about-ticker-card p-4 rounded-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0 text-white"><i class="bi bi-broadcast me-2 text-danger animate-pulse"></i>Live Market Monitor</h6>
+                        <span class="badge bg-success bg-opacity-20 text-white border border-success border-opacity-40 small px-2 py-1" style="font-size:0.7rem;"><i class="bi bi-circle-fill me-1 text-success" style="font-size:0.5rem;"></i>SignalR Live</span>
+                    </div>
+                    <div class="d-flex flex-column gap-2 overflow-y-auto flex-grow-1" id="aboutTickerList" style="max-height: 290px; padding-right: 5px;">
+                        <div class="text-white-50 text-center py-3 small">
+                            <i class="bi bi-arrow-repeat spin me-1"></i> Waiting for SignalR ticks...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3-Layer Architecture -->
+    <div class="mb-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-main mb-1">3-Layer Architecture</h2>
+            <p class="text-muted">Clean separation of concerns — Presentation, Business, and Data Access — running on ASP.NET Core MVC with SignalR for live market updates.</p>
+        </div>
+        <div class="d-flex flex-column flex-md-row align-items-stretch justify-content-center gap-3 py-3 position-relative">
+            <!-- Layer 1: Presentation -->
+            <div class="flex-fill" style="max-width: 370px;">
+                <div class="layer-card h-100 p-4 text-center">
+                    <div class="layer-icon mx-auto" style="background: linear-gradient(135deg,#6d28d9,#9333ea);">
+                        <i class="bi bi-display"></i>
+                    </div>
+                    <h6 class="fw-bold text-main mb-2">Presentation Layer</h6>
+                    <p class="text-muted small mb-3">
+                        ASP.NET Core MVC Razor Views, shared layouts, and SignalR real-time surfaces for live market ticks, notifications, and presence tracking.
+                    </p>
+                    <div class="d-flex flex-wrap gap-1 justify-content-center">
+                        <span class="tech-badge">Razor Pages</span>
+                        <span class="tech-badge">SignalR</span>
+                        <span class="tech-badge">Bootstrap 5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arrow 1 -->
+            <div class="d-flex align-items-center justify-content-center py-2 px-md-1">
+                <i class="bi bi-arrow-right-circle-fill text-primary fs-3 d-none d-md-block" style="opacity: 0.7;"></i>
+                <i class="bi bi-arrow-down-circle-fill text-primary fs-3 d-md-none" style="opacity: 0.7;"></i>
+            </div>
+
+            <!-- Layer 2: Business -->
+            <div class="flex-fill" style="max-width: 370px;">
+                <div class="layer-card h-100 p-4 text-center">
+                    <div class="layer-icon mx-auto" style="background: linear-gradient(135deg,#0284c7,#38bdf8);">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <h6 class="fw-bold text-main mb-2">Business Layer</h6>
+                    <p class="text-muted small mb-3">
+                        Validation rules, analysis orchestration, OpenAI synthesis, report lifecycle management, and background market data services.
+                    </p>
+                    <div class="d-flex flex-wrap gap-1 justify-content-center">
+                        <span class="tech-badge">Services</span>
+                        <span class="tech-badge">OpenAI</span>
+                        <span class="tech-badge">Background Services</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arrow 2 -->
+            <div class="d-flex align-items-center justify-content-center py-2 px-md-1">
+                <i class="bi bi-arrow-right-circle-fill text-primary fs-3 d-none d-md-block" style="opacity: 0.7;"></i>
+                <i class="bi bi-arrow-down-circle-fill text-primary fs-3 d-md-none" style="opacity: 0.7;"></i>
+            </div>
+
+            <!-- Layer 3: Data Access -->
+            <div class="flex-fill" style="max-width: 370px;">
+                <div class="layer-card h-100 p-4 text-center">
+                    <div class="layer-icon mx-auto" style="background: linear-gradient(135deg,#10b981,#059669);">
+                        <i class="bi bi-database-check"></i>
+                    </div>
+                    <h6 class="fw-bold text-main mb-2">Data Access Layer</h6>
+                    <p class="text-muted small mb-3">
+                        Entity Framework Core persistence, repository pattern, PostgreSQL-backed storage, and transaction management for news articles and accounts.
+                    </p>
+                    <div class="d-flex flex-wrap gap-1 justify-content-center">
+                        <span class="tech-badge">EF Core</span>
+                        <span class="tech-badge">PostgreSQL</span>
+                        <span class="tech-badge">Repositories</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technologies -->
+    <div class="mb-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-main mb-1">Core Technologies</h2>
+            <p class="text-muted">The stack that powers live updates, durable reporting, and AI synthesis.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="tech-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-hdd-network tech-icon"></i>
+                        <div class="tech-label">PostgreSQL</div>
+                        <div class="tech-badge mt-2">Database</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="tech-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-diagram-3 tech-icon"></i>
+                        <div class="tech-label">Entity Framework</div>
+                        <div class="tech-badge mt-2">ORM</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="tech-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-wifi tech-icon"></i>
+                        <div class="tech-label">SignalR</div>
+                        <div class="tech-badge mt-2">Real-time WebSocket</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="tech-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-bootstrap tech-icon"></i>
+                        <div class="tech-label">Bootstrap 5</div>
+                        <div class="tech-badge mt-2">UI Framework</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="tech-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-robot tech-icon"></i>
+                        <div class="tech-label">OpenAI</div>
+                        <div class="tech-badge mt-2">AI Synthesis</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="tech-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-bar-chart-line tech-icon"></i>
+                        <div class="tech-label">AlphaVantage</div>
+                        <div class="tech-badge mt-2">Market Data API</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="tech-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-newspaper tech-icon"></i>
+                        <div class="tech-label">NewsAPI</div>
+                        <div class="tech-badge mt-2">News Aggregation</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="tech-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-braces-asterisk tech-icon"></i>
+                        <div class="tech-label">ASP.NET Core</div>
+                        <div class="tech-badge mt-2">Backend Runtime</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SignalR Realtime Features -->
+    <div class="mb-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-main mb-1">Real-time Features</h2>
+            <p class="text-muted">SignalR hubs powering live market updates, notifications, and presence across the platform.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="layer-card p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="layer-icon" style="background:linear-gradient(135deg,#10b981,#059669); width:44px; height:44px; font-size:1.1rem;">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-0">MarketTickerHub</h6>
+                            <div class="text-muted small">Live price ticks</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Streams real-time simulated stock prices and market index ticks to all connected clients via WebSocket.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="layer-card p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="layer-icon" style="background:linear-gradient(135deg,#6d28d9,#9333ea); width:44px; height:44px; font-size:1.1rem;">
+                            <i class="bi bi-bell-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-0">NotificationHub</h6>
+                            <div class="text-muted small">Role-based alerts</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Broadcasts flash notifications and CRUD alerts to authenticated users by role with toast animations.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="layer-card p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="layer-icon" style="background:linear-gradient(135deg,#0284c7,#38bdf8); width:44px; height:44px; font-size:1.1rem;">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-0">PresenceHub</h6>
+                            <div class="text-muted small">Online presence</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Tracks active connected visitor sessions and broadcasts real-time online user count to the navbar.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="layer-card p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="layer-icon" style="background:linear-gradient(135deg,#db2777,#be185d); width:44px; height:44px; font-size:1.1rem;">
+                            <i class="bi bi-newspaper"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-0">ReportHub</h6>
+                            <div class="text-muted small">Live report broadcasts</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Broadcasts newly generated financial reports to public visitors instantly as they are synthesized.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="layer-card p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="layer-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b); width:44px; height:44px; font-size:1.1rem;">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-0">AnalysisProgressHub</h6>
+                            <div class="text-muted small">Pipeline progress</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Streams live news-synthesis pipeline progress bars and step indicators to Staff clients during report generation.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contributors -->
+    <div>
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-main mb-1">Contributors</h2>
+            <p class="text-muted">The team behind the FNTS platform — hover to see the glow effect.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="team-card">
+                    <div class="card-body">
+                        <div class="team-avatar">A</div>
+                        <div class="fw-bold text-main">Alex</div>
+                        <div class="text-muted small">Backend & Signals</div>
+                        <div class="mt-2">
+                            <span class="tech-badge">.NET Core</span>
+                            <span class="tech-badge">SignalR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="team-card">
+                    <div class="card-body">
+                        <div class="team-avatar">B</div>
+                        <div class="fw-bold text-main">Bella</div>
+                        <div class="text-muted small">Data Engineering</div>
+                        <div class="mt-2">
+                            <span class="tech-badge">EF Core</span>
+                            <span class="tech-badge">PostgreSQL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="team-card">
+                    <div class="card-body">
+                        <div class="team-avatar">C</div>
+                        <div class="fw-bold text-main">Chris</div>
+                        <div class="text-muted small">Frontend & UX</div>
+                        <div class="mt-2">
+                            <span class="tech-badge">CSS</span>
+                            <span class="tech-badge">Bootstrap</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="team-card">
+                    <div class="card-body">
+                        <div class="team-avatar">D</div>
+                        <div class="fw-bold text-main">Dana</div>
+                        <div class="text-muted small">Research & QA</div>
+                        <div class="mt-2">
+                            <span class="tech-badge">AI/ML</span>
+                            <span class="tech-badge">Testing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var tickerConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/marketTicker")
+                .configureLogging(signalR.LogLevel.Warning)
+                .build();
+
+            var container = document.getElementById("aboutTickerList");
+
+            tickerConnection.on("ReceiveMarketTicks", function (ticks) {
+                if (!container) return;
+                
+                // Clear wait state on first ticks
+                container.innerHTML = "";
+
+                if (!ticks || ticks.length === 0) {
+                    container.innerHTML = `<div class="text-white-50 text-center py-3 small">No active tickers available</div>`;
+                    return;
+                }
+
+                // Render all tickers received dynamically
+                ticks.forEach(function(tick) {
+                    var changeColor = tick.changePercent >= 0 ? "#4ade80" : "#f87171";
+                    var changeSign = tick.changePercent >= 0 ? "+" : "";
+                    var iconClass = tick.changePercent >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill";
+                    
+                    var itemHtml = `
+                        <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-white border-opacity-10">
+                            <div>
+                                <span class="fw-bold text-white small" style="letter-spacing:0.05em;">${tick.symbol}</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="text-white small fw-semibold me-2">$${tick.price.toLocaleString(undefined, {minimumFractionDigits: (tick.symbol === "BTC" || tick.price > 1000) ? 0 : 2, maximumFractionDigits: (tick.symbol === "BTC" || tick.price > 1000) ? 0 : 2})}</span>
+                                <span class="small fw-bold" style="color: ${changeColor}; font-size: 0.75rem;">
+                                    <i class="bi ${iconClass} me-1"></i>${changeSign}${tick.changePercent.toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', itemHtml);
+                });
+            });
+
+            tickerConnection.start().catch(function (err) {
+                console.error("MarketTickerHub connection failed: ", err);
+            });
+        })();
+    </script>
+}
