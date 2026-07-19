@@ -1,6 +1,247 @@
-﻿@{
+@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<style>
+    .privacy-hero {
+        background: linear-gradient(135deg, rgba(30,27,75,0.95), rgba(15,15,26,0.98)), radial-gradient(circle at 70% 30%, rgba(109,40,217,0.15) 0%, transparent 55%);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem 2.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-light);
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        margin-bottom: 2rem;
+    }
+    .privacy-section {
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        margin-bottom: 1rem;
+        transition: box-shadow 0.3s ease;
+    }
+    .privacy-section:hover {
+        box-shadow: var(--shadow-md);
+    }
+    .privacy-section .section-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(124,58,237,0.04);
+    }
+    .privacy-section .section-header i {
+        font-size: 1.15rem;
+        color: var(--brand-1);
+    }
+    [data-bs-theme="dark"] .privacy-section .section-header i {
+        color: var(--brand-3);
+    }
+    .privacy-section .section-header h5 {
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+    }
+    .privacy-section .section-body {
+        padding: 1.25rem 1.5rem;
+    }
+    .privacy-section ul {
+        padding-left: 1.2rem;
+        margin: 0;
+    }
+    .privacy-section ul li {
+        margin-bottom: 0.4rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    .privacy-section ul li::marker {
+        color: var(--brand-1);
+    }
+    [data-bs-theme="dark"] .privacy-section ul li::marker {
+        color: var(--brand-3);
+    }
+    .privacy-section p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.65;
+        margin-bottom: 0.75rem;
+    }
+    .privacy-section p:last-child { margin-bottom: 0; }
+    .privacy-section strong { color: var(--text-main); }
+    .privacy-note {
+        background: rgba(124,58,237,0.06);
+        border: 1px solid rgba(124,58,237,0.15);
+        border-radius: var(--radius-md);
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+    .privacy-note i { color: var(--brand-1); margin-top: 2px; flex-shrink: 0; }
+    [data-bs-theme="dark"] .privacy-note i { color: var(--brand-3); }
+</style>
+
+<div class="animate-fade-in-up">
+    <!-- Hero Banner -->
+    <div class="privacy-hero">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#6d28d9,#db2777);display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-shield-lock-fill fs-5 text-white"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold text-white mb-0" style="letter-spacing:-0.5px;">Privacy Policy</h2>
+                <p class="text-white-50 mb-0 small">Last updated: July 2026 · FNTS Inc.</p>
+            </div>
+        </div>
+        <p class="text-white-50 mb-0" style="max-width:700px;font-size:0.9rem;line-height:1.6;">
+            FUNews Trading System ("FNTS," "we," "our," or "us") is committed to protecting your personal information. This policy explains how we collect, use, disclose, and safeguard your data when you use our platform and services.
+        </p>
+    </div>
+
+    <!-- Sections -->
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <!-- Data Collection -->
+            <div class="privacy-section animate-fade-in-up" style="animation-delay:50ms;">
+                <div class="section-header">
+                    <i class="bi bi-database-fill"></i>
+                    <h5>Data We Collect</h5>
+                </div>
+                <div class="section-body">
+                    <p>We collect information you provide directly to us, including:</p>
+                    <ul>
+                        <li><strong>Account credentials</strong> — name, email address, hashed password, and role assignments</li>
+                        <li><strong>Profile data</strong> — account preferences, display name, and activity preferences</li>
+                        <li><strong>Submitted content</strong> — news reports, analysis, tags, and categories you create or modify</li>
+                        <li><strong>Technical data</strong> — browser type, IP address, session timestamps, and SignalR connection identifiers</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- How We Use -->
+            <div class="privacy-section animate-fade-in-up" style="animation-delay:100ms;">
+                <div class="section-header">
+                    <i class="bi bi-gear-fill"></i>
+                    <h5>How We Use Your Data</h5>
+                </div>
+                <div class="section-body">
+                    <p>Your information is used solely for platform operations:</p>
+                    <ul>
+                        <li>Authenticate and authorize access to FNTS features based on your assigned role</li>
+                        <li>Generate and deliver AI-synthesized financial reports and sentiment signals</li>
+                        <li>Track report authorship, audit trails, and modification history</li>
+                        <li>Stream real-time market ticks, notifications, and presence data via SignalR</li>
+                        <li>Send system notifications and platform alerts through SignalR toast messages</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Cookies -->
+            <div class="privacy-section animate-fade-in-up" style="animation-delay:150ms;">
+                <div class="section-header">
+                    <i class="bi bi-cookie-fill"></i>
+                    <h5>Cookies & Tracking</h5>
+                </div>
+                <div class="section-body">
+                    <p>FNTS uses minimal cookies and local storage for essential functionality:</p>
+                    <ul>
+                        <li><strong>Authentication session</strong> — encrypted session cookie for signed-in users</li>
+                        <li><strong>Theme preference</strong> — stores light/dark mode selection in localStorage</li>
+                        <li><strong>Presence tracking</strong> — SignalR connection ID managed server-side for online count</li>
+                        <li>No third-party analytics or advertising cookies are used on this platform.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <!-- Data Sharing -->
+            <div class="privacy-section animate-fade-in-up" style="animation-delay:75ms;">
+                <div class="section-header">
+                    <i class="bi bi-share-fill"></i>
+                    <h5>Data Sharing & Disclosure</h5>
+                </div>
+                <div class="section-body">
+                    <p>We do not sell, trade, or rent your personal data. Data may be shared only in these cases:</p>
+                    <ul>
+                        <li><strong>Service providers</strong> — trusted third parties who process data on our behalf (PostgreSQL hosting, CDN)</li>
+                        <li><strong>Legal obligations</strong> — when required by law, court order, or regulatory authority</li>
+                        <li><strong>Academic context</strong> — pseudonymous usage data may be shared for educational research</li>
+                        <li><strong>Business transfers</strong> — in the event of a merger or acquisition, data would transfer under the same privacy terms</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Data Retention -->
+            <div class="privacy-section animate-fade-in-up" style="animation-delay:125ms;">
+                <div class="section-header">
+                    <i class="bi bi-clock-history"></i>
+                    <h5>Data Retention</h5>
+                </div>
+                <div class="section-body">
+                    <p>We retain your data only as long as necessary:</p>
+                    <ul>
+                        <li><strong>Active accounts</strong> — retained while your account is active and for 90 days after deletion</li>
+                        <li><strong>Audit logs</strong> — report creation and modification records retained for 12 months</li>
+                        <li><strong>Session data</strong> — cleared upon logout; connection metadata purged within 24 hours</li>
+                        <li>Deleted accounts are anonymized in audit logs to preserve reporting history.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Security -->
+            <div class="privacy-section animate-fade-in-up" style="animation-delay:175ms;">
+                <div class="section-header">
+                    <i class="bi bi-lock-fill"></i>
+                    <h5>Data Security</h5>
+                </div>
+                <div class="section-body">
+                    <p>We implement appropriate technical and organizational measures:</p>
+                    <ul>
+                        <li>Passwords are hashed using industry-standard algorithms — never stored in plain text</li>
+                        <li>Role-based access control (RBAC) restricts data access to authorized roles only</li>
+                        <li>SignalR connections are authenticated via the ASP.NET Core pipeline</li>
+                        <li>HTTPS/TLS encryption enforced for all data in transit</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Your Rights -->
+            <div class="privacy-section animate-fade-in-up" style="animation-delay:200ms;">
+                <div class="section-header">
+                    <i class="bi bi-person-check-fill"></i>
+                    <h5>Your Rights</h5>
+                </div>
+                <div class="section-body">
+                    <p>Depending on your jurisdiction, you may have the right to:</p>
+                    <ul>
+                        <li>Access, correct, or delete your personal data through your account settings</li>
+                        <li>Withdraw consent for non-essential data processing at any time</li>
+                        <li>Request an export of your data in a machine-readable format</li>
+                        <li>Object to processing of your data for specific purposes</li>
+                    </ul>
+                    <div class="privacy-note mt-3">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>To exercise any of these rights, contact our support team via the <a asp-controller="Home" asp-action="Contact" class="text-primary">Contact page</a>. We respond to all verifiable requests within 30 days.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer note -->
+    <div class="text-center mt-4">
+        <p class="text-muted small">
+            Questions about this Privacy Policy?
+            <a asp-controller="Home" asp-action="Contact" class="text-primary fw-semibold">Contact our support team</a>
+            or read our <a asp-controller="Home" asp-action="Terms" class="text-primary fw-semibold">Terms of Service</a>.
+        </p>
+    </div>
+</div>

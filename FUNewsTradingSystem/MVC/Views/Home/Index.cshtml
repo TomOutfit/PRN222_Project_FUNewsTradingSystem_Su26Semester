@@ -3,23 +3,71 @@
 }
 
 <style>
+    /* ── Home hero: always use dark background regardless of theme ── */
     .home-hero {
-        background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 15, 26, 0.98) 100%), 
-                    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.15) 0%, transparent 50%);
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.97) 0%, rgba(9, 11, 17, 0.99) 100%),
+                    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%);
         border-radius: var(--radius-xl);
         padding: 4rem 3rem;
         box-shadow: var(--shadow-lg);
         position: relative;
         overflow: hidden;
-        border: 1px solid var(--border-light);
+        border: 1px solid rgba(255,255,255,0.08);
         margin-bottom: 3rem;
+    }
+
+    /* ── Hero badge: high contrast on both light and dark themes ── */
+    .home-hero .hero-badge {
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.4);
+        font-weight: 700;
+        font-size: 0.78rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    }
+
+    /* ── Gradient text in hero: visible on both themes ── */
+    .home-hero .gradient-text {
+        background: linear-gradient(135deg, #34d399 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ── Hero title: modern fintech typography ── */
+    .home-hero .hero-title {
+        font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        letter-spacing: -2px;
+        line-height: 1.05;
+        font-size: clamp(2.2rem, 5vw, 3.5rem);
+    }
+    .home-hero .hero-title .fnts-label {
+        font-size: 0.55em;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: rgba(255,255,255,0.45);
+        vertical-align: middle;
+        margin-right: 0.5rem;
+    }
+
+    /* ── Hero lead text ── */
+    .home-hero .hero-lead {
+        font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.72);
+        max-width: 600px;
+        line-height: 1.65;
+        font-size: 1.05rem;
     }
 
     .home-hero::before {
         content: "";
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+        background: linear-gradient(90deg, var(--brand-3) 0%, transparent 100%);
         opacity: 0.05;
         pointer-events: none;
     }
@@ -39,14 +87,16 @@
     }
 
     .quick-action-card {
-        transition: transform var(--transition), box-shadow var(--transition);
-        border: 1px solid var(--border-light);
+        transition: transform var(--transition-bounce), box-shadow var(--transition), border-color var(--transition);
+        border: 1px solid var(--border);
+        background: var(--surface-card);
+        border-radius: var(--radius-md);
     }
 
     .quick-action-card:hover {
         transform: translateY(-4px);
         box-shadow: var(--shadow-md);
-        border-color: var(--accent);
+        border-color: var(--brand-3);
     }
 
     .metric-number {
@@ -58,6 +108,11 @@
         background-clip: text;
         line-height: 1.1;
     }
+
+    /* ── Home page: feature / metric text contrast on light theme ── */
+    [data-bs-theme="light"] .feature-icon { background: var(--brand-1); }
+    [data-bs-theme="light"] .fintech-card .text-main { color: #0f172a !important; }
+    [data-bs-theme="light"] .fintech-card h4 { color: #0f172a !important; }
 </style>
 
 <div class="report-detail-container">
@@ -65,17 +120,18 @@
     <div class="home-hero text-white text-center text-md-start">
         <div class="row align-items-center g-5">
             <div class="col-lg-8">
-                <span class="badge bg-primary px-3 py-2 mb-3 text-uppercase tracking-wider">
-                    <i class="bi bi-cpu-fill me-1"></i> Powered by AI Synthesis
+                <span class="badge hero-badge px-3 py-2 mb-3 text-uppercase">
+                    <i class="bi bi-bank me-1"></i> Consumer Finance Hub
                 </span>
-                <h1 class="display-4 fw-extrabold mb-3 text-white" style="letter-spacing: -1.5px; line-height: 1.1;">
-                    FUNews Trading <span class="gradient-text">Analysis Portal</span>
+                <h1 class="hero-title text-white">
+                    <span class="fnts-label">FNTS</span>
+                    <span class="gradient-text">Consumer Finance Dashboard</span>
                 </h1>
-                <p class="lead text-white-50 mb-4 fs-5" style="max-width: 650px;">
-                    Access real-time synthesized financial reports, automated sentiment assessments, and structured BUY/SELL/HOLD recommendations to navigate target equity and crypto assets.
+                <p class="hero-lead">
+                    Access real-time AI-synthesized financial reports, live sector analysis, and structured asset indicators built for modern market monitoring and investor decision support.
                 </p>
                 <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
-                    <a asp-controller="Report" asp-action="Index" class="btn btn-primary btn-lg px-4 shadow-sm">
+                    <a asp-controller="Report" asp-action="Index" class="btn btn-primary btn-lg px-4 shadow-sm fintech-btn-primary">
                         <i class="bi bi-newspaper me-2"></i> Explore Analysis Reports
                     </a>
                     @if (!User.Identity?.IsAuthenticated == true)
@@ -89,15 +145,15 @@
             <div class="col-lg-4 d-none d-lg-block">
                 <div class="p-4 bg-white bg-opacity-5 rounded-4 border border-white border-opacity-10 backdrop-blur h-100" style="box-shadow: 0 20px 40px rgba(0,0,0,0.3); min-height: 230px; display: flex; flex-direction: column; justify-content: space-between;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="fw-bold m-0 text-white" style="font-size: 0.95rem;">FNTS Index Trend</h5>
+                        <h5 class="fw-bold m-0 text-main" style="font-size: 0.95rem;">FNTS Index Trend</h5>
                         <span id="fntsPercentage" class="badge bg-success text-white small">+0.0%</span>
                     </div>
                     <div style="flex-grow: 1; height: 110px; position: relative;">
                         <canvas id="homeMiniChart"></canvas>
                     </div>
-                    <div class="d-flex justify-content-between small text-white-50 mt-3" style="font-size: 0.75rem;">
-                        <span>Status: Live Sentiment</span>
-                        <span class="text-success"><i class="bi bi-circle-fill me-1 small"></i> Active</span>
+                    <div class="d-flex justify-content-between small mt-3" style="font-size: 0.75rem; color: #0f172a;">
+                        <span>Status: Live Yahoo Finance Data</span>
+                        <span class="text-success" style="color: #34d399 !important; font-weight: 600;"><i class="bi bi-circle-fill me-1 small"></i> Active</span>
                     </div>
                 </div>
             </div>
@@ -218,13 +274,13 @@
     <!-- Core Features Grid -->
     <div class="mb-5">
         <div class="text-center mb-4">
-            <h2 class="fw-bold text-main">Engine Capabilities</h2>
+            <h2 class="fw-bold text-main">Platform Analytics Capabilities</h2>
             <p class="text-muted">How our automated trading system synthesizes data.</p>
         </div>
 
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="card fintech-card h-100 p-4 border-0">
                     <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
                     <h4 class="fw-bold text-main mb-2">Automated Signals</h4>
                     <p class="text-muted mb-0">
@@ -233,7 +289,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="card fintech-card h-100 p-4 border-0">
                     <div class="feature-icon"><i class="bi bi-bar-chart-steps"></i></div>
                     <h4 class="fw-bold text-main mb-2">Fundamental Synthesizer</h4>
                     <p class="text-muted mb-0">
@@ -242,7 +298,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="card fintech-card h-100 p-4 border-0">
                     <div class="feature-icon"><i class="bi bi-shield-fill-exclamation"></i></div>
                     <h4 class="fw-bold text-main mb-2">Risk Alerts</h4>
                     <p class="text-muted mb-0">
@@ -254,7 +310,7 @@
     </div>
 
     <!-- Metrics Stats Grid -->
-    <div class="card border-0 shadow-sm p-4 text-center">
+    <div class="card fintech-card p-4 text-center border-0">
         <div class="row g-4">
             <div class="col-6 col-md-3 border-end">
                 <div class="metric-number">5k+</div>
@@ -283,22 +339,13 @@
             const ctx = document.getElementById('homeMiniChart');
             if (!ctx) return;
 
-            // Generate initial mock data for sentiment trend (20 points)
-            const labels = [];
-            const data = [];
-            let val = 1520.00;
-            for (let i = 0; i < 20; i++) {
-                labels.push('');
-                data.push(val);
-            }
-
             const chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: [],
                     datasets: [{
                         label: 'FNTS Index',
-                        data: data,
+                        data: [],
                         borderColor: '#a78bfa',
                         borderWidth: 2,
                         fill: true,
@@ -321,6 +368,35 @@
                 }
             });
 
+            // Fetch initial real historical data from Yahoo Finance
+            fetch("/api/market/chart/FNTS")
+                .then(response => response.json())
+                .then(res => {
+                    if (res && res.success && res.prices && res.prices.length > 0) {
+                        chart.data.labels = res.labels;
+                        chart.data.datasets[0].data = res.prices;
+
+                        // Calculate percentage change based on last two prices
+                        var lastPrice = res.prices[res.prices.length - 1];
+                        var prevPrice = res.prices.length > 1 ? res.prices[res.prices.length - 2] : lastPrice;
+                        var pctChange = prevPrice !== 0 ? ((lastPrice - prevPrice) / prevPrice) * 100 : 0;
+
+                        var pctBadge = document.getElementById("fntsPercentage");
+                        if (pctBadge) {
+                            var sign = pctChange >= 0 ? "+" : "";
+                            pctBadge.textContent = sign + pctChange.toFixed(2) + "%";
+                            if (pctChange >= 0) {
+                                pctBadge.className = "badge bg-success text-white small";
+                            } else {
+                                pctBadge.className = "badge bg-danger text-white small";
+                            }
+                        }
+
+                        chart.update();
+                    }
+                })
+                .catch(err => console.error("Failed to fetch historical index chart data:", err));
+
             // Connect to MarketTickerHub to get live index ticking data
             var tickerConnection = new signalR.HubConnectionBuilder()
                 .withUrl("/hubs/marketTicker")
@@ -333,7 +409,7 @@
                     chart.data.labels.push('');
                     chart.data.datasets[0].data.push(fntsTick.price);
 
-                    if (chart.data.datasets[0].data.length > 25) {
+                    if (chart.data.datasets[0].data.length > 35) {
                         chart.data.labels.shift();
                         chart.data.datasets[0].data.shift();
                     }
