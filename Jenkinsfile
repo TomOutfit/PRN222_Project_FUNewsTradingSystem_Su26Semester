@@ -264,15 +264,6 @@ pipeline {
                             testResultsHtml = sb.toString()
                         }
 
-                        // Publish test results and artifacts for Jenkins UI
-                        if (isUnix()) {
-                            sh 'if [ -d TestResults ]; then echo "Publishing TestResults"; fi'
-                            archiveArtifacts artifacts: 'TestResults/**', allowEmptyArchive: true
-                        } else {
-                            bat 'if exist TestResults\\NUL (echo Publishing TestResults)'
-                            archiveArtifacts artifacts: 'TestResults/**', allowEmptyArchive: true
-                        }
-
                         // Determine header values
                         def htmlTitle = noTests ? 'No Test Cases Found' : 'Test Execution Report'
                         def statusLabel = noTests ? 'NO TESTS' : (failed > 0 ? 'FAILED' : 'PASSED')
@@ -493,25 +484,6 @@ pipeline {
   .metric .label {
     font-size: 0.68rem; color: var(--text-faint);
     text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
-  }
-
-  .csp-warning {
-    background: var(--warn-soft);
-    border: 1px solid rgba(255,180,84,0.25);
-    border-radius: var(--radius-sm);
-    padding: 13px 16px;
-    margin-bottom: 26px;
-    font-size: 0.82rem;
-    color: var(--warn);
-    display: flex; gap: 10px; align-items: flex-start;
-  }
-  .csp-warning svg { flex-shrink: 0; width: 17px; height: 17px; fill: currentColor; margin-top: 1px; }
-  .csp-warning code {
-    font-family: 'JetBrains Mono', monospace;
-    background: rgba(0,0,0,0.25);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.78rem;
   }
 
   .section-label {
@@ -785,11 +757,6 @@ pipeline {
         <div class="metric m-skip"><div class="num">${skipped}</div><div class="label">Skipped</div></div>
       </div>
 
-      <div class="csp-warning">
-        <svg viewBox="0 0 20 20"><path d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/></svg>
-        <div>If styling doesn't load in Jenkins, run in <em>Manage Jenkins &rarr; Script Console</em>: <code>System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "")</code></div>
-      </div>
-
       <div class="section-label">Test results</div>
 
       <div class="filter-bar">
@@ -892,7 +859,7 @@ function applyFilters() {
                         echo "  Skipped : ${skipped}"
                         echo '=============================================='
                         echo "  Report  : TestResults/test-results.html"
-                        echo "  TRX     : ${trxFiles  ? trxFiles[0].path  : 'N/A'}"
+                        echo "  TRX     : ${trxPath ?: 'N/A'}"
                         echo '=============================================='
                         echo ''
 
