@@ -1,18 +1,10 @@
 /**
- * Staff Tag Management AJAX Script — Premium High-Performance Edition
+ * Staff Tag Management AJAX Script
  */
-
-let deleteTagId = null;
-let targetTagRowToDelete = null; // Lưu trữ hàng đang chuẩn bị xóa để tạo hoạt ảnh
 
 function getTagModal() {
     const modalElement = document.getElementById("tagCrudModal");
     return bootstrap.Modal.getOrCreateInstance(modalElement);
-}
-
-function getDeleteModal() {
-    const deleteElement = document.getElementById("deleteConfirmModal") || document.getElementById("confirmDeleteModal");
-    return bootstrap.Modal.getOrCreateInstance(deleteElement);
 }
 
 // Trợ giúp hiệu ứng rung lắc (shake) đàn hồi khi có lỗi nhập liệu
@@ -257,90 +249,7 @@ async function submitEditForm() {
 }
 
 // =========================
-// DELETE
-// =========================
-function deleteTag(id, name) {
-    deleteTagId = id;
-
-    // Tìm phần tử dòng tr tương ứng để làm animation slide-out biến mất mượt mà
-    const deleteBtn = document.querySelector(`button[onclick*="deleteTag(${id}"]`);
-    if (deleteBtn) {
-        targetTagRowToDelete = deleteBtn.closest('tr');
-    }
-
-    document.getElementById("deleteMessage").textContent =
-        `Are you sure you want to delete tag "${name}"?`;
-
-    // Thiết lập trạng thái nảy nhẹ đàn hồi cho nút xác nhận
-    const confirmBtn = document.getElementById("confirmDeleteBtn");
-    confirmBtn.disabled = false;
-    confirmBtn.innerHTML = 'Delete';
-    confirmBtn.onclick = confirmDeleteTag;
-
-    getDeleteModal().show();
-}
-
-async function confirmDeleteTag() {
-    const confirmBtn = document.getElementById("confirmDeleteBtn");
-    const token = document.querySelector(
-        '#ajax-antiforgery input[name="__RequestVerificationToken"]'
-    ).value;
-
-    confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting...';
-
-    try {
-        const response = await fetch(
-            `/Staff/Tags/Delete/${deleteTagId}`,
-            {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': token
-                }
-            });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = 'Delete';
-            if (window.ToastHelpers) {
-                window.ToastHelpers.showError(result.message || 'Delete failed.');
-            }
-            shakeElement(document.querySelector('#deleteConfirmModal .modal-content') || document.querySelector('#confirmDeleteModal .modal-content'));
-            return;
-        }
-
-        if (window.ToastHelpers) {
-            window.ToastHelpers.showSuccess('Tag deleted successfully!');
-        }
-        getDeleteModal().hide();
-
-        // Hoạt ảnh trượt ngang (Slide-out 60fps) dòng bị xóa biến mất mềm mại trước khi reload
-        if (targetTagRowToDelete) {
-            targetTagRowToDelete.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-            targetTagRowToDelete.style.opacity = '0';
-            targetTagRowToDelete.style.transform = 'translateX(-30px)';
-            setTimeout(() => {
-                refreshTagTable();
-                targetTagRowToDelete = null;
-            }, 400);
-        } else {
-            refreshTagTable();
-        }
-    }
-    catch (error) {
-        console.error(error);
-        confirmBtn.disabled = false;
-        confirmBtn.innerHTML = 'Delete';
-        if (window.ToastHelpers) {
-            window.ToastHelpers.showError('An unexpected error occurred during deletion.');
-        }
-    }
-}
-
-// =========================
-// REFRESH
+// DELETE (uses shared _ConfirmDeleteModal → executeDelete)
 // =========================
 
 function refreshTagTable() {
