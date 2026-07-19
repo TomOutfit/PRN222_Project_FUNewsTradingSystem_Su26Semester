@@ -105,6 +105,7 @@ pipeline {
                         if (fileExists(fixedTrxPath)) {
                             trxPath = fixedTrxPath
                             noTests = false
+                            trxFiles = [ [path: trxPath] ]
                         }
 
                         // --- Summary Stats ---
@@ -117,31 +118,47 @@ pipeline {
                         if (!noTests) {
                             try {
                                 def trxText = readFile(trxPath)
-                                def xml = new XmlSlurper(false, false).parseText(trxText)
+                                
+                                def dbFactory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+                                dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+                                dbFactory.setFeature("http://xml.org/sax/features/validation", false)
+                                
+                                def dBuilder = dbFactory.newDocumentBuilder()
+                                def doc = dBuilder.parse(new java.io.ByteArrayInputStream(trxText.getBytes("UTF-8")))
+                                doc.getDocumentElement().normalize()
 
                                 // Parse counters
-                                if (xml.ResultSummary.Counters.size() > 0) {
-                                    def counters = xml.ResultSummary.Counters[0]
-                                    total = counters.@total.text() ? counters.@total.text().toInteger() : 0
-                                    passed = counters.@passed.text() ? counters.@passed.text().toInteger() : 0
-                                    failed = counters.@failed.text() ? counters.@failed.text().toInteger() : 0
-                                    skipped = counters.@notExecuted.text() ? counters.@notExecuted.text().toInteger() : 0
+                                def countersNodes = doc.getElementsByTagName("Counters")
+                                if (countersNodes.getLength() > 0) {
+                                    def countersEl = (org.w3c.dom.Element) countersNodes.item(0)
+                                    total = countersEl.getAttribute("total") ? countersEl.getAttribute("total").toInteger() : 0
+                                    passed = countersEl.getAttribute("passed") ? countersEl.getAttribute("passed").toInteger() : 0
+                                    failed = countersEl.getAttribute("failed") ? countersEl.getAttribute("failed").toInteger() : 0
+                                    skipped = countersEl.getAttribute("notExecuted") ? countersEl.getAttribute("notExecuted").toInteger() : 0
                                 }
 
                                 // Map to lookup class names efficiently
                                 def classMap = [:]
-                                xml.TestDefinitions.UnitTest.each { ut ->
-                                    def id = ut.@id.text()
-                                    def className = ut.TestMethod.@className.text()
-                                    if (id && className) {
-                                        classMap[id] = className
+                                def unitTestNodes = doc.getElementsByTagName("UnitTest")
+                                for (int i = 0; i < unitTestNodes.getLength(); i++) {
+                                    def unitTestEl = (org.w3c.dom.Element) unitTestNodes.item(i)
+                                    def id = unitTestEl.getAttribute("id")
+                                    def testMethodNodes = unitTestEl.getElementsByTagName("TestMethod")
+                                    if (testMethodNodes.getLength() > 0) {
+                                        def testMethodEl = (org.w3c.dom.Element) testMethodNodes.item(0)
+                                        def className = testMethodEl.getAttribute("className")
+                                        if (id && className) {
+                                            classMap[id] = className
+                                        }
                                     }
                                 }
 
                                 // Parse individual test results
-                                xml.Results.UnitTestResult.each { utr ->
-                                    def name = utr.@testName.text()
-                                    def rawOutcome = utr.@outcome.text()?.toLowerCase() ?: "skipped"
+                                def resultNodes = doc.getElementsByTagName("UnitTestResult")
+                                for (int i = 0; i < resultNodes.getLength(); i++) {
+                                    def utrEl = (org.w3c.dom.Element) resultNodes.item(i)
+                                    def name = utrEl.getAttribute("testName")
+                                    def rawOutcome = utrEl.getAttribute("outcome")?.toLowerCase() ?: "skipped"
                                     def outcome = "skipped"
                                     if (rawOutcome == "passed") {
                                         outcome = "passed"
@@ -149,15 +166,30 @@ pipeline {
                                         outcome = "failed"
                                     }
 
-                                    def duration = utr.@duration.text() ?: "0s"
-                                    def testId = utr.@testId.text()
+                                    def duration = utrEl.getAttribute("duration") ?: "0s"
+                                    def testId = utrEl.getAttribute("testId")
                                     def className = classMap[testId] ?: "UnknownClass"
 
                                     def errorMessage = ""
                                     def stackTrace = ""
-                                    if (utr.Output.ErrorInfo.size() > 0) {
-                                        errorMessage = utr.Output.ErrorInfo.Message.text()
-                                        stackTrace = utr.Output.ErrorInfo.StackTrace.text()
+                                    
+                                    def outputNodes = utrEl.getElementsByTagName("Output")
+                                    if (outputNodes.getLength() > 0) {
+                                        def outputEl = (org.w3c.dom.Element) outputNodes.item(0)
+                                        def errorInfoNodes = outputEl.getElementsByTagName("ErrorInfo")
+                                        if (errorInfoNodes.getLength() > 0) {
+                                            def errorInfoEl = (org.w3c.dom.Element) errorInfoNodes.item(0)
+                                            
+                                            def messageNodes = errorInfoEl.getElementsByTagName("Message")
+                                            if (messageNodes.getLength() > 0) {
+                                                errorMessage = messageNodes.item(0).getTextContent()
+                                            }
+                                            
+                                            def stackTraceNodes = errorInfoEl.getElementsByTagName("StackTrace")
+                                            if (stackTraceNodes.getLength() > 0) {
+                                                stackTrace = stackTraceNodes.item(0).getTextContent()
+                                            }
+                                        }
                                     }
 
                                     testResults << [
