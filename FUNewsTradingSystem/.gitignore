@@ -1,0 +1,17 @@
+friction-log.md
+
+# ── Build artifacts ──────────────────────────────
+**/bin/
+**/obj/
+
+# ── User-specific VS files ───────────────────────
+*.user
+*.suo
+.vs/
+
+# ── IDE / OS ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+friction-log.md
+log.md
