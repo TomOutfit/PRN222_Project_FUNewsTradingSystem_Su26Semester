@@ -1,0 +1,1959 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Execution Report</title>
+<style>
+  :root {
+    --bg: #0a0c12;
+    --bg-grid: rgba(255,255,255,0.025);
+    --surface: rgba(255,255,255,0.035);
+    --surface-solid: #13161f;
+    --border: rgba(255,255,255,0.09);
+    --border-soft: rgba(255,255,255,0.05);
+    --text: #eef0f6;
+    --text-dim: #8b90a3;
+    --text-faint: #565b70;
+    --accent: #7c8cff;
+    --accent-soft: rgba(124,140,255,0.12);
+    --good: #3ddc97;
+    --good-soft: rgba(61,220,151,0.12);
+    --bad: #ff5d7a;
+    --bad-soft: rgba(255,93,122,0.12);
+    --warn: #ffb454;
+    --warn-soft: rgba(255,180,84,0.12);
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 9px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(124,140,255,0.10), transparent 45%),
+      radial-gradient(circle at 88% 8%, rgba(61,220,151,0.07), transparent 40%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 48px 20px;
+    display: flex;
+    justify-content: center;
+    line-height: 1.5;
+  }
+
+  .container { width: 100%; max-width: 960px; }
+
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), #4a5bff);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(124,140,255,0.35);
+  }
+
+  .brand-text { display: flex; flex-direction: column; }
+  .brand-text .eyebrow {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .brand-text .proj {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .build-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    padding: 7px 12px;
+    border-radius: 999px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+
+  .hero {
+    padding: 36px 40px 32px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: center;
+    border-bottom: 1px solid var(--border-soft);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+
+  .ring-wrap { position: relative; width: 132px; height: 132px; flex-shrink: 0; }
+  .ring {
+    width: 132px; height: 132px;
+    border-radius: 50%;
+    background: conic-gradient(var(--good) 0deg 360deg, rgba(255,255,255,0.06) 360deg 360deg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ring-inner {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: var(--surface-solid);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 1px solid var(--border-soft);
+  }
+  .ring-inner .pct {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem; font-weight: 700; color: var(--text);
+  }
+  .ring-inner .pct-label {
+    font-size: 0.62rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  .hero-info h1 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .hero-info .sub { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 16px; }
+
+  .status-badge-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .status-badge-top::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .status-passed-top { background: var(--good-soft); color: var(--good); border: 1px solid rgba(61,220,151,0.3); }
+  .status-failed-top  { background: var(--bad-soft);  color: var(--bad);  border: 1px solid rgba(255,93,122,0.3); }
+  .status-none-top    { background: rgba(255,255,255,0.06); color: var(--text-dim); border: 1px solid var(--border); }
+
+  .card-body { padding: 32px 40px 40px; }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 18px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--bar-color, var(--text-faint));
+  }
+  .m-total { --bar-color: var(--accent); }
+  .m-pass  { --bar-color: var(--good); }
+  .m-fail  { --bar-color: var(--bad); }
+  .m-skip  { --bar-color: var(--warn); }
+
+  .metric .num {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 1.9rem; font-weight: 700; line-height: 1; margin-bottom: 6px;
+  }
+  .m-total .num { color: var(--accent); }
+  .m-pass .num  { color: var(--good); }
+  .m-fail .num  { color: var(--bad); }
+  .m-skip .num  { color: var(--warn); }
+
+  .metric .label {
+    font-size: 0.68rem; color: var(--text-faint);
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
+  }
+
+  .section-label {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+  }
+
+  .filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btns { display: flex; gap: 6px; }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    color: var(--text-dim);
+    padding: 8px 15px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+  .filter-btn:hover { color: var(--text); border-color: var(--border); }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(124,140,255,0.35);
+  }
+
+  .search-box { position: relative; flex-grow: 1; max-width: 300px; }
+  .search-box input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px 9px 38px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.84rem;
+    outline: none;
+    transition: all 0.15s ease;
+  }
+  .search-box input::placeholder { color: var(--text-faint); }
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .search-box svg {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; fill: var(--text-faint);
+  }
+
+  .test-list { display: flex; flex-direction: column; gap: 18px; }
+
+  .test-group {
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: rgba(255,255,255,0.012);
+  }
+
+  .test-group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: rgba(255,255,255,0.025);
+    border-bottom: 1px solid var(--border-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+  .group-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-pass { background: var(--good); box-shadow: 0 0 6px var(--good); }
+  .dot-fail { background: var(--bad); box-shadow: 0 0 6px var(--bad); }
+  .group-name { color: var(--text); font-weight: 500; flex-grow: 1; word-break: break-word; }
+  .group-count { color: var(--text-faint); font-size: 0.72rem; flex-shrink: 0; }
+
+  details.test-item {
+    border-top: 1px solid var(--border-soft);
+    transition: background-color 0.15s ease;
+  }
+  details.test-item:first-of-type { border-top: none; }
+  details.test-item[open] { background: rgba(255,255,255,0.02); }
+
+  summary {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    gap: 12px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::marker { display: none; }
+
+  .chevron {
+    width: 14px; height: 14px;
+    color: var(--text-faint);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    margin-left: auto;
+  }
+  details.test-item[open] .chevron { transform: rotate(180deg); }
+
+  .badge {
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-passed  { background: var(--good-soft); color: var(--good); border: 1px solid rgba(61,220,151,0.25); }
+  .badge-failed  { background: var(--bad-soft);  color: var(--bad);  border: 1px solid rgba(255,93,122,0.25); }
+  .badge-skipped { background: var(--warn-soft); color: var(--warn); border: 1px solid rgba(255,180,84,0.25); }
+
+  .test-name-text {
+    font-size: 0.87rem;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .test-time-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    flex-shrink: 0;
+    margin-left: auto;
+    padding-right: 4px;
+  }
+  details.test-item[open] .test-time-badge { margin-left: 0; }
+
+  .test-details-content {
+    padding: 4px 18px 20px 18px;
+  }
+
+  .detail-field { margin-bottom: 12px; font-size: 0.83rem; line-height: 1.5; color: var(--text-dim); }
+  .detail-field strong {
+    display: block;
+    color: var(--text-faint);
+    font-weight: 600;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .error-container { margin-top: 14px; }
+  .error-text {
+    background: #05060a;
+    border: 1px solid rgba(255,93,122,0.15);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--bad);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    line-height: 1.6;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 56px 24px;
+    color: var(--text-faint);
+  }
+  .empty-state svg { width: 44px; height: 44px; margin-bottom: 14px; fill: currentColor; opacity: 0.4; }
+  .empty-state svg { width: 17px; height: 17px; }
+  .empty-state h3 { font-size: 1rem; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; }
+  .empty-state p { font-size: 0.84rem; }
+
+  .info-table {
+    margin-top: 34px;
+    border-top: 1px solid var(--border-soft);
+    padding-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 24px;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    border-bottom: 1px dashed var(--border-soft);
+  }
+  .info-row span:last-child {
+    color: var(--text-dim);
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-faint);
+    font-size: 0.76rem;
+    margin-top: 18px;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 24px 12px; }
+    .hero { grid-template-columns: 1fr; text-align: center; padding: 28px 24px; }
+    .ring-wrap { margin: 0 auto; }
+    .card-body { padding: 24px; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .info-table { grid-template-columns: 1fr; }
+    .test-name-text { max-width: 140px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="top-row">
+    <div class="brand">
+      <div class="brand-mark">FN</div>
+      <div class="brand-text">
+        <span class="eyebrow">CI / Test Report</span>
+        <span class="proj">FUNewsTradingSystem</span>
+      </div>
+    </div>
+    <div class="build-pill">Build #N/A &middot; Release</div>
+  </div>
+
+  <div class="card">
+    <div class="hero">
+      <div class="ring-wrap">
+        <div class="ring">
+          <div class="ring-inner">
+            <span class="pct">100%</span>
+            <span class="pct-label">Pass rate</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-info">
+        <h1>Test Execution Report</h1>
+        <p class="sub">Automated test execution summary for the latest pipeline run.</p>
+        <span class="status-badge-top status-passed-top">PASSED</span>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <div class="metrics">
+        <div class="metric m-total"><div class="num">115</div><div class="label">Total</div></div>
+        <div class="metric m-pass"><div class="num">115</div><div class="label">Passed</div></div>
+        <div class="metric m-fail"><div class="num">0</div><div class="label">Failed</div></div>
+        <div class="metric m-skip"><div class="num">0</div><div class="label">Skipped</div></div>
+      </div>
+
+      <div class="section-label">Test results</div>
+
+      <div class="filter-bar">
+        <div class="filter-btns">
+          <button class="filter-btn active" data-filter="all" onclick="filterTests('all', this)">All</button>
+          <button class="filter-btn" data-filter="passed" onclick="filterTests('passed', this)">Passed</button>
+          <button class="filter-btn" data-filter="failed" onclick="filterTests('failed', this)">Failed</button>
+          <button class="filter-btn" data-filter="skipped" onclick="filterTests('skipped', this)">Skipped</button>
+        </div>
+        <div class="search-box">
+          <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+          <input type="text" id="search-input" placeholder="Search tests..." onkeyup="applyFilters()">
+        </div>
+      </div>
+
+      <div class="test-list">
+                <div class="test-group">
+            <div class="test-group-header">
+                <span class="group-dot dot-pass"></span>
+                <span class="group-name">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</span>
+                <span class="group-count">50 tests</span>
+            </div>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_cryptotickers_containcryptorisks(ticker: &quot;bnb&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_CryptoTickers_ContainCryptoRisks(ticker: &quot;BNB&quot;)</span>
+                    <span class="test-time-badge">00.0000162</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000162</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemocksentimentoutput_returnsnonemptytext(ticker: &quot;btc&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockSentimentOutput_ReturnsNonEmptyText(ticker: &quot;BTC&quot;)</span>
+                    <span class="test-time-badge">00.0000508</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000508</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.determinesentimenttone_detectscorrecttone(headlines: &quot;drop fall decline warn plummet bear lawsuit down l&quot;···, expectedtone: &quot;negative&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.DetermineSentimentTone_DetectsCorrectTone(headlines: &quot;drop fall decline warn plummet bear lawsuit down l&quot;···, expectedTone: &quot;Negative&quot;)</span>
+                    <span class="test-time-badge">00.0000982</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000982</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_allrequiredfieldspopulated" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_AllRequiredFieldsPopulated</span>
+                    <span class="test-time-badge">00.0002772</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0002772</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.preprocessjsonresponse_extractsjsonfromsurroundingtext" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.PreprocessJsonResponse_ExtractsJsonFromSurroundingText</span>
+                    <span class="test-time-badge">00.0001129</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001129</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockfundamentaloutput_alignedwithsentimentdecision(ticker: &quot;aapl&quot;, sentiment: &quot;neutral balanced market sentiment&quot;, expecteddirection: &quot;hold&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockFundamentalOutput_AlignedWithSentimentDecision(ticker: &quot;AAPL&quot;, sentiment: &quot;neutral balanced market sentiment&quot;, expectedDirection: &quot;HOLD&quot;)</span>
+                    <span class="test-time-badge">00.0006619</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0006619</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.extractheadlinetitles_stripsnumberprefixanddescription" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.ExtractHeadlineTitles_StripsNumberPrefixAndDescription</span>
+                    <span class="test-time-badge">00.0001818</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001818</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemocksentimentoutput_returnsnonemptytext(ticker: &quot;aapl&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockSentimentOutput_ReturnsNonEmptyText(ticker: &quot;AAPL&quot;)</span>
+                    <span class="test-time-badge">00.0089324</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0089324</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.extractheadlinetitles_whennodashseparator_returnsfullline" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.ExtractHeadlineTitles_WhenNoDashSeparator_ReturnsFullLine</span>
+                    <span class="test-time-badge">00.0001680</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001680</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_indexetfs_containmacrorisks(ticker: &quot;qqq&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_IndexETFs_ContainMacroRisks(ticker: &quot;QQQ&quot;)</span>
+                    <span class="test-time-badge">00.0001383</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001383</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.determinesentimenttone_emptyheadlines_returnspositive" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.DetermineSentimentTone_EmptyHeadlines_ReturnsPositive</span>
+                    <span class="test-time-badge">00.0001021</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001021</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockfundamentaloutput_alignedwithsentimentdecision(ticker: &quot;aapl&quot;, sentiment: &quot;prevailing negative market sentiment&quot;, expecteddirection: &quot;sell&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockFundamentalOutput_AlignedWithSentimentDecision(ticker: &quot;AAPL&quot;, sentiment: &quot;prevailing negative market sentiment&quot;, expectedDirection: &quot;SELL&quot;)</span>
+                    <span class="test-time-badge">00.0000478</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000478</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_titlecontainsdecisionandticker" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_TitleContainsDecisionAndTicker</span>
+                    <span class="test-time-badge">00.0001131</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001131</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.portfoliomanagerprompttemplate_containsexpecteddecisionschema" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.PortfolioManagerPromptTemplate_ContainsExpectedDecisionSchema</span>
+                    <span class="test-time-badge">00.0000983</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000983</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.extractheadlinetitles_returnsemptylist_fornullorwhitespace" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.ExtractHeadlineTitles_ReturnsEmptyList_ForNullOrWhiteSpace</span>
+                    <span class="test-time-badge">00.0002512</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0002512</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_confidencescore_inrange" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_ConfidenceScore_InRange</span>
+                    <span class="test-time-badge">00.0004703</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0004703</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.sentimentprompttemplate_containsplaceholders" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.SentimentPromptTemplate_ContainsPlaceholders</span>
+                    <span class="test-time-badge">00.0001648</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001648</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemocksentimentoutput_negativesentiment_containsnegativelanguage" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockSentimentOutput_NegativeSentiment_ContainsNegativeLanguage</span>
+                    <span class="test-time-badge">00.0001215</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001215</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_cryptotickers_containcryptorisks(ticker: &quot;eth&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_CryptoTickers_ContainCryptoRisks(ticker: &quot;ETH&quot;)</span>
+                    <span class="test-time-badge">00.0004519</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0004519</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.determinesentimenttone_detectscorrecttone(headlines: &quot;surge rise gain profit bull buy strong higher posi&quot;···, expectedtone: &quot;positive&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.DetermineSentimentTone_DetectsCorrectTone(headlines: &quot;surge rise gain profit bull buy strong higher posi&quot;···, expectedTone: &quot;Positive&quot;)</span>
+                    <span class="test-time-badge">00.0001633</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001633</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_returnscorrectdecision(ticker: &quot;msft&quot;, sentiment: &quot;neutral consolidation balanced&quot;, expecteddecision: &quot;hold&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_ReturnsCorrectDecision(ticker: &quot;MSFT&quot;, sentiment: &quot;neutral consolidation balanced&quot;, expectedDecision: &quot;HOLD&quot;)</span>
+                    <span class="test-time-badge">00.0000251</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000251</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_returnscorrectdecision(ticker: &quot;tsla&quot;, sentiment: &quot;negative bear drop decline&quot;, expecteddecision: &quot;sell&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_ReturnsCorrectDecision(ticker: &quot;TSLA&quot;, sentiment: &quot;negative bear drop decline&quot;, expectedDecision: &quot;SELL&quot;)</span>
+                    <span class="test-time-badge">00.0001677</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001677</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_indexetfs_containmacrorisks(ticker: &quot;spy&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_IndexETFs_ContainMacroRisks(ticker: &quot;SPY&quot;)</span>
+                    <span class="test-time-badge">00.0000181</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000181</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatefallbacknewsheadlines_producesthreelines" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateFallbackNewsHeadlines_ProducesThreeLines</span>
+                    <span class="test-time-badge">00.0001499</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001499</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemocksentimentoutput_positivesentiment_mentionsbullishlanguage" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockSentimentOutput_PositiveSentiment_MentionsBullishLanguage</span>
+                    <span class="test-time-badge">00.0001871</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001871</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatefallbacknewsheadlines_returnsnonemptystring(ticker: &quot;aapl&quot;, company: &quot;apple inc&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateFallbackNewsHeadlines_ReturnsNonEmptyString(ticker: &quot;AAPL&quot;, company: &quot;Apple Inc&quot;)</span>
+                    <span class="test-time-badge">00.0000192</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000192</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.preprocessjsonresponse_stripsjsoncodefence" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.PreprocessJsonResponse_StripsJsonCodeFence</span>
+                    <span class="test-time-badge">00.0011417</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0011417</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.runanalysisasync_whentagnotfound_returnsfailureresult" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.RunAnalysisAsync_WhenTagNotFound_ReturnsFailureResult</span>
+                    <span class="test-time-badge">01.9727187</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 01.9727187</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.preprocessjsonresponse_cleanjson_returnssamejson" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.PreprocessJsonResponse_CleanJson_ReturnsSameJson</span>
+                    <span class="test-time-badge">00.0001021</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001021</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.determinesentimenttone_returnsvalidsentiment_whenneutral" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.DetermineSentimentTone_ReturnsValidSentiment_WhenNeutral</span>
+                    <span class="test-time-badge">00.0026197</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0026197</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.preprocessjsonresponse_nullorwhitespace_returnsempty" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.PreprocessJsonResponse_NullOrWhitespace_ReturnsEmpty</span>
+                    <span class="test-time-badge">00.0001156</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001156</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatefallbacknewsheadlines_returnsnonemptystring(ticker: &quot;btc&quot;, company: &quot;&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateFallbackNewsHeadlines_ReturnsNonEmptyString(ticker: &quot;BTC&quot;, company: &quot;&quot;)</span>
+                    <span class="test-time-badge">00.0001399</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001399</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemocksentimentoutput_returnsnonemptytext(ticker: &quot;tsla&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockSentimentOutput_ReturnsNonEmptyText(ticker: &quot;TSLA&quot;)</span>
+                    <span class="test-time-badge">00.0003328</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0003328</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_cryptotickers_containcryptorisks(ticker: &quot;btc&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_CryptoTickers_ContainCryptoRisks(ticker: &quot;BTC&quot;)</span>
+                    <span class="test-time-badge">00.0026788</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0026788</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.fundamentalprompttemplate_containsplaceholders" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.FundamentalPromptTemplate_ContainsPlaceholders</span>
+                    <span class="test-time-badge">00.0000865</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000865</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockfundamentaloutput_alignedwithsentimentdecision(ticker: &quot;aapl&quot;, sentiment: &quot;positive sentiment strong bullish&quot;, expecteddirection: &quot;buy&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockFundamentalOutput_AlignedWithSentimentDecision(ticker: &quot;AAPL&quot;, sentiment: &quot;positive sentiment strong bullish&quot;, expectedDirection: &quot;BUY&quot;)</span>
+                    <span class="test-time-badge">00.0002140</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0002140</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatefallbacknewsheadlines_containstickersymbol" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateFallbackNewsHeadlines_ContainsTickerSymbol</span>
+                    <span class="test-time-badge">00.0001075</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001075</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.extractheadlinetitles_truncateslongtitles" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.ExtractHeadlineTitles_TruncatesLongTitles</span>
+                    <span class="test-time-badge">00.0003967</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0003967</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.extractheadlinetitles_skipsblanklines" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.ExtractHeadlineTitles_SkipsBlankLines</span>
+                    <span class="test-time-badge">00.0002301</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0002301</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_indexetfs_containmacrorisks(ticker: &quot;fnts&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_IndexETFs_ContainMacroRisks(ticker: &quot;FNTS&quot;)</span>
+                    <span class="test-time-badge">00.0000160</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000160</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemocksentimentoutput_withtwoormoretitles_includessecondtitleinoutput" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockSentimentOutput_WithTwoOrMoreTitles_IncludesSecondTitleInOutput</span>
+                    <span class="test-time-badge">00.0001691</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001691</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_cryptotickers_containcryptorisks(ticker: &quot;sol&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_CryptoTickers_ContainCryptoRisks(ticker: &quot;SOL&quot;)</span>
+                    <span class="test-time-badge">00.0000172</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000172</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_indexetfs_containmacrorisks(ticker: &quot;dia&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_IndexETFs_ContainMacroRisks(ticker: &quot;DIA&quot;)</span>
+                    <span class="test-time-badge">00.0001564</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001564</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.extractheadlinetitles_handlesemdashseparator" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.ExtractHeadlineTitles_HandlesEmDashSeparator</span>
+                    <span class="test-time-badge">00.0001947</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001947</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockfundamentaloutput_containsnoexception" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockFundamentalOutput_ContainsNoException</span>
+                    <span class="test-time-badge">00.0009229</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0009229</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatefallbacknewsheadlines_whencompanyempty_usestickerasname" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateFallbackNewsHeadlines_WhenCompanyEmpty_UsesTickerAsName</span>
+                    <span class="test-time-badge">00.0001067</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001067</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_returnscorrectdecision(ticker: &quot;aapl&quot;, sentiment: &quot;positive bullish strong&quot;, expecteddecision: &quot;buy&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_ReturnsCorrectDecision(ticker: &quot;AAPL&quot;, sentiment: &quot;positive bullish strong&quot;, expectedDecision: &quot;BUY&quot;)</span>
+                    <span class="test-time-badge">00.0001847</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001847</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatefallbacknewsheadlines_returnsnonemptystring(ticker: &quot;tsla&quot;, company: &quot;tesla&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateFallbackNewsHeadlines_ReturnsNonEmptyString(ticker: &quot;TSLA&quot;, company: &quot;Tesla&quot;)</span>
+                    <span class="test-time-badge">00.0001948</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0001948</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.preprocessjsonresponse_stripsplaincodefence" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.PreprocessJsonResponse_StripsPlainCodeFence</span>
+                    <span class="test-time-badge">00.0002385</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0002385</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tradingagentservicetests.generatemockportfoliomanagerresponse_cryptotickers_containcryptorisks(ticker: &quot;xrp&quot;)" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests.GenerateMockPortfolioManagerResponse_CryptoTickers_ContainCryptoRisks(ticker: &quot;XRP&quot;)</span>
+                    <span class="test-time-badge">00.0000554</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TradingAgentServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0000554</div>
+                </div>
+            </details>
+</div>
+        <div class="test-group">
+            <div class="test-group-header">
+                <span class="group-dot dot-pass"></span>
+                <span class="group-name">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</span>
+                <span class="group-count">18 tests</span>
+            </div>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.createwithtagasync_invalidcategoryid_returnserror" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.CreateWithTagAsync_InvalidCategoryId_ReturnsError</span>
+                    <span class="test-time-badge">00.0009843</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0009843</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getbydaterangeasync_validrange_delegatestorepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetByDateRangeAsync_ValidRange_DelegatesToRepository</span>
+                    <span class="test-time-badge">00.0044090</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0044090</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getreportdetailasync_existingid_returnsarticle" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetReportDetailAsync_ExistingId_ReturnsArticle</span>
+                    <span class="test-time-badge">00.0009599</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0009599</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getactivereportsasync_delegatestorepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetActiveReportsAsync_DelegatesToRepository</span>
+                    <span class="test-time-badge">00.0014702</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0014702</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getactiveasync_returnsallactivearticles" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetActiveAsync_ReturnsAllActiveArticles</span>
+                    <span class="test-time-badge">00.0017078</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0017078</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getbycreatorasync_validaccountid_returnslist" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetByCreatorAsync_ValidAccountId_ReturnsList</span>
+                    <span class="test-time-badge">00.0070423</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0070423</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getbyidasync_existingid_returnsarticle" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetByIdAsync_ExistingId_ReturnsArticle</span>
+                    <span class="test-time-badge">00.0011056</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0011056</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.createwithtagasync_missingtitle_returnsvalidationerror" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.CreateWithTagAsync_MissingTitle_ReturnsValidationError</span>
+                    <span class="test-time-badge">00.0008260</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0008260</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.togglestatusasync_whenrepositoryreturnstrue_returnstrue" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.ToggleStatusAsync_WhenRepositoryReturnsTrue_ReturnsTrue</span>
+                    <span class="test-time-badge">00.0014555</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0014555</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getactivereportsasync_withfilters_passesfilterstorepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetActiveReportsAsync_WithFilters_PassesFiltersToRepository</span>
+                    <span class="test-time-badge">00.0028708</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0028708</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.createwithtagasync_zerocategoryid_returnserror" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.CreateWithTagAsync_ZeroCategoryId_ReturnsError</span>
+                    <span class="test-time-badge">00.0009036</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0009036</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getreportsbycreatorasync_delegatestorepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetReportsByCreatorAsync_DelegatesToRepository</span>
+                    <span class="test-time-badge">00.0028043</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0028043</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.createwithtagasync_missingcontent_returnsvalidationerror" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.CreateWithTagAsync_MissingContent_ReturnsValidationError</span>
+                    <span class="test-time-badge">00.0008310</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0008310</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getreportdetailasync_nonexisting_returnsnull" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetReportDetailAsync_NonExisting_ReturnsNull</span>
+                    <span class="test-time-badge">00.9232701</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.9232701</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.getbyidasync_nonexistingid_returnsnull" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.GetByIdAsync_NonExistingId_ReturnsNull</span>
+                    <span class="test-time-badge">00.0019315</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0019315</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.createwithtagasync_invalidtag_returnserror" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.CreateWithTagAsync_InvalidTag_ReturnsError</span>
+                    <span class="test-time-badge">00.0030358</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0030358</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.createwithtagasync_validinputs_returnssuccesswithentityid" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.CreateWithTagAsync_ValidInputs_ReturnsSuccessWithEntityId</span>
+                    <span class="test-time-badge">00.0034369</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0034369</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.newsarticleservicetests.togglestatusasync_delegatestorepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests.ToggleStatusAsync_DelegatesToRepository</span>
+                    <span class="test-time-badge">00.0031678</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.NewsArticleServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0031678</div>
+                </div>
+            </details>
+</div>
+        <div class="test-group">
+            <div class="test-group-header">
+                <span class="group-dot dot-pass"></span>
+                <span class="group-name">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</span>
+                <span class="group-count">20 tests</span>
+            </div>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.authenticateasync_accountnotfound_returnsnull" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.AuthenticateAsync_AccountNotFound_ReturnsNull</span>
+                    <span class="test-time-badge">00.0012543</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0012543</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.updateasync_uniqueemail_updatesandreturnssuccess" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.UpdateAsync_UniqueEmail_UpdatesAndReturnsSuccess</span>
+                    <span class="test-time-badge">00.0052928</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0052928</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.getbyemailasync_existingemail_returnsaccount" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.GetByEmailAsync_ExistingEmail_ReturnsAccount</span>
+                    <span class="test-time-badge">00.0015028</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0015028</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.changepasswordasync_wrongcurrentpassword_returnsfailure" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.ChangePasswordAsync_WrongCurrentPassword_ReturnsFailure</span>
+                    <span class="test-time-badge">00.0009268</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0009268</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.getbyidasync_existingid_returnsaccount" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.GetByIdAsync_ExistingId_ReturnsAccount</span>
+                    <span class="test-time-badge">00.9235780</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.9235780</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.changepasswordasync_hashplaceholder_allowschange" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.ChangePasswordAsync_HashPlaceholder_AllowsChange</span>
+                    <span class="test-time-badge">00.0015476</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0015476</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.authenticateasync_correctpassword_returnsaccount" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.AuthenticateAsync_CorrectPassword_ReturnsAccount</span>
+                    <span class="test-time-badge">00.0013713</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0013713</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.createasync_newemail_createsandreturnssuccess" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.CreateAsync_NewEmail_CreatesAndReturnsSuccess</span>
+                    <span class="test-time-badge">00.0020636</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0020636</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.getallasync_returnsallaccounts" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.GetAllAsync_ReturnsAllAccounts</span>
+                    <span class="test-time-badge">00.0027968</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0027968</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.getbyemailasync_nonexistingemail_returnsnull" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.GetByEmailAsync_NonExistingEmail_ReturnsNull</span>
+                    <span class="test-time-badge">00.0014884</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0014884</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.updatenameasync_nonexistingaccount_returnsfailure" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.UpdateNameAsync_NonExistingAccount_ReturnsFailure</span>
+                    <span class="test-time-badge">00.0014792</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0014792</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.createasync_duplicateemail_returnsfailure" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.CreateAsync_DuplicateEmail_ReturnsFailure</span>
+                    <span class="test-time-badge">00.0021475</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0021475</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.getbyidasync_nonexistingid_returnsnull" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.GetByIdAsync_NonExistingId_ReturnsNull</span>
+                    <span class="test-time-badge">00.0009464</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0009464</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.changepasswordasync_correctcurrentpassword_changessuccessfully" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.ChangePasswordAsync_CorrectCurrentPassword_ChangesSuccessfully</span>
+                    <span class="test-time-badge">00.0056518</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0056518</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.updateasync_emailconflict_returnsfailure" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.UpdateAsync_EmailConflict_ReturnsFailure</span>
+                    <span class="test-time-badge">00.0011021</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0011021</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.changepasswordasync_accountnotfound_returnsfailure" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.ChangePasswordAsync_AccountNotFound_ReturnsFailure</span>
+                    <span class="test-time-badge">00.0008195</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0008195</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.updatenameasync_existingaccount_updatesnameandreturnssuccess" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.UpdateNameAsync_ExistingAccount_UpdatesNameAndReturnsSuccess</span>
+                    <span class="test-time-badge">00.0022202</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0022202</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.deleteasync_alwaysreturnssuccess" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.DeleteAsync_AlwaysReturnsSuccess</span>
+                    <span class="test-time-badge">00.0019725</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0019725</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.authenticateasync_wrongpassword_returnsnull" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.AuthenticateAsync_WrongPassword_ReturnsNull</span>
+                    <span class="test-time-badge">00.0008399</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0008399</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.systemaccountservicetests.authenticateasync_hashplaceholder_returnsaccount" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests.AuthenticateAsync_HashPlaceholder_ReturnsAccount</span>
+                    <span class="test-time-badge">00.0025188</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.SystemAccountServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0025188</div>
+                </div>
+            </details>
+</div>
+        <div class="test-group">
+            <div class="test-group-header">
+                <span class="group-dot dot-pass"></span>
+                <span class="group-name">FUNewsTradingSystem.Tests.Services.CategoryServiceTests</span>
+                <span class="group-count">17 tests</span>
+            </div>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.deletecategoryasync_notreferencedandnochildren_deletesandreturnstrue" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.DeleteCategoryAsync_NotReferencedAndNoChildren_DeletesAndReturnsTrue</span>
+                    <span class="test-time-badge">00.0019019</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0019019</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.getcategorybyidasync_nonexistingid_returnsnull" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.GetCategoryByIdAsync_NonExistingId_ReturnsNull</span>
+                    <span class="test-time-badge">00.0008944</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0008944</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.getallcategoriesasync_emptylist_returnsempty" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.GetAllCategoriesAsync_EmptyList_ReturnsEmpty</span>
+                    <span class="test-time-badge">00.0008865</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0008865</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.createcategoryasync_whenrepositoryreturnsnull_returnsfalse" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.CreateCategoryAsync_WhenRepositoryReturnsNull_ReturnsFalse</span>
+                    <span class="test-time-badge">00.0055467</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0055467</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.deletecategoryasync_childrenreferencedbyarticle_returnsfalsewithoutdeleting" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.DeleteCategoryAsync_ChildrenReferencedByArticle_ReturnsFalseWithoutDeleting</span>
+                    <span class="test-time-badge">00.0014940</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0014940</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.getactiveasync_delegatestorepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.GetActiveAsync_DelegatesToRepository</span>
+                    <span class="test-time-badge">00.0016433</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0016433</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.getallcategoriesasync_returnsallfromrepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.GetAllCategoriesAsync_ReturnsAllFromRepository</span>
+                    <span class="test-time-badge">00.0229788</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0229788</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.getcategorybyidasync_existingid_returnscategory" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.GetCategoryByIdAsync_ExistingId_ReturnsCategory</span>
+                    <span class="test-time-badge">00.0028725</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0028725</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.gettoplevelasync_delegatestorepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.GetTopLevelAsync_DelegatesToRepository</span>
+                    <span class="test-time-badge">00.0028569</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0028569</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.toggleactiveasync_activecategory_deactivatesandreturnsfalse" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.ToggleActiveAsync_ActiveCategory_DeactivatesAndReturnsFalse</span>
+                    <span class="test-time-badge">00.0019059</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0019059</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.toggleactiveasync_inactivecategory_activatesandreturnstrue" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.ToggleActiveAsync_InactiveCategory_ActivatesAndReturnsTrue</span>
+                    <span class="test-time-badge">00.0007948</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0007948</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.deletecategoryasync_referencedbyarticle_returnsfalsewithoutdeleting" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.DeleteCategoryAsync_ReferencedByArticle_ReturnsFalseWithoutDeleting</span>
+                    <span class="test-time-badge">00.9285441</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.9285441</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.createcategoryasync_success_returnstrue" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.CreateCategoryAsync_Success_ReturnsTrue</span>
+                    <span class="test-time-badge">00.0015050</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0015050</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.toggleactiveasync_nonexistingid_returnsfalse" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.ToggleActiveAsync_NonExistingId_ReturnsFalse</span>
+                    <span class="test-time-badge">00.0006594</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0006594</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.updatecategoryasync_nonexistingcategory_returnsfalse" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.UpdateCategoryAsync_NonExistingCategory_ReturnsFalse</span>
+                    <span class="test-time-badge">00.0019511</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0019511</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.updatecategoryasync_existingcategory_callsupdateandreturnstrue" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.UpdateCategoryAsync_ExistingCategory_CallsUpdateAndReturnsTrue</span>
+                    <span class="test-time-badge">00.0029175</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0029175</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.categoryservicetests.createcategoryasync_whenrepositoryreturnsidzero_returnsfalse" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.CategoryServiceTests.CreateCategoryAsync_WhenRepositoryReturnsIdZero_ReturnsFalse</span>
+                    <span class="test-time-badge">00.0016545</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.CategoryServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0016545</div>
+                </div>
+            </details>
+</div>
+        <div class="test-group">
+            <div class="test-group-header">
+                <span class="group-dot dot-pass"></span>
+                <span class="group-name">FUNewsTradingSystem.Tests.Services.TagServiceTests</span>
+                <span class="group-count">10 tests</span>
+            </div>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.gettagbyidasync_existingid_returnstag" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.GetTagByIdAsync_ExistingId_ReturnsTag</span>
+                    <span class="test-time-badge">00.0040003</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0040003</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.createtagasync_uniquetagname_createssuccessfully" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.CreateTagAsync_UniqueTagName_CreatesSuccessfully</span>
+                    <span class="test-time-badge">00.0067623</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0067623</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.updatetagasync_uniquenameamongothertags_updatessuccessfully" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.UpdateTagAsync_UniqueNameAmongOtherTags_UpdatesSuccessfully</span>
+                    <span class="test-time-badge">00.0036956</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0036956</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.gettagbyidasync_nonexistingid_returnsnull" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.GetTagByIdAsync_NonExistingId_ReturnsNull</span>
+                    <span class="test-time-badge">00.9233393</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.9233393</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.createtagasync_duplicatetagname_throwsinvalidoperationexception" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.CreateTagAsync_DuplicateTagName_ThrowsInvalidOperationException</span>
+                    <span class="test-time-badge">00.0018266</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0018266</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.updatetagasync_sametagsameid_noduplicateconflict" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.UpdateTagAsync_SameTagSameId_NoDuplicateConflict</span>
+                    <span class="test-time-badge">00.0050275</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0050275</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.getalltagsasync_emptylist_returnsempty" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.GetAllTagsAsync_EmptyList_ReturnsEmpty</span>
+                    <span class="test-time-badge">00.0066230</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0066230</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.getalltagsasync_returnsalltagsfromrepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.GetAllTagsAsync_ReturnsAllTagsFromRepository</span>
+                    <span class="test-time-badge">00.0027316</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0027316</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.deletetagasync_delegatestorepository" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.DeleteTagAsync_DelegatesToRepository</span>
+                    <span class="test-time-badge">00.0014396</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0014396</div>
+                </div>
+            </details>
+            <details class="test-item passed" data-name="funewstradingsystem.tests.services.tagservicetests.updatetagasync_duplicatenamewithdifferentid_throwsinvalidoperationexception" data-outcome="passed">
+                <summary>
+                    <span class="badge badge-passed">PASSED</span>
+                    <span class="test-name-text">FUNewsTradingSystem.Tests.Services.TagServiceTests.UpdateTagAsync_DuplicateNameWithDifferentId_ThrowsInvalidOperationException</span>
+                    <span class="test-time-badge">00.0168496</span>
+                    <svg class="chevron" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </summary>
+                <div class="test-details-content">
+                    <div class="detail-field"><strong>Class</strong> FUNewsTradingSystem.Tests.Services.TagServiceTests</div>
+                    <div class="detail-field"><strong>Duration</strong> 00.0168496</div>
+                </div>
+            </details>
+</div>
+
+      </div>
+
+      <div class="info-table">
+        <div class="info-row"><span>Solution file</span><span>FUNewsTradingSystem.sln</span></div>
+        <div class="info-row"><span>Build configuration</span><span>Release</span></div>
+        <div class="info-row"><span>Build number</span><span>#N/A</span></div>
+        <div class="info-row"><span>Executed at</span><span>7/19/2026 8:44:38 PM</span></div>
+      </div>
+      
+      <div class="footer">FUNewsTradingSystem &middot; Continuous Integration</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let activeFilter = 'all';
+
+function filterTests(status, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = status;
+    applyFilters();
+}
+
+function applyFilters() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+    document.querySelectorAll('.test-group').forEach(group => {
+        let visibleInGroup = 0;
+        group.querySelectorAll('.test-item').forEach(item => {
+            const name = item.dataset.name || '';
+            const outcome = item.dataset.outcome || '';
+            const matchesSearch = name.includes(query);
+            const matchesFilter = activeFilter === 'all' || outcome === activeFilter;
+            const show = matchesSearch && matchesFilter;
+            item.style.display = show ? 'block' : 'none';
+            if (show) visibleInGroup++;
+        });
+        group.style.display = visibleInGroup > 0 ? 'block' : 'none';
+    });
+}
+</script>
+</body>
+</html>
