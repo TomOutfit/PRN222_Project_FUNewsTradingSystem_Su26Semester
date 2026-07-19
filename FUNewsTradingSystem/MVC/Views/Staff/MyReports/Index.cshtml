@@ -5,9 +5,8 @@
 
 @{
     ViewData["Title"] = "My Reports";
-    var activeCount   = Model.Count(r => r.NewsStatus);
-    var archivedCount = Model.Count(r => !r.NewsStatus);
-
+    var activeCount    = Model.Count(r => r.NewsStatus);
+    var archivedCount  = Model.Count(r => !r.NewsStatus);
     var categories = ViewBag.Categories as IEnumerable<Category> ?? new List<Category>();
     var tags = ViewBag.Tags as IEnumerable<Tag> ?? new List<Tag>();
     int? selectedCategory = ViewBag.SelectedCategory as int?;
@@ -16,45 +15,384 @@
 }
 
 <style>
-    .stat-chip { display:inline-flex;align-items:center;gap:.45rem;padding:.35rem .9rem;border-radius:30px;font-size:.8rem;font-weight:600; }
-    .table tbody tr td:first-child { padding-left:1.25rem; }
-    .table tbody tr td:last-child  { padding-right:1.25rem; }
-    .table thead tr th:first-child { padding-left:1.25rem; }
-    .table thead tr th:last-child  { padding-right:1.25rem; }
-    .report-title { font-weight:600;font-size:.9rem;color:var(--text-main); }
-    .report-date  { font-size:.78rem;color:var(--text-muted);white-space:nowrap; }
-    .ticker-tag   { display:inline-flex;align-items:center;gap:.25rem;padding:.18em .55em;border-radius:12px;font-size:.75rem;font-weight:600;background:rgba(124,58,237,.1);color:var(--accent);border:1px solid rgba(124,58,237,.2); }
-    [data-bs-theme="dark"] .ticker-tag { background:rgba(124,58,237,.2); }
-    .empty-state { text-align:center;padding:4rem 2rem;color:var(--text-muted); }
-    .empty-state .empty-icon { font-size:3.5rem;margin-bottom:1rem;opacity:.35; }
+    /* ── Stat Chips ── */
+    .stat-chip {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .35rem .875rem; border-radius: 30px;
+        font-size: .8rem; font-weight: 600;
+    }
+    .stat-chip.active-chip {
+        background: rgba(16,185,129,.08); color: #059669;
+        border: 1px solid rgba(16,185,129,.25);
+    }
+    .stat-chip.archived-chip {
+        background: rgba(100,116,139,.06); color: #64748b;
+        border: 1px solid rgba(100,116,139,.2);
+    }
+
+    /* ── Filter Card ── */
     .filter-card {
         background: var(--surface-card);
-        border-radius: 16px;
+        border-radius: 18px;
         border: 1px solid var(--border);
         padding: 1.25rem 1.5rem;
         margin-bottom: 1.5rem;
         box-shadow: var(--shadow-sm);
     }
     .filter-card .form-label {
-        font-size: .78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .05em;
+        font-size: .73rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .05em;
         color: var(--text-muted);
+    }
+
+    /* ════════════════════════════════════════════
+       PREMIUM TABLE — Report History
+       ════════════════════════════════════════════ */
+
+    /* ── Card wrapper ── */
+    .fnts-card-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: .9rem 1.4rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+    }
+    .fnts-card-header h6 {
+        font-weight: 700; margin: 0; color: var(--text-main);
+        font-size: .875rem; display: flex; align-items: center; gap: .5rem;
+    }
+    .fnts-card-header h6 .hdr-icon { color: var(--accent); }
+
+    /* ── Report Title ── */
+    .report-title {
+        font-weight: 600; font-size: .875rem;
+        color: var(--text-main);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px;
+    }
+    .report-date { font-size: .78rem; color: var(--text-muted); white-space: nowrap; }
+
+    /* ── Ticker Tag ── */
+    .ticker-tag {
+        display: inline-flex; align-items: center; gap: .2rem;
+        padding: .18em .55em; border-radius: 10px;
+        font-size: .73rem; font-weight: 700;
+        background: rgba(37,99,235,.07);
+        color: #2563eb; border: 1px solid rgba(37,99,235,.15);
+    }
+    [data-bs-theme="dark"] .ticker-tag {
+        background: rgba(37,99,235,.12); color: #60a5fa; border-color: rgba(37,99,235,.25);
+    }
+
+    /* ── Status badge ── */
+    .status-badge {
+        display: inline-flex; align-items: center; gap: .3rem;
+        border-radius: 9px; font-size: .73rem; font-weight: 700;
+        padding: .25rem .6rem; white-space: nowrap;
+    }
+    .status-active {
+        background: rgba(16,185,129,.08); color: #059669;
+        border: 1px solid rgba(16,185,129,.2);
+    }
+    .status-archived {
+        background: rgba(100,116,139,.07); color: #64748b;
+        border: 1px solid rgba(100,116,139,.2);
+    }
+    [data-bs-theme="dark"] .status-active   { background: rgba(16,185,129,.12);  color: #34d399; border-color: rgba(16,185,129,.3); }
+    [data-bs-theme="dark"] .status-archived { background: rgba(148,163,184,.12); color: #94a3b8; border-color: rgba(148,163,184,.3); }
+
+    /* ── Empty State ── */
+    .fnts-empty {
+        text-align: center; padding: 4rem 2rem;
+        display: flex; flex-direction: column; align-items: center; gap: .6rem;
+    }
+    .fnts-empty-icon {
+        width: 64px; height: 64px; border-radius: 50%;
+        background: rgba(37,99,235,.06);
+        display: flex; align-items: center; justify-content: center;
+    }
+    [data-bs-theme="dark"] .fnts-empty-icon { background: rgba(37,99,235,.1); }
+    .fnts-empty h6 { font-weight: 700; color: var(--text-muted); margin: 0; }
+    .fnts-empty p   { color: var(--text-muted); font-size: .85rem; margin: 0; }
+
+    /* ════════════════════════════════════════════
+       PREMIUM TABLE CARD
+       ════════════════════════════════════════════ */
+    .rpt-table-card {
+        background: var(--surface-card);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.3s ease;
+    }
+    .rpt-table-card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* ── Gradient Header Bar ── */
+    .rpt-table-header {
+        background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    .rpt-table-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(37,99,235,0.15), transparent);
+        animation: headerShimmer 3s ease-in-out infinite;
+    }
+    @@keyframes headerShimmer {
+        0%   { left: -60%; }
+        100% { left: 120%; }
+    }
+    .rpt-table-header-title {
+        display: flex; align-items: center; gap: .6rem;
+        color: rgba(255,255,255,0.85);
+        font-weight: 700; font-size: .875rem;
+    }
+    .rpt-table-header-title i { color: #38bdf8; font-size: 1.1rem; }
+    .rpt-table-header-count {
+        background: rgba(56,189,248,0.15);
+        border: 1px solid rgba(56,189,248,0.25);
+        color: #38bdf8;
+        font-size: .72rem; font-weight: 700;
+        padding: .2rem .6rem;
+        border-radius: 99px;
+    }
+
+    /* ── Column Headers ── */
+    .rpt-thead th {
+        background: linear-gradient(180deg, rgba(248,250,252,0.95) 0%, rgba(241,245,249,0.9) 100%);
+        color: #64748b !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        font-size: .68rem !important;
+        letter-spacing: .08em !important;
+        padding: .75rem 1.1rem !important;
+        border-bottom: 2px solid var(--border) !important;
+        white-space: nowrap;
+        vertical-align: middle;
+        position: relative;
+    }
+    [data-bs-theme="dark"] .rpt-thead th {
+        background: linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.9) 100%);
+        border-bottom-color: rgba(255,255,255,0.06) !important;
+    }
+    .rpt-thead th .th-inner {
+        display: flex; align-items: center; gap: .35rem;
+    }
+    .rpt-thead th .th-icon {
+        width: 18px; height: 18px;
+        border-radius: 5px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: .7rem;
+        background: rgba(37,99,235,0.08);
+        color: #2563eb;
+    }
+    [data-bs-theme="dark"] .rpt-thead th .th-icon {
+        background: rgba(56,189,248,0.1);
+        color: #38bdf8;
+    }
+
+    /* ── Table Rows ── */
+    .rpt-tbody tr {
+        border-bottom: 1px solid var(--border) !important;
+        background: var(--surface-card);
+    }
+    .rpt-tbody tr:last-child { border-bottom: none !important; }
+    .rpt-tbody tr:hover { background: rgba(37,99,235,0.04) !important; }
+    [data-bs-theme="dark"] .rpt-tbody tr:hover { background: rgba(16,185,129,0.04) !important; }
+    .rpt-tbody td {
+        padding: .85rem 1.1rem !important;
+        vertical-align: middle;
+        color: var(--text-main);
+        font-size: .85rem;
+    }
+    .rpt-tbody td:first-child { border-left: 3px solid transparent; transition: border-color .15s ease; }
+    .rpt-tbody tr:hover td:first-child { border-left-color: #2563eb; }
+
+    /* ── Row Entrance Animation ── */
+    @@keyframes rptRowEntrance {
+        from { opacity: 0; transform: translateY(4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .rpt-tbody tr { animation: rptRowEntrance 0.35s ease both; }
+    .rpt-tbody tr:nth-child(1)  { animation-delay: 0.03s; }
+    .rpt-tbody tr:nth-child(2)  { animation-delay: 0.06s; }
+    .rpt-tbody tr:nth-child(3)  { animation-delay: 0.09s; }
+    .rpt-tbody tr:nth-child(n+4) { animation-delay: 0.12s; }
+
+    .rpt-tbody tr {
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .rpt-tbody tr:hover { background: rgba(37,99,235,.05) !important; transform: translateX(2px); }
+    [data-bs-theme="dark"] .rpt-tbody tr:hover { background: rgba(16,185,129,.05) !important; }
+
+    /* ── Status Badge with Glow ── */
+    .rpt-status-active {
+        background: rgba(16,185,129,.1);
+        color: #059669;
+        border: 1px solid rgba(16,185,129,.3);
+        border-radius: 10px;
+        font-size: .72rem; font-weight: 700;
+        padding: .28rem .65rem;
+        display: inline-flex; align-items: center; gap: .3rem;
+        box-shadow: 0 0 0 0 rgba(16,185,129,0);
+        animation: statusGlow 2.5s ease-in-out infinite;
+    }
+    .rpt-status-active i { font-size: .7rem; }
+    @@keyframes statusGlow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        50%       { box-shadow: 0 0 0 4px rgba(16,185,129,0.12); }
+    }
+    [data-bs-theme="dark"] .rpt-status-active {
+        background: rgba(16,185,129,.12);
+        color: #34d399;
+        border-color: rgba(16,185,129,.3);
+    }
+
+    .rpt-status-archived {
+        background: rgba(100,116,139,.08);
+        color: #64748b;
+        border: 1px solid rgba(100,116,139,.2);
+        border-radius: 10px;
+        font-size: .72rem; font-weight: 700;
+        padding: .28rem .65rem;
+        display: inline-flex; align-items: center; gap: .3rem;
+    }
+    [data-bs-theme="dark"] .rpt-status-archived {
+        background: rgba(148,163,184,.1);
+        color: #94a3b8;
+        border-color: rgba(148,163,184,.25);
+    }
+
+    /* ── Sector Badge ── */
+    .rpt-sector-badge {
+        background: rgba(37,99,235,.07);
+        color: #2563eb;
+        border: 1px solid rgba(37,99,235,.18);
+        border-radius: 9px;
+        font-size: .72rem; font-weight: 700;
+        padding: .22rem .55rem;
+        display: inline-flex; align-items: center; gap: .25rem;
+    }
+    [data-bs-theme="dark"] .rpt-sector-badge {
+        background: rgba(56,189,248,.1);
+        color: #38bdf8;
+        border-color: rgba(56,189,248,.2);
+    }
+
+    /* ── Ticker Pills ── */
+    .rpt-ticker-pill {
+        background: rgba(124,58,237,.07);
+        color: #7c3aed;
+        border: 1px solid rgba(124,58,237,.18);
+        border-radius: 8px;
+        font-size: .7rem; font-weight: 700;
+        padding: .18em .5em;
+        display: inline-flex; align-items: center; gap: .2rem;
+        transition: all .2s ease;
+    }
+    .rpt-ticker-pill:hover {
+        background: rgba(124,58,237,.14);
+        transform: scale(1.05);
+    }
+    [data-bs-theme="dark"] .rpt-ticker-pill {
+        background: rgba(167,139,250,.1);
+        color: #a78bfa;
+        border-color: rgba(167,139,250,.2);
+    }
+
+    /* ── Action Buttons ── */
+    .rpt-btn {
+        display: inline-flex; align-items: center; gap: .3rem;
+        padding: .4rem .85rem;
+        border-radius: 10px;
+        font-size: .76rem; font-weight: 700;
+        border: 1.5px solid;
+        cursor: pointer;
+        transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
+        white-space: nowrap;
+        position: relative; overflow: hidden;
+    }
+    .rpt-btn::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: rgba(255,255,255,0.15);
+        transform: translateX(-100%);
+        transition: transform .3s ease;
+    }
+    .rpt-btn:hover::after { transform: translateX(0); }
+    .rpt-btn:active { transform: scale(0.95) !important; }
+
+    .rpt-btn-archive {
+        background: rgba(100,116,139,.07);
+        border-color: rgba(100,116,139,.2);
+        color: #64748b;
+    }
+    .rpt-btn-archive:hover {
+        background: #64748b;
+        border-color: #64748b;
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(100,116,139,.4);
+        transform: translateY(-2px);
+    }
+
+    .rpt-btn-restore {
+        background: rgba(16,185,129,.07);
+        border-color: rgba(16,185,129,.2);
+        color: #059669;
+    }
+    .rpt-btn-restore:hover {
+        background: #059669;
+        border-color: #059669;
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(16,185,129,.4);
+        transform: translateY(-2px);
+    }
+
+    .rpt-btn-view {
+        background: rgba(37,99,235,.07);
+        border-color: rgba(37,99,235,.22);
+        color: #2563eb;
+    }
+    .rpt-btn-view:hover {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(37,99,235,.4);
+        transform: translateY(-2px);
+    }
+
+    /* ── Table responsive wrapper ── */
+    .rpt-table-wrap {
+        border-radius: 0 0 20px 20px;
+        overflow: hidden;
+        border-top: none;
     }
 </style>
 
 <div class="page-header">
     <div>
-        <h2><i class="bi bi-journal-text me-2" style="background:linear-gradient(135deg,#0284c7,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>My Reports</h2>
+        <h2>
+            <i class="bi bi-journal-text me-2"
+               style="background:linear-gradient(135deg,#0284c7,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>
+            My Reports
+        </h2>
         <p class="text-muted mb-0">Your AI-generated trading analysis history.</p>
     </div>
-    <div class="d-flex align-items-center gap-2">
-        <span class="stat-chip" style="background:rgba(16,185,129,.1);color:#059669">
-            <i class="bi bi-circle-fill" style="font-size:.5rem"></i>@activeCount Active
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="stat-chip active-chip">
+            <i class="bi bi-circle-fill" style="font-size:.5rem;color:#10b981"></i>@activeCount Active
         </span>
-        <span class="stat-chip" style="background:rgba(100,116,139,.1);color:var(--text-muted)">
-            <i class="bi bi-archive-fill" style="font-size:.7rem"></i>@archivedCount Archived
+        <span class="stat-chip archived-chip">
+            <i class="bi bi-archive-fill" style="font-size:.75rem"></i>@archivedCount Archived
         </span>
     </div>
 </div>
@@ -64,59 +402,69 @@
     <form method="get" asp-controller="Report" asp-action="MyReports">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label"><i class="bi bi-folder2 me-1"></i>Sector (Category)</label>
-                <select name="categoryId" class="form-select form-select-sm">
+                <label class="form-label d-block"><i class="bi bi-folder2 me-1"></i>Sector</label>
+                <select name="categoryId" class="form-select fintech-form-control">
                     <option value="">All Sectors</option>
                     @foreach (var cat in categories)
                     {
-                        <option value="@cat.CategoryID" selected="@(selectedCategory == cat.CategoryID ? "selected" : null)">
-                            @cat.CategoryName
-                        </option>
+                        <option value="@cat.CategoryID" selected="@(selectedCategory == cat.CategoryID ? "selected" : null)">@cat.CategoryName</option>
                     }
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label"><i class="bi bi-hash me-1"></i>Ticker (Tag)</label>
-                <select name="tagId" class="form-select form-select-sm">
+                <label class="form-label d-block"><i class="bi bi-hash me-1"></i>Ticker</label>
+                <select name="tagId" class="form-select fintech-form-control">
                     <option value="">All Tickers</option>
                     @foreach (var tag in tags)
                     {
-                        <option value="@tag.TagID" selected="@(selectedTag == tag.TagID ? "selected" : null)">
-                            @tag.TagName
-                        </option>
+                        <option value="@tag.TagID" selected="@(selectedTag == tag.TagID ? "selected" : null)">@tag.TagName</option>
                     }
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label"><i class="bi bi-compass me-1"></i>Decision Type</label>
-                <select name="decision" class="form-select form-select-sm">
+                <label class="form-label d-block"><i class="bi bi-compass me-1"></i>Decision</label>
+                <select name="decision" class="form-select fintech-form-control">
                     <option value="">All Decisions</option>
-                    <option value="BUY" selected="@(selectedDecision == "BUY" ? "selected" : null)">BUY 🚀</option>
-                    <option value="SELL" selected="@(selectedDecision == "SELL" ? "selected" : null)">SELL 📉</option>
-                    <option value="HOLD" selected="@(selectedDecision == "HOLD" ? "selected" : null)">HOLD ⚖️</option>
+                    <option value="BUY"  selected="@(selectedDecision == "BUY"  ? "selected" : null)">BUY</option>
+                    <option value="SELL" selected="@(selectedDecision == "SELL" ? "selected" : null)">SELL</option>
+                    <option value="HOLD" selected="@(selectedDecision == "HOLD" ? "selected" : null)">HOLD</option>
                 </select>
             </div>
             <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                <button type="submit" class="btn fintech-btn-primary flex-grow-1">
                     <i class="bi bi-funnel-fill me-1"></i>Filter
                 </button>
-                <a href="/Staff/MyReports" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                <a href="/Staff/MyReports" class="btn fintech-btn-outline d-flex align-items-center justify-content-center px-3">
+                    <i class="bi bi-arrow-counterclockwise"></i>
                 </a>
             </div>
         </div>
     </form>
 </div>
 
-<div class="card">
-    <div class="card-body p-0">
+<!-- ── Premium Table Card ── -->
+<div class="rpt-table-card">
+    <!-- Gradient Header -->
+    <div class="rpt-table-header">
+        <div class="rpt-table-header-title">
+            <i class="bi bi-table"></i>
+            Report History
+        </div>
+        <span class="rpt-table-header-count">@Model.TotalItemCount reports</span>
+    </div>
+
+    <div class="rpt-table-wrap">
         @if (!Model.Any())
         {
-            <div class="empty-state">
-                <div class="empty-icon">📭</div>
-                <h6 style="color:var(--text-muted)">No reports found</h6>
-                <p style="font-size:.875rem">No matching reports found or you haven't run analysis yet.</p>
-                <a asp-controller="RunAnalysis" asp-action="Index" class="btn btn-primary btn-sm mt-1">
+            <div class="fnts-empty">
+                <div class="fnts-empty-icon">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent);opacity:.6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                    </svg>
+                </div>
+                <h6>No reports found</h6>
+                <p>No matching reports found or you haven't run analysis yet.</p>
+                <a asp-controller="RunAnalysis" asp-action="Index" class="btn fintech-btn-primary btn-sm mt-2">
                     <i class="bi bi-play-fill me-1"></i>Run Analysis
                 </a>
             </div>
@@ -125,49 +473,104 @@
         {
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
-                    <thead>
+                    <thead class="rpt-thead">
                         <tr>
-                            <th>Title</th>
-                            <th>Date</th>
-                            <th>Sector</th>
-                            <th>Tickers</th>
-                            <th>Status</th>
-                            <th class="text-center">Action</th>
-                            <th class="text-end">Detail</th>
+                            <th>
+                                <div class="th-inner">
+                                    <span class="th-icon"><i class="bi bi-card-text"></i></span>
+                                    Title
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-inner">
+                                    <span class="th-icon"><i class="bi bi-calendar3"></i></span>
+                                    Date
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-inner">
+                                    <span class="th-icon"><i class="bi bi-folder2-open"></i></span>
+                                    Sector
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-inner">
+                                    <span class="th-icon"><i class="bi bi-hash"></i></span>
+                                    Tickers
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-inner">
+                                    <span class="th-icon"><i class="bi bi-toggle-on"></i></span>
+                                    Status
+                                </div>
+                            </th>
+                            <th class="text-center">
+                                <div class="th-inner justify-content-center">
+                                    <span class="th-icon"><i class="bi bi-sliders"></i></span>
+                                    Toggle
+                                </div>
+                            </th>
+                            <th class="text-end">
+                                <div class="th-inner justify-content-end">
+                                    <span class="th-icon"><i class="bi bi-eye"></i></span>
+                                    Detail
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody id="reportTableBody">
+                    <tbody class="rpt-tbody" id="reportTableBody">
                         @foreach (var item in Model)
                         {
                             <tr id="report-row-@item.NewsArticleID">
-                                <td><span class="report-title">@item.NewsTitle</span></td>
-                                <td><span class="report-date"><i class="bi bi-clock me-1"></i>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")</span></td>
                                 <td>
-                                    <span class="badge bg-secondary">@item.Category?.CategoryName</span>
+                                    <span class="report-title fw-semibold" title="@item.NewsTitle">@item.NewsTitle</span>
                                 </td>
                                 <td>
-                                    @foreach (var tag in item.NewsTagList)
-                                    {
-                                        <span class="ticker-tag me-1"><i class="bi bi-hash"></i>@tag.Tag.TagName</span>
-                                    }
+                                    <span class="report-date">
+                                        <i class="bi bi-clock me-1 opacity-50"></i>
+                                        @item.CreatedDate.ToString("yyyy-MM-dd HH:mm")
+                                    </span>
                                 </td>
                                 <td>
-                                    <span id="status-badge-@item.NewsArticleID"
-                                          class="badge @(item.NewsStatus ? "bg-success" : "bg-secondary")">
+                                    <span class="rpt-sector-badge">
+                                        <i class="bi bi-folder2"></i>
+                                        @item.Category?.CategoryName
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var tag in item.NewsTagList)
+                                        {
+                                            <span class="rpt-ticker-pill">
+                                                <i class="bi bi-hash"></i>@tag.Tag.TagName
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <span id="status-badge-@item.NewsArticleID" class="@(item.NewsStatus ? "rpt-status-active" : "rpt-status-archived")">
+                                        <i class="bi @(item.NewsStatus ? "bi-check-circle-fill" : "bi-archive-fill")"></i>
                                         @(item.NewsStatus ? "Active" : "Archived")
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm @(item.NewsStatus ? "btn-outline-warning" : "btn-outline-success")"
-                                            onclick="toggleStatus(@item.NewsArticleID)">
-                                        <i class="bi @(item.NewsStatus ? "bi-archive" : "bi-arrow-counterclockwise") me-1"></i>
-                                        @(item.NewsStatus ? "Archive" : "Restore")
-                                    </button>
+                                    @if (item.NewsStatus)
+                                    {
+                                        <a class="rpt-btn rpt-btn-archive" onclick="toggleStatus(@item.NewsArticleID)">
+                                            <i class="bi bi-archive"></i>Archive
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="rpt-btn rpt-btn-restore" onclick="toggleStatus(@item.NewsArticleID)">
+                                            <i class="bi bi-arrow-counterclockwise"></i>Restore
+                                        </a>
+                                    }
                                 </td>
                                 <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-primary"
-                                       href="/Report/Detail/@item.NewsArticleID">
-                                        <i class="bi bi-eye me-1"></i>View
+                                    <a class="rpt-btn rpt-btn-view" href="/Report/Detail/@item.NewsArticleID">
+                                        <i class="bi bi-eye"></i>View
                                     </a>
                                 </td>
                             </tr>

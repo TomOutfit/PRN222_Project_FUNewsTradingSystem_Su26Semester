@@ -46,9 +46,10 @@ async function toggleStatus(newsId) {
 
 function updateRowStatus(newsId, isActive) {
     const badge = document.getElementById(`status-badge-${newsId}`);
-    const button = document.querySelector(`button[onclick="toggleStatus(${newsId})"]`);
+    const row   = document.getElementById(`report-row-${newsId}`);
+    const toggleCell = row ? row.querySelector('td:nth-child(6)') : null;
 
-    if (!badge || !button) {
+    if (!badge) {
         if (typeof window.refreshPageContentRealtime === 'function') {
             window.refreshPageContentRealtime();
         } else {
@@ -57,36 +58,41 @@ function updateRowStatus(newsId, isActive) {
         return;
     }
 
-    // Hoạt ảnh nảy đàn hồi tinh tế khi hoán đổi màu sắc và chữ
-    badge.style.transform = 'scale(0.3)';
-    badge.style.opacity = '0';
+    // Animate out
+    badge.style.transform = 'scale(0.6) rotate(-10deg)';
+    badge.style.opacity   = '0';
     badge.style.transition = 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
-
-    button.style.transform = 'scale(0.95)';
-    button.disabled = true;
+    if (toggleCell) {
+        toggleCell.style.opacity = '0.4';
+    }
 
     setTimeout(() => {
         if (isActive) {
-            badge.classList.remove('bg-secondary');
-            badge.classList.add('bg-success');
-            badge.textContent = 'Active';
-            
-            button.className = 'btn btn-sm btn-outline-warning';
-            button.innerHTML = '<i class="bi bi-archive me-1"></i>Archive';
+            badge.className = 'rpt-status-active';
+            badge.innerHTML = '<i class="bi bi-check-circle-fill"></i>Active';
         } else {
-            badge.classList.remove('bg-success');
-            badge.classList.add('bg-secondary');
-            badge.textContent = 'Archived';
-            
-            button.className = 'btn btn-sm btn-outline-success';
-            button.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i>Restore';
+            badge.className = 'rpt-status-archived';
+            badge.innerHTML = '<i class="bi bi-archive-fill"></i>Archived';
         }
 
-        // Hiện lại với hiệu ứng Spring nảy nhẹ
-        badge.style.transform = 'scale(1)';
-        badge.style.opacity = '1';
-        
-        button.style.transform = '';
-        button.disabled = false;
-    }, 150);
+        // Animate in with bounce
+        badge.style.transform = 'scale(1.1)';
+        badge.style.opacity   = '1';
+
+        if (toggleCell) {
+            toggleCell.style.opacity = '1';
+            if (isActive) {
+                toggleCell.innerHTML = `<a class="rpt-btn rpt-btn-archive" onclick="toggleStatus(${newsId})">
+                    <i class="bi bi-archive"></i>Archive</a>`;
+            } else {
+                toggleCell.innerHTML = `<a class="rpt-btn rpt-btn-restore" onclick="toggleStatus(${newsId})">
+                    <i class="bi bi-arrow-counterclockwise"></i>Restore</a>`;
+            }
+        }
+
+        setTimeout(() => {
+            badge.style.transform = 'scale(1)';
+            badge.style.transition = '';
+        }, 200);
+    }, 180);
 }
