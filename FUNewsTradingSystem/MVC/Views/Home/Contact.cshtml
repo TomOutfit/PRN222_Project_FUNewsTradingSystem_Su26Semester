@@ -1,0 +1,340 @@
+@{
+    ViewData["Title"] = "Contact Support";
+}
+
+<style>
+    .contact-wrapper {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Glassmorphic card */
+    .glass-contact-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        padding: 2rem;
+        transition: box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    [data-bs-theme="dark"] .glass-contact-card {
+        background: rgba(26, 26, 46, 0.7);
+        border-color: rgba(255,255,255,0.08);
+    }
+    .glass-contact-card:hover {
+        box-shadow: var(--shadow-lg), 0 0 30px rgba(109,40,217,0.1);
+    }
+
+    /* Floating label inputs */
+    .float-field {
+        position: relative;
+        margin-bottom: 1.25rem;
+    }
+    .float-field .form-control {
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        background-color: var(--surface);
+        color: var(--text-main);
+        font-size: 0.9rem;
+        padding: 0.75rem 0.875rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        resize: none;
+    }
+    .float-field .form-control:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(124,58,237,0.15), 0 0 12px rgba(124,58,237,0.1);
+        background-color: var(--surface-card);
+        outline: none;
+    }
+    .float-field .form-label {
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    /* Live validation states */
+    .float-field.is-valid .form-control {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+    }
+    .float-field.is-invalid .form-control {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+    }
+    .float-field.is-invalid .invalid-feedback { display: block; }
+    .invalid-feedback {
+        display: none;
+        color: #ef4444;
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+        font-weight: 500;
+    }
+    /* Focus animation ring */
+    .float-field .focus-ring {
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        border: 2px solid var(--accent);
+        opacity: 0;
+        transform: scale(0.95);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: none;
+    }
+    .float-field:focus-within .focus-ring {
+        opacity: 1;
+        transform: scale(1);
+        animation: ringFocus 0.5s ease forwards;
+    }
+    @@keyframes ringFocus {
+        0% { opacity: 0; transform: scale(0.95); }
+        50% { opacity: 0.6; }
+        100% { opacity: 0; transform: scale(1.05); }
+    }
+
+    /* Char counter */
+    .char-counter {
+        text-align: right;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+    }
+    .char-counter.near-limit { color: #f59e0b; }
+    .char-counter.at-limit { color: #ef4444; font-weight: 600; }
+
+    /* Submit button states */
+    #contactSubmit {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s var(--ease-out-expo);
+    }
+    #contactSubmit .btn-spinner {
+        display: none;
+    }
+    #contactSubmit.loading .btn-text { opacity: 0; }
+    #contactSubmit.loading .btn-spinner { display: inline-block; }
+    #contactSubmit.loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    /* Support channel cards */
+    .channel-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 1.25rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .channel-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--accent);
+    }
+    .channel-card .channel-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    /* Inline validation feedback */
+    .field-status {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.9rem;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .float-field.is-valid .field-status.valid { opacity: 1; color: #10b981; }
+    .float-field.is-invalid .field-status.invalid { opacity: 1; color: #ef4444; }
+</style>
+
+<div class="contact-wrapper animate-fade-in-up">
+    <div class="page-header">
+        <div>
+            <h2>
+                <i class="bi bi-chat-dots-fill me-2" style="background:linear-gradient(135deg,#6d28d9,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>
+                @ViewData["Title"]
+            </h2>
+            <p class="text-muted mb-0">Send us a message — we typically respond within one business day.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Glassmorphic Contact Form -->
+        <div class="col-lg-7">
+            <div class="glass-contact-card">
+                <h5 class="fw-bold text-main mb-4">
+                    <i class="bi bi-pencil-square me-2 text-primary"></i>Send a Message
+                </h5>
+
+                <form id="contactForm" novalidate>
+                    <!-- Name -->
+                    <div class="float-field" id="field-name">
+                        <div class="focus-ring"></div>
+                        <label class="form-label" for="contactName">
+                            <i class="bi bi-person-fill me-1"></i>Full Name
+                        </label>
+                        <div style="position:relative;">
+                            <input id="contactName" class="form-control" type="text"
+                                   placeholder="e.g. John Smith" autocomplete="name" />
+                            <span class="field-status valid"><i class="bi bi-check-circle-fill"></i></span>
+                            <span class="field-status invalid"><i class="bi bi-x-circle-fill"></i></span>
+                        </div>
+                        <div class="invalid-feedback">Please enter your full name.</div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="float-field" id="field-email">
+                        <div class="focus-ring"></div>
+                        <label class="form-label" for="contactEmail">
+                            <i class="bi bi-envelope-fill me-1"></i>Email Address
+                        </label>
+                        <div style="position:relative;">
+                            <input id="contactEmail" class="form-control" type="email"
+                                   placeholder="john@example.com" autocomplete="email" />
+                            <span class="field-status valid"><i class="bi bi-check-circle-fill"></i></span>
+                            <span class="field-status invalid"><i class="bi bi-x-circle-fill"></i></span>
+                        </div>
+                        <div class="invalid-feedback">Please enter a valid email address.</div>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="float-field" id="field-subject">
+                        <div class="focus-ring"></div>
+                        <label class="form-label" for="contactSubject">
+                            <i class="bi bi-tag-fill me-1"></i>Subject
+                        </label>
+                        <select id="contactSubject" class="form-control form-select">
+                            <option value="">Select a topic...</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="account">Account Issue</option>
+                            <option value="api">API Integration</option>
+                            <option value="feedback">General Feedback</option>
+                        </select>
+                    </div>
+
+                    <!-- Message -->
+                    <div class="float-field" id="field-message">
+                        <div class="focus-ring"></div>
+                        <label class="form-label" for="contactMessage">
+                            <i class="bi bi-chat-quote-fill me-1"></i>Message
+                        </label>
+                        <textarea id="contactMessage" class="form-control" rows="5"
+                                  placeholder="Describe your question or issue in detail..."></textarea>
+                        <div class="char-counter"><span id="charCount">0</span> / 1000</div>
+                        <div class="invalid-feedback">Message must be at least 20 characters.</div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button id="contactSubmit" class="btn btn-primary w-100 py-2.5 mt-1" type="submit">
+                        <span class="btn-text">
+                            <i class="bi bi-send me-2"></i>Send Message
+                        </span>
+                        <span class="btn-spinner">
+                            <i class="bi bi-arrow-repeat spin me-2"></i>Sending...
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Support Channels + Info -->
+        <div class="col-lg-5">
+            <div class="d-flex flex-column gap-3">
+                <!-- Email -->
+                <div class="channel-card">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="channel-icon" style="background: linear-gradient(135deg,#6d28d9,#9333ea);">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-1">Email Support</h6>
+                            <div class="text-muted small">support@fnts.example</div>
+                            <div class="text-muted small">Response within 24h</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slack/Chat -->
+                <div class="channel-card">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="channel-icon" style="background: linear-gradient(135deg,#0284c7,#38bdf8);">
+                            <i class="bi bi-slack"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-1">Internal Chat</h6>
+                            <div class="text-muted small">Use the notifications panel</div>
+                            <div class="text-muted small">Real-time SignalR messaging</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div class="channel-card">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="channel-icon" style="background: linear-gradient(135deg,#10b981,#059669);">
+                            <i class="bi bi-book-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-1">Documentation</h6>
+                            <div class="text-muted small">
+                                <a asp-controller="Home" asp-action="FAQ" class="text-decoration-none">FAQ</a> and
+                                <a asp-controller="Home" asp-action="Terms" class="text-decoration-none">Terms of Service</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ shortcut -->
+                <div class="channel-card">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="channel-icon" style="background: linear-gradient(135deg,#db2777,#be185d);">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-main mb-1">Quick Answers</h6>
+                            <div class="text-muted small mb-2">Check the FAQ for instant answers.</div>
+                            <a asp-controller="Home" asp-action="FAQ" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-question-circle me-1"></i>Browse FAQ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="channel-card" style="border-left: 3px solid #10b981;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold text-main mb-0">System Status</h6>
+                            <div class="text-muted small">All systems operational</div>
+                        </div>
+                        <span class="badge bg-success px-2 py-1">
+                            <i class="bi bi-check-circle-fill me-1"></i>Live
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/contact-form.js" asp-append-version="true"></script>
+}
