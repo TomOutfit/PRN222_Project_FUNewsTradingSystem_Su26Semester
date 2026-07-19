@@ -5,7 +5,7 @@
 }
 
 <style>
-    .section-card { background:var(--surface-card); border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:var(--shadow-sm); height:100%; }
+    .section-card { background:var(--surface-card); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--shadow-sm); height:100%; }
     .section-card-header { padding:1rem 1.35rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.6rem; font-weight:700; font-size:.9rem; }
     .hdr-icon { width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff;flex-shrink:0; }
     .section-card-body { padding:1.35rem; }
@@ -30,16 +30,16 @@
 
 <div class="page-header">
     <div>
-        <h2><i class="bi bi-person-circle me-2" style="background:linear-gradient(135deg,#6d28d9,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>My Profile</h2>
+        <h2><i class="bi bi-person-circle me-2" style="background:var(--brand-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></i>My Profile</h2>
         <p class="text-muted mb-0">Manage your account information and security settings.</p>
     </div>
-    <a asp-controller="Staff" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+    <a asp-controller="Staff" asp-action="Index" class="btn fintech-btn-outline btn-sm">
         <i class="bi bi-arrow-left me-1"></i>Back
     </a>
 </div>
 
 @* Profile banner *@
-<div class="mb-4" style="background:linear-gradient(135deg,#6d28d9,#9333ea 50%,#db2777);border-radius:18px;padding:2rem 2.25rem;display:flex;align-items:center;gap:1.5rem;position:relative;overflow:hidden">
+<div class="mb-4" style="background:var(--brand-gradient);border-radius:var(--radius-md);padding:2rem 2.25rem;display:flex;align-items:center;gap:1.5rem;position:relative;overflow:hidden">
     <div style="position:absolute;right:-30px;top:-30px;width:160px;height:160px;background:rgba(255,255,255,0.07);border-radius:50%"></div>
     <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:#fff;flex-shrink:0">@initials</div>
     <div>
@@ -53,7 +53,7 @@
     <div class="col-md-4">
         <div class="section-card">
             <div class="section-card-header">
-                <div class="hdr-icon" style="background:linear-gradient(135deg,#6d28d9,#9333ea)"><i class="bi bi-info-circle-fill"></i></div>
+                <div class="hdr-icon" style="background:var(--brand-gradient)"><i class="bi bi-info-circle-fill"></i></div>
                 Account Information
             </div>
             <div class="section-card-body">
@@ -67,7 +67,7 @@
     <div class="col-md-4">
         <div class="section-card">
             <div class="section-card-header">
-                <div class="hdr-icon" style="background:linear-gradient(135deg,#0284c7,#38bdf8)"><i class="bi bi-pencil-square"></i></div>
+                <div class="hdr-icon" style="background:var(--brand-gradient)"><i class="bi bi-pencil-square"></i></div>
                 Update Display Name
             </div>
             <div class="section-card-body">
@@ -76,9 +76,9 @@
                     <input type="hidden" name="accountId" value="@Model.AccountId" />
                     <div class="mb-3">
                         <label for="accountName" class="form-label">Display Name</label>
-                        <input type="text" class="form-control" id="accountName" name="accountName" value="@Model.AccountName" required minlength="2" maxlength="100" placeholder="Your display name" />
+                        <input type="text" class="form-control fintech-form-control" id="accountName" name="accountName" value="@Model.AccountName" required minlength="2" maxlength="100" placeholder="Your display name" />
                     </div>
-                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save me-1"></i>Save Name</button>
+                    <button type="submit" class="btn fintech-btn-primary w-100"><i class="bi bi-save me-1"></i>Save Name</button>
                 </form>
             </div>
         </div>
@@ -87,7 +87,7 @@
     <div class="col-md-4">
         <div class="section-card">
             <div class="section-card-header">
-                <div class="hdr-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b)"><i class="bi bi-key-fill"></i></div>
+                <div class="hdr-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i class="bi bi-key-fill"></i></div>
                 Change Password
             </div>
             <div class="section-card-body">
@@ -97,17 +97,17 @@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" style="font-size:.82rem"></div>
                     <div class="mb-2">
                         <label for="currentPassword" class="form-label">Current Password</label>
-                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" placeholder="••••••••" required />
+                        <input type="password" class="form-control fintech-form-control" id="currentPassword" name="currentPassword" placeholder="••••••••" required />
                     </div>
                     <div class="mb-2">
                         <label for="newPassword" class="form-label">New Password</label>
-                        <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Min. 8 chars" required minlength="8" />
+                        <input type="password" class="form-control fintech-form-control" id="newPassword" name="newPassword" placeholder="Min. 8 chars" required minlength="8" />
                     </div>
                     <div class="mb-3">
                         <label for="confirmNewPassword" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" placeholder="Repeat new password" required />
+                        <input type="password" class="form-control fintech-form-control" id="confirmNewPassword" name="confirmNewPassword" placeholder="Repeat new password" required />
                     </div>
-                    <button type="submit" class="btn btn-warning w-100"><i class="bi bi-shield-lock me-1"></i>Change Password</button>
+                    <button type="submit" class="btn fintech-btn-outline w-100"><i class="bi bi-shield-lock me-1"></i>Change Password</button>
                 </form>
             </div>
         </div>
