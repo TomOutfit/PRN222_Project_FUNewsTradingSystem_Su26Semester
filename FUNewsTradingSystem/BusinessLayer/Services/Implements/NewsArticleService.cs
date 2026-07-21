@@ -19,7 +19,6 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
         public async Task<List<NewsArticle>> GetActiveAsync() => await _repository.GetActiveAsync();
         public async Task<NewsArticle?> GetByIdAsync(int id) => await _repository.GetByIdAsync(id);
         public async Task<List<NewsArticle>> GetByCreatorAsync(int accountId) => await _repository.GetByCreatorAsync(accountId);
-        public async Task<List<NewsArticle>> GetByDateRangeAsync(DateTime startUtc, DateTime endUtc) => await _repository.GetByDateRangeAsync(startUtc, endUtc);
 
         public async Task<ServiceResult> CreateWithTagAsync(NewsArticle article, int tagId)
         {
@@ -67,6 +66,16 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
         public async Task<List<NewsArticle>> GetReportsByCreatorAsync(int accountId, int? categoryId = null, int? tagId = null, string? decision = null)
         {
             return await _repository.GetReportsByCreatorAsync(accountId, categoryId, tagId, decision);
+        }
+
+        public async Task<List<NewsArticle>> GetByDateRangeAsync(DateTime startUtc, DateTime endUtc)
+        {
+            return await _repository.GetByDateRangeAsync(startUtc, endUtc);
+        }
+
+        public async Task<List<NewsArticle>> GetByDateRangeAsync(DateTime startUtc, DateTime endUtc, int? tagId)
+        {
+            return await _repository.GetByDateRangeAsync(startUtc, endUtc, tagId);
         }
 
         public async Task<bool> ToggleStatusAsync(int newsId, int accountId) {

@@ -423,6 +423,44 @@
     [data-bs-theme="dark"] .stats-empty-icon svg { color: rgba(96,165,250,0.5); }
     [data-bs-theme="dark"] .kpi-label { color: rgba(226,232,240,0.45); }
     [data-bs-theme="dark"] .legend-pct { color: rgba(226,232,240,0.45); }
+
+    /* ── Row expansion ── */
+    .detail-row { background: var(--surface) !important; }
+    .detail-panel {
+        background: var(--surface);
+        border-bottom: 2px solid var(--brand-1);
+        transition: background 0.2s;
+    }
+    [data-bs-theme="dark"] .detail-panel { background: #0f172a; border-bottom-color: rgba(37,99,235,0.3); }
+    .detail-inner {
+        background: var(--surface-card);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        margin: .5rem 0;
+    }
+    [data-bs-theme="dark"] .detail-inner { background: #1e2236; border-color: rgba(255,255,255,0.06); }
+    .detail-label {
+        font-size: .68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--text-muted);
+        margin-bottom: .2rem;
+    }
+    .detail-content {
+        font-size: .85rem;
+        color: var(--text-main);
+        line-height: 1.4;
+    }
+    .row-chevron { transition: transform 0.25s ease; }
+    tr.clickable-row[aria-expanded="true"] .row-chevron { transform: rotate(90deg); }
+    tr.clickable-row:hover { background: rgba(37,99,235,0.04) !important; }
+    [data-bs-theme="dark"] tr.clickable-row:hover { background: rgba(37,99,235,0.06) !important; }
+    .clickable-row { cursor: pointer; }
+    .clickable-row:hover td:first-child { border-left-color: var(--brand-1) !important; }
+
+    /* ── Export loading button ── */
+    #btnExportExcel, #btnExportPdf { min-width: 90px; transition: all 0.2s; }
 </style>
 
 <!-- ── Page Header ── -->
@@ -440,7 +478,7 @@
 <div class="stats-filter-bar">
     <form id="filterForm" asp-controller="AdminStatistics" asp-action="Index" method="get">
         <div class="row g-3 align-items-end">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label asp-for="Filter.StartDate" class="form-label d-block"></label>
                 <div class="input-group">
                     <span class="input-group-text" style="border-radius:12px 0 0 12px;border-color:var(--border);background:var(--surface);color:var(--text-muted)">
@@ -451,7 +489,7 @@
                 </div>
                 <span asp-validation-for="Filter.StartDate" class="text-danger d-block" style="font-size:.75rem;margin-top:.2rem"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label asp-for="Filter.EndDate" class="form-label d-block"></label>
                 <div class="input-group">
                     <span class="input-group-text" style="border-radius:12px 0 0 12px;border-color:var(--border);background:var(--surface);color:var(--text-muted)">
@@ -462,7 +500,21 @@
                 </div>
                 <span asp-validation-for="Filter.EndDate" class="text-danger d-block" style="font-size:.75rem;margin-top:.2rem"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label d-block"><i class="bi bi-hash me-1"></i>Ticker (Tag)</label>
+                <select name="tagId" class="form-select fintech-form-control stats-date-input" style="border-radius:12px 12px 12px 12px !important">
+                    <option value="">All Tickers</option>
+                    @{
+                        var allTags = ViewBag.AllTags as IEnumerable<FUNewsTradingSystem_DataAccessLayer.Models.Tag> ?? Enumerable.Empty<FUNewsTradingSystem_DataAccessLayer.Models.Tag>();
+                        int? selectedTagId = ViewBag.SelectedTagId as int?;
+                        foreach (var t in allTags)
+                        {
+                            <option value="@t.TagID" selected="@(selectedTagId == t.TagID ? "selected" : null)">@t.TagName</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
                 <button type="submit" class="btn stats-btn-generate w-100" onclick="return validateDates()">
                     <i class="bi bi-sparkles me-2"></i>Generate Report
                 </button>
@@ -704,18 +756,12 @@
             @if (Model.Results != null && Model.Results.Any())
             {
                 <div class="d-flex align-items-center gap-2">
-                    <a asp-action="ExportExcel"
-                       asp-route-startDate="@Model.Filter.StartDate.ToString("yyyy-MM-dd")"
-                       asp-route-endDate="@Model.Filter.EndDate.ToString("yyyy-MM-dd")"
-                       class="btn btn-export btn-export-excel">
-                        <i class="bi bi-file-earmark-excel"></i>Excel
-                    </a>
-                    <a asp-action="ExportPdf"
-                       asp-route-startDate="@Model.Filter.StartDate.ToString("yyyy-MM-dd")"
-                       asp-route-endDate="@Model.Filter.EndDate.ToString("yyyy-MM-dd")"
-                       class="btn btn-export btn-export-pdf">
-                        <i class="bi bi-file-earmark-pdf"></i>PDF
-                    </a>
+                    <button id="btnExportExcel" class="btn btn-export btn-export-excel" onclick="exportReport('excel')">
+                        <i class="bi bi-file-earmark-excel"></i><span class="btn-label">Excel</span>
+                    </button>
+                    <button id="btnExportPdf" class="btn btn-export btn-export-pdf" onclick="exportReport('pdf')">
+                        <i class="bi bi-file-earmark-pdf"></i><span class="btn-label">PDF</span>
+                    </button>
                 </div>
             }
         </div>
@@ -751,9 +797,17 @@
                                     "SELL" => "#ef4444",
                                     _      => "#f59e0b"
                                 };
-                                <tr>
-                                    <td class="title-cell" title="@item.NewsTitle">@item.NewsTitle</td>
-                                    <td class="headline-cell">@item.Headline</td>
+                                var shortContent = !string.IsNullOrEmpty(item.Headline) && item.Headline.Length > 80
+                                    ? item.Headline.Substring(0, 80) + "…"
+                                    : item.Headline;
+                                <tr class="clickable-row" data-bs-toggle="collapse" data-bs-target="#detail-@item.NewsArticleID" style="cursor:pointer">
+                                    <td class="title-cell" title="@item.NewsTitle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-chevron-right text-muted row-chevron" style="font-size:.7rem;transition:transform .2s"></i>
+                                            <span>@item.NewsTitle</span>
+                                        </div>
+                                    </td>
+                                    <td class="headline-cell">@shortContent</td>
                                     <td class="date-cell">
                                         <i class="bi bi-clock me-1 opacity-50"></i>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")
                                     </td>
@@ -773,6 +827,46 @@
                                                 @(item.CreatedByName?.Length > 0 ? item.CreatedByName[0].ToString().ToUpper() : "?")
                                             </div>
                                             <span class="creator-name">@item.CreatedByName</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Expanded detail row -->
+                                <tr class="detail-row">
+                                    <td colspan="7" class="p-0 border-0">
+                                        <div id="detail-@item.NewsArticleID" class="collapse detail-panel">
+                                            <div class="detail-inner p-3">
+                                                <div class="row g-4">
+                                                    <div class="col-md-8">
+                                                        <div class="detail-label">Headline</div>
+                                                        <div class="detail-content">@item.Headline</div>
+                                                        @if (!string.IsNullOrEmpty(item.Headline))
+                                                        {
+                                                            <div class="detail-label mt-3">Signal</div>
+                                                            <div>
+                                                                <span class="signal-badge @signalClass me-2">@item.Decision</span>
+                                                                <span class="badge bg-secondary" style="font-size:.72rem">
+                                                                    Conf: <strong>@item.ConfidenceScore%</strong>
+                                                                </span>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="detail-label">Created Date</div>
+                                                        <div class="detail-content">@item.CreatedDate.ToString("MMMM dd, yyyy HH:mm") UTC</div>
+                                                        <div class="detail-label mt-2">Author</div>
+                                                        <div class="detail-content">@item.CreatedByName</div>
+                                                        <div class="detail-label mt-2">Sector</div>
+                                                        <div class="detail-content">@item.CategoryName</div>
+                                                        <div class="detail-label mt-2">Full Title</div>
+                                                        <div class="detail-content small">@item.NewsTitle</div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-end mt-2">
+                                                    <a href="/Report/Detail/@item.NewsArticleID" class="btn btn-sm fintech-btn-outline">
+                                                        <i class="bi bi-box-arrow-up-right me-1"></i>Open Full Report
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -828,6 +922,81 @@ else
                 }
             }
             return true;
+        }
+
+        /* ── Export helpers (Excel/PDF via fetch — no tab switch) ── */
+        async function exportReport(format) {
+            var startDate = document.getElementById("startDate").value;
+            var endDate   = document.getElementById("endDate").value;
+            if (!startDate || !endDate) {
+                alert("Please set a date range first.");
+                return;
+            }
+
+            var btn = format === 'excel'
+                ? document.getElementById('btnExportExcel')
+                : document.getElementById('btnExportPdf');
+            var label = btn.querySelector('.btn-label');
+
+            // ── Loading state ──
+            btn.disabled = true;
+            label.textContent = 'Exporting…';
+            var origClass = btn.className;
+            btn.style.cssText = 'opacity:0.7;cursor:wait;pointer-events:none;min-width:90px';
+
+            try {
+                var url = (format === 'excel'
+                    ? '@Url.Action("ExportExcel", "AdminStatistics")'
+                    : '@Url.Action("ExportPdf", "AdminStatistics")')
+                    + `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
+
+                var response = await fetch(url);
+                if (!response.ok) throw new Error('Server error: ' + response.status);
+
+                var filename = format === 'excel'
+                    ? `Statistics_${startDate}_to_${endDate}.xlsx`
+                    : `Statistics_${startDate}_to_${endDate}.pdf`;
+                var mimeType = format === 'excel'
+                    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    : 'application/pdf';
+
+                var blob = await response.blob();
+                var objectUrl = URL.createObjectURL(blob);
+
+                var a = document.createElement('a');
+                a.href = objectUrl;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(objectUrl);
+
+                // ── Success feedback ──
+                btn.style.cssText = '';
+                btn.className = origClass;
+                label.textContent = format === 'excel' ? 'Exported!' : 'Exported!';
+                btn.classList.remove('btn-export-excel', 'btn-export-pdf');
+                btn.classList.add('btn', 'btn-success', 'btn-sm');
+                setTimeout(function() {
+                    btn.className = origClass;
+                    btn.disabled = false;
+                    label.textContent = format === 'excel' ? 'Excel' : 'PDF';
+                }, 2500);
+            } catch (err) {
+                console.error('Export failed:', err);
+                btn.style.cssText = '';
+                btn.className = origClass;
+                label.textContent = 'Failed!';
+                btn.style.borderColor = '#dc2626';
+                btn.style.color = '#dc2626';
+                setTimeout(function() {
+                    btn.disabled = false;
+                    label.textContent = format === 'excel' ? 'Excel' : 'PDF';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 3000);
+            }
         }
 
         (function() {

@@ -51,6 +51,23 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
                 .ToListAsync();
         }
 
+        public async Task<List<NewsArticle>> GetByDateRangeAsync(DateTime startUtc, DateTime endUtc, int? tagId)
+        {
+            var query = _context.NewsArticles
+                .Include(na => na.Category)
+                .Include(na => na.CreatedByAccount)
+                .Include(na => na.NewsTagList)
+                    .ThenInclude(nt => nt.Tag)
+                .Where(na => na.CreatedDate >= startUtc && na.CreatedDate <= endUtc);
+
+            if (tagId.HasValue && tagId.Value > 0)
+            {
+                query = query.Where(na => na.NewsTagList.Any(nt => nt.TagID == tagId.Value));
+            }
+
+            return await query.ToListAsync();
+        }
+
         public async Task<int> CreateWithTagAsync(NewsArticle article, int tagId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();

@@ -17,11 +17,16 @@ namespace FUNewsTradingSystem_MVC.Controllers
     {
         private readonly INewsArticleService _newsArticleService;
         private readonly ISystemAccountService _accountService;
+        private readonly ITagService _tagService;
 
-        public AdminStatisticsController(INewsArticleService newsArticleService, ISystemAccountService accountService)
+        public AdminStatisticsController(
+            INewsArticleService newsArticleService,
+            ISystemAccountService accountService,
+            ITagService tagService)
         {
             _newsArticleService = newsArticleService;
             _accountService = accountService;
+            _tagService = tagService;
         }
 
         [HttpGet("/api/admin/dashboard-stats")]
@@ -101,18 +106,22 @@ namespace FUNewsTradingSystem_MVC.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] int? page)
+        public async Task<IActionResult> Index([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] int? page, [FromQuery] int? tagId)
         {
             var filter = new StatisticsFilterViewModel();
             if (startDate.HasValue) filter.StartDate = startDate.Value;
             if (endDate.HasValue) filter.EndDate = endDate.Value;
+            filter.TagId = tagId;
+
+            ViewBag.AllTags = await _tagService.GetAllTagsAsync();
+            ViewBag.SelectedTagId = tagId;
 
             var vm = new StatisticsResultViewModel
             {
                 Filter = filter
             };
 
-            if (!startDate.HasValue && !endDate.HasValue && Request.Query.Count == 0)
+            if (!startDate.HasValue && !endDate.HasValue && !tagId.HasValue && Request.Query.Count == 0)
             {
                 return View("~/Views/AdminStatistics/Index.cshtml", vm);
             }
@@ -124,6 +133,8 @@ namespace FUNewsTradingSystem_MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index([FromForm] StatisticsFilterViewModel filter, [FromQuery] int? page)
         {
+            ViewBag.AllTags = await _tagService.GetAllTagsAsync();
+            ViewBag.SelectedTagId = filter.TagId;
             return await GenerateResultView(filter, page);
         }
 
@@ -151,13 +162,13 @@ namespace FUNewsTradingSystem_MVC.Controllers
             var startUtc = filter.StartDate.Date;
             var endUtc = filter.EndDate.Date.AddDays(1).AddTicks(-1);
 
-            var articles = await _newsArticleService.GetByDateRangeAsync(startUtc, endUtc);
+            var articles = await _newsArticleService.GetByDateRangeAsync(startUtc, endUtc, filter.TagId);
 
             int buyCount = 0;
             int sellCount = 0;
             int holdCount = 0;
             var sectorCounts = new Dictionary<string, int>();
-            
+
             double totalConfidence = 0;
             double buyConfidence = 0;
             double sellConfidence = 0;

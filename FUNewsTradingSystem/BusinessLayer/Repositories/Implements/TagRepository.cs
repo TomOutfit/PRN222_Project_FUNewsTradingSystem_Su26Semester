@@ -28,6 +28,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
 
         public async Task AddAsync(Tag tag)
         {
+            tag.TagName = tag.TagName.Trim().ToUpperInvariant();
             await _context.Tags.AddAsync(tag);
             await _context.SaveChangesAsync();
         }
@@ -40,7 +41,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
             if (existing == null)
                 return;
 
-            existing.TagName = tag.TagName;
+            existing.TagName = tag.TagName.Trim().ToUpperInvariant();
             existing.Note = tag.Note;
             await _context.SaveChangesAsync();
         }
@@ -58,8 +59,9 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
 
         public async Task<bool> ExistsByNameAsync(string tagName)
         {
+            var normalized = tagName.Trim().ToUpperInvariant();
             return await _context.Tags
-                .AnyAsync(t => t.TagName == tagName);
+                .AnyAsync(t => t.TagName == normalized);
         }
     }
 }

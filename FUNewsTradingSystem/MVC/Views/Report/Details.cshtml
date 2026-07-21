@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = Model.NewsTitle ?? "Report Detail";
 
-    // Style variables depending on recommendation
+    // ── Style variables depending on recommendation ──
     string recGradient = Model.Decision switch
     {
         "BUY" => "linear-gradient(135deg, #10b981 0%, #047857 100%)",
@@ -13,16 +13,16 @@
 
     string recShadow = Model.Decision switch
     {
-        "BUY" => "rgba(16, 185, 129, 0.3)",
-        "SELL" => "rgba(244, 63, 94, 0.3)",
-        _ => "rgba(245, 158, 11, 0.3)"
+        "BUY" => "rgba(16, 185, 129, 0.35)",
+        "SELL" => "rgba(244, 63, 94, 0.35)",
+        _ => "rgba(245, 158, 11, 0.35)"
     };
 
     string recShadowPulse = Model.Decision switch
     {
-        "BUY" => "rgba(16, 185, 129, 0.4)",
-        "SELL" => "rgba(244, 63, 94, 0.4)",
-        _ => "rgba(245, 158, 11, 0.4)"
+        "BUY" => "rgba(16, 185, 129, 0.5)",
+        "SELL" => "rgba(244, 63, 94, 0.5)",
+        _ => "rgba(245, 158, 11, 0.5)"
     };
 
     string sectionColor = Model.Decision switch
@@ -39,7 +39,14 @@
         _ => "bi-dash-circle-fill"
     };
 
-    // Parsing structured AI trading reports if matching pattern
+    string decisionLabel = Model.Decision switch
+    {
+        "BUY" => "Strong Buy Signal",
+        "SELL" => "Strong Sell Signal",
+        _ => "Hold / Neutral"
+    };
+
+    // ── Parse structured AI reports ──
     string sentimentContent = "";
     string fundamentalContent = "";
     string riskContent = "";
@@ -60,6 +67,14 @@
             isParsed = true;
         }
     }
+
+    // ── Compute fake key stats for visual richness ──
+    var confColor = Model.ConfidenceScore switch
+    {
+        >= 80 => "#10b981",
+        >= 60 => "#f59e0b",
+        _ => "#ef4444"
+    };
 }
 
 <style>
@@ -68,336 +83,684 @@
         --rec-shadow: @recShadow;
         --rec-shadow-pulse: @recShadowPulse;
         --section-color: @sectionColor;
+        --conf-color: @confColor;
     }
 
+    /* ── Page entrance ── */
     .report-detail-container {
-        animation: pageEnter 0.40s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: pageEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @@keyframes pageEnter {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── Hero Banner ── */
+    .report-hero {
+        background: var(--rec-gradient);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem 2.5rem 2rem;
+        margin-bottom: 1.75rem;
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        box-shadow: 0 16px 48px var(--rec-shadow);
+    }
+    .report-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.15);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .report-hero::after {
+        content: "";
+        position: absolute;
+        top: -60px; right: -40px;
+        width: 280px; height: 280px;
+        background: rgba(255,255,255,0.07);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .report-hero > * { position: relative; z-index: 1; }
+
+    /* Bottom decorative orb */
+    .report-hero .hero-orb {
+        position: absolute;
+        bottom: -50px; left: -20px;
+        width: 180px; height: 180px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .hero-category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: rgba(0,0,0,0.3);
+        border: 1.5px solid rgba(255,255,255,0.5);
+        color: #fff;
+        padding: .3rem .85rem;
+        border-radius: 30px;
+        font-size: .8rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+    }
+    .hero-title {
+        font-size: clamp(1.6rem, 3vw, 2.5rem);
+        font-weight: 800;
+        line-height: 1.18;
+        letter-spacing: -0.5px;
+        margin: 1rem 0 .75rem;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .hero-headline {
+        font-size: 1rem;
+        font-style: italic;
+        color: rgba(255,255,255,0.95);
+        border-left: 3px solid rgba(255,255,255,0.7);
+        padding-left: .85rem;
+        margin: 1.25rem 0;
+        line-height: 1.55;
+        text-shadow: 0 1px 6px rgba(0,0,0,0.2);
+    }
+    .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem 1.5rem;
+        font-size: .82rem;
+        color: rgba(255,255,255,0.95);
+        margin-top: 1.25rem;
+    }
+    .hero-meta-item {
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    /* ── Decision pill inside hero ── */
+    .decision-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .6rem;
+        background: rgba(255,255,255,0.95);
+        color: #1a1a2e;
+        padding: .5rem 1.25rem;
+        border-radius: 40px;
+        font-weight: 800;
+        font-size: .88rem;
+        letter-spacing: .04em;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .decision-pill .bi {
+        font-size: 1rem;
+        color: var(--section-color);
+    }
+
+    /* ── Stats strip ── */
+    .stats-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 6px;
+        background: rgba(0,0,0,0.22);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        margin-top: 1.5rem;
+    }
+    .stat-item {
+        background: rgba(0,0,0,0.18);
+        padding: .85rem 1rem;
+        text-align: center;
+    }
+    .stat-value {
+        display: block;
+        font-size: 1.4rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: .25rem;
+        color: #fff;
+    }
+    .stat-label {
+        display: block;
+        font-size: .68rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: rgba(255,255,255,0.7);
+    }
+        line-height: 1;
+        margin-bottom: .2rem;
+    }
+    .stat-label {
+        display: block;
+        font-size: .68rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        opacity: 0.75;
+    }
+
+    /* ── Analysis section cards ── */
+    .analysis-section-card {
+        border-left: 4px solid var(--section-color);
+        background: var(--surface-card);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        transition: transform .2s, box-shadow .2s, border-left-color .2s;
+        border-top: 1px solid var(--border-light);
+        border-right: 1px solid var(--border-light);
+        border-bottom: 1px solid var(--border-light);
+        overflow: hidden;
+    }
+    .analysis-section-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+    .analysis-section-card .section-icon-wrap {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .analysis-section-card .section-body {
+        font-size: .95rem;
+        line-height: 1.7;
+        color: var(--text-main);
+    }
+
+    /* ── Chart card enhancements ── */
+    .chart-card {
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow .25s;
+    }
+    .chart-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+    .chart-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--surface-card);
+    }
+    .chart-body {
+        padding: 1.25rem;
+        background: var(--surface-card);
+    }
+    .chart-footer {
+        padding: .75rem 1.5rem;
+        border-top: 1px solid var(--border-light);
+        background: rgba(0,0,0,.02);
+        font-size: .75rem;
+        color: var(--text-muted);
+    }
+
+    /* ── Metadata sidebar cards ── */
+    .meta-card {
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: var(--surface-card);
+        box-shadow: var(--shadow-xs);
+        transition: box-shadow .2s, transform .2s;
+    }
+    .meta-card:hover {
+        box-shadow: var(--shadow-sm);
+        transform: translateY(-2px);
+    }
+    .meta-card-header {
+        padding: .85rem 1.25rem;
+        font-size: .75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border-light);
+        background: rgba(0,0,0,.02);
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .meta-card-body {
+        padding: 1.25rem;
+    }
+    .meta-row {
+        display: flex;
+        align-items: flex-start;
+        gap: .6rem;
+        padding: .5rem 0;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .meta-row:last-child { border-bottom: none; }
+    .meta-row-icon {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .8rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .meta-row-label {
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: var(--text-muted);
+        margin-bottom: .1rem;
+    }
+    .meta-row-value {
+        font-size: .9rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    /* ── Tag pills ── */
+    .tag-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 30px;
+        padding: .35rem .9rem;
+        font-weight: 600;
+        font-size: .82rem;
+        color: var(--text-main);
+        transition: all .18s;
+        cursor: default;
+    }
+    .tag-pill:hover {
+        border-color: var(--brand-1);
+        color: var(--brand-1);
+        background: rgba(37,99,235,.06);
+        transform: translateY(-1px);
+    }
+
+    /* ── Back button ── */
+    .back-btn {
+        transition: all .2s;
+    }
+    .back-btn:hover {
+        transform: translateX(-5px);
+    }
+
+    /* ── Recommendation sidebar card ── */
     .recommendation-card {
         background: var(--rec-gradient);
         color: #fff;
         border: none;
-        box-shadow: 0 10px 30px var(--rec-shadow);
+        box-shadow: 0 12px 36px var(--rec-shadow);
         position: relative;
         overflow: hidden;
-        border-radius: var(--radius-lg);
-        transition: transform var(--transition);
+        border-radius: var(--radius-xl);
     }
-    .recommendation-card:hover {
-        transform: translateY(-2px);
-    }
-
     .recommendation-card::before {
         content: "";
         position: absolute;
-        top: -40%;
-        right: -20%;
-        width: 180px;
-        height: 180px;
-        background: rgba(255, 255, 255, 0.08);
+        top: -50%; right: -25%;
+        width: 220px; height: 220px;
+        background: rgba(255,255,255,0.07);
         border-radius: 50%;
     }
-
     .recommendation-card::after {
         content: "";
         position: absolute;
-        bottom: -30%;
-        left: -10%;
-        width: 120px;
-        height: 120px;
-        background: rgba(255, 255, 255, 0.05);
+        bottom: -35%; left: -15%;
+        width: 150px; height: 150px;
+        background: rgba(255,255,255,0.04);
         border-radius: 50%;
     }
-
-    .analysis-section-card {
-        border-left: 5px solid var(--section-color);
-        background: var(--surface-card);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-        transition: transform var(--transition), box-shadow var(--transition);
-        border-top: 1px solid var(--border-light);
-        border-right: 1px solid var(--border-light);
-        border-bottom: 1px solid var(--border-light);
-    }
-
-    .analysis-section-card:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .ticker-pill {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 30px;
-        color: var(--text-main);
-        padding: 0.35rem 0.85rem;
-        font-weight: 600;
-        font-size: 0.825rem;
-        transition: all var(--transition);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    .ticker-pill:hover {
-        border-color: var(--brand-1);
-        background: rgba(37, 99, 235, 0.08);
-        color: var(--brand-1);
-        transform: translateY(-1px);
-    }
-
-    .author-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.4rem 0.9rem;
-        border-radius: 30px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        font-weight: 500;
-        font-size: 0.875rem;
-    }
-
-    .deleted-author {
-        background: rgba(239, 68, 68, 0.08);
-        border-color: rgba(239, 68, 68, 0.2);
-        color: #ef4444 !important;
-    }
-
-    .pulse-badge {
-        position: relative;
-    }
-    .pulse-badge::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 30px;
+    .pulse-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: #fff;
         box-shadow: 0 0 0 0 var(--rec-shadow-pulse);
-        animation: badgePulse 2s infinite;
+        animation: pulseDot 2s infinite;
     }
-    @@keyframes badgePulse {
-        0% {
-            box-shadow: 0 0 0 0 var(--rec-shadow-pulse);
-        }
-        70% {
-            box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-        }
+    @@keyframes pulseDot {
+        0%   { box-shadow: 0 0 0 0 var(--rec-shadow-pulse); }
+        70%  { box-shadow: 0 0 0 10px rgba(0,0,0,0); }
+        100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
     }
 
-    .back-btn {
-        transition: all var(--transition);
+    /* ── Confidence bar inside rec card ── */
+    .conf-track {
+        height: 8px;
+        background: rgba(255,255,255,0.18);
+        border-radius: 99px;
+        overflow: hidden;
+        margin-top: .35rem;
     }
-    .back-btn:hover {
-        transform: translateX(-4px);
+    .conf-fill {
+        height: 100%;
+        border-radius: 99px;
+        background: rgba(255,255,255,0.9);
+        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .conf-badge {
+        background: rgba(255,255,255,0.28);
+        border: 1px solid rgba(255,255,255,0.4);
+        color: #fff;
+        font-weight: 700;
+        font-size: .85rem;
+        padding: .2rem .6rem;
+        border-radius: 8px;
+    }
+
+    /* ── Responsive tweaks ── */
+    @@media (max-width: 767.98px) {
+        .report-hero { padding: 1.75rem 1.25rem; }
+        .hero-title  { font-size: 1.5rem; }
     }
 </style>
 
 <div class="container px-0 report-detail-container">
-    <!-- Navigation Back Button -->
     <div class="mb-4">
         <a asp-controller="Report" asp-action="Index" class="btn fintech-btn-outline btn-sm rounded-pill px-3 back-btn">
             <i class="bi bi-arrow-left me-1"></i> Back to Analysis Reports
         </a>
     </div>
 
-    <!-- Main Grid Layout -->
-    <div class="row g-4">
-        <!-- LEFT: Main Article details -->
-        <div class="col-lg-8">
-            <article class="card fintech-card p-4 p-md-5 mb-4 border-0">
-                <!-- Title Header -->
-                <header class="mb-4">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-primary px-3 py-1.5"><i class="bi bi-folder2 me-1"></i>@Model.CategoryName</span>
-                        <time class="text-muted small" datetime="@Model.CreatedDate.ToString("o")">
-                            <i class="bi bi-calendar-event me-1"></i>@Model.CreatedDate.ToString("MMM dd, yyyy HH:mm") UTC
-                        </time>
-                    </div>
-                    <h1 class="fw-bold mb-3 text-main" style="font-size: 2.25rem; line-height: 1.25; letter-spacing: -0.5px;">
-                        @Model.NewsTitle
-                    </h1>
-                </header>
+    <!-- ═══════════════════════════════════════
+         HERO BANNER
+    ════════════════════════════════════════ -->
+    <div class="report-hero mb-4">
+        <!-- Top row: category + decision pill -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <span class="hero-category-badge">
+                <i class="bi bi-folder2-open"></i> @Model.CategoryName
+            </span>
+            <div class="decision-pill">
+                <i class="bi @decisionIcon"></i>
+                @decisionLabel
+            </div>
+        </div>
 
-                <!-- Headline blockquote -->
-                @if (!string.IsNullOrWhiteSpace(Model.Headline))
+        <!-- Title -->
+        <h1 class="hero-title">@Model.NewsTitle</h1>
+
+        <!-- Headline -->
+        @if (!string.IsNullOrWhiteSpace(Model.Headline))
+        {
+            <p class="hero-headline mb-0">
+                <i class="bi bi-quote" style="font-size:1.2rem; opacity:.6;"></i>
+                @Model.Headline
+            </p>
+        }
+
+        <!-- Stats strip: Tags, Confidence, Date, Source -->
+        <div class="stats-strip">
+            @if (Model.Tags != null && Model.Tags.Any())
+            {
+                <div class="stat-item">
+                    <span class="stat-value d-flex flex-wrap justify-content-center gap-1">
+                        @foreach (var t in Model.Tags)
+                        {
+                            <span style="background:#fff; color:#1a1a2e; font-size:.72rem; font-weight:700; padding:.15rem .55rem; border-radius:30px; white-space:nowrap;">@t</span>
+                        }
+                    </span>
+                    <span class="stat-label">Assets Tracked</span>
+                </div>
+            }
+            @if (Model.ConfidenceScore > 0)
+            {
+                <div class="stat-item">
+                    <span class="stat-value" style="color:#fff;">@Model.ConfidenceScore%</span>
+                    <span class="stat-label">AI Confidence</span>
+                </div>
+            }
+            <div class="stat-item">
+                <span class="stat-value" style="font-size:.95rem; text-transform:uppercase; letter-spacing:.05em;">@Model.Decision</span>
+                <span class="stat-label">Signal Type</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" style="font-size:.78rem; line-height:1.3;">@Model.CreatedDate.ToString("MMM dd")</span>
+                <span class="stat-label">Published</span>
+            </div>
+        </div>
+
+        <!-- Meta row -->
+        <div class="hero-meta">
+            <span class="hero-meta-item">
+                <i class="bi bi-calendar3"></i>
+                @Model.CreatedDate.ToString("MMMM dd, yyyy")
+            </span>
+            <span class="hero-meta-item">
+                <i class="bi bi-person-badge"></i>
+                @(string.IsNullOrEmpty(Model.CreatedByName) || Model.CreatedByName == "Deleted User" ? "Unknown Author" : Model.CreatedByName)
+            </span>
+            @if (!string.IsNullOrWhiteSpace(Model.NewsSource))
+            {
+                <span class="hero-meta-item">
+                    <i class="bi bi-rss"></i> @Model.NewsSource
+                </span>
+            }
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         MAIN CONTENT GRID
+    ════════════════════════════════════════ -->
+    <div class="row g-4">
+        <!-- LEFT COLUMN: Article + Chart -->
+        <div class="col-lg-8">
+            <!-- ── Article Body ── -->
+            <article class="card fintech-card p-4 p-md-5 mb-4 border-0">
+                @if (isParsed)
                 {
-                    <div class="p-3 bg-light bg-opacity-50 rounded-3 border-start border-4 border-primary mb-4">
-                        <p class="mb-0 text-muted fst-italic lead" style="font-size: 1.05rem;">
-                            <i class="bi bi-quote me-2 fs-3 text-primary align-middle opacity-50"></i>@Model.Headline
-                        </p>
+                    <!-- Parsed 3-section analysis -->
+                    <div class="d-flex flex-column gap-4">
+                        <!-- Sentiment -->
+                        <div class="analysis-section-card p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="section-icon-wrap" style="background:rgba(16,185,129,.12); color:#10b981;">
+                                    <i class="bi bi-chat-square-heart-fill"></i>
+                                </div>
+                                <h4 class="fw-bold mb-0 text-main" style="font-size:1.05rem;">Market Sentiment</h4>
+                            </div>
+                            <p class="section-body mb-0">@sentimentContent</p>
+                        </div>
+
+                        <!-- Fundamental -->
+                        <div class="analysis-section-card p-4" style="border-left-color: var(--brand-1);">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="section-icon-wrap" style="background:rgba(37,99,235,.12); color:#2563eb;">
+                                    <i class="bi bi-bar-chart-fill"></i>
+                                </div>
+                                <h4 class="fw-bold mb-0 text-main" style="font-size:1.05rem;">Fundamental Indicators</h4>
+                            </div>
+                            <p class="section-body mb-0">@fundamentalContent</p>
+                        </div>
+
+                        <!-- Risk -->
+                        <div class="analysis-section-card p-4" style="border-left-color: #ef4444;">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="section-icon-wrap" style="background:rgba(239,68,68,.1); color:#ef4444;">
+                                    <i class="bi bi-shield-exclamation-fill"></i>
+                                </div>
+                                <h4 class="fw-bold mb-0 text-main" style="font-size:1.05rem;">Key Risk Warnings</h4>
+                            </div>
+                            <p class="section-body mb-0">@riskContent</p>
+                        </div>
                     </div>
                 }
-
-                <hr class="my-4 opacity-50">
-
-                <!-- Content Area -->
-                <section class="content-body">
-                    @if (isParsed)
+                else
+                {
+                    <!-- Raw paragraph fallback -->
+                    @if (!string.IsNullOrWhiteSpace(Model.NewsContent))
                     {
-                        <!-- Dynamic Beautiful Sections for Automated Trading Reports -->
-                        <div class="d-flex flex-column gap-4">
-                            <!-- 1. Sentiment View -->
-                            <div class="analysis-section-card p-4">
-                                <h4 class="fw-bold text-main d-flex align-items-center gap-2 mb-3" style="font-size: 1.15rem;">
-                                    <span class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle" style="width: 32px; height: 32px;">
-                                        <i class="bi bi-chat-left-heart-fill"></i>
-                                    </span>
-                                    Market Sentiment View
-                                </h4>
-                                <p class="mb-0 text-main" style="text-align: justify; line-height: 1.6;">
-                                    @sentimentContent
-                                </p>
-                            </div>
-
-                            <!-- 2. Fundamental View -->
-                            <div class="analysis-section-card p-4" style="--section-color: var(--accent);">
-                                <h4 class="fw-bold text-main d-flex align-items-center gap-2 mb-3" style="font-size: 1.15rem;">
-                                    <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 32px; height: 32px;">
-                                        <i class="bi bi-bar-chart-steps"></i>
-                                    </span>
-                                    Fundamental Indicators
-                                </h4>
-                                <p class="mb-0 text-main" style="text-align: justify; line-height: 1.6;">
-                                    @fundamentalContent
-                                </p>
-                            </div>
-
-                            <!-- 3. Risk Warning View -->
-                            <div class="analysis-section-card p-4" style="--section-color: #ef4444;">
-                                <h4 class="fw-bold text-main d-flex align-items-center gap-2 mb-3" style="font-size: 1.15rem;">
-                                    <span class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle" style="width: 32px; height: 32px;">
-                                        <i class="bi bi-shield-exclamation"></i>
-                                    </span>
-                                    Key Risk Warnings
-                                </h4>
-                                <p class="mb-0 text-main" style="text-align: justify; line-height: 1.6;">
-                                    @riskContent
-                                </p>
-                            </div>
-                        </div>
+                        var paragraphs = Model.NewsContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var para in paragraphs)
+                        {
+                            <p class="text-main lh-lg mb-3" style="text-align:justify; font-size:.95rem; line-height:1.7;">@para</p>
+                        }
                     }
                     else
                     {
-                        <!-- Fallback normal paragraph rendering -->
-                        @if (!string.IsNullOrWhiteSpace(Model.NewsContent))
-                        {
-                            var paragraphs = Model.NewsContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var para in paragraphs)
-                            {
-                                <p class="text-main lh-lg mb-3" style="text-align: justify; font-size: 1rem;">@para</p>
-                            }
-                        }
-                        else
-                        {
-                            <p class="text-muted fst-italic">No detailed content available for this report.</p>
-                        }
+                        <p class="text-muted fst-italic">No detailed content available for this report.</p>
                     }
-                </section>
-
-                <!-- Data Source / Footer -->
-                @if (!string.IsNullOrWhiteSpace(Model.NewsSource))
-                {
-                    <footer class="mt-5 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <span class="small text-muted"><i class="bi bi-cpu me-1"></i> Synthesis Engine & Source:</span>
-                        <span class="badge bg-light text-dark border px-3 py-2">@Model.NewsSource</span>
-                    </footer>
                 }
             </article>
 
-            <!-- Price Chart Card -->
-            <div class="card fintech-card p-4 p-md-5 mb-4 border-0">
-                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <h4 class="fw-bold m-0 text-main" style="font-size: 1.25rem;">
-                        <i class="bi bi-activity text-primary me-2"></i>
-                        @(Model.Tags != null && Model.Tags.Any() ? $"{Model.Tags.First()} Price Trend" : "FNTS Index Composite Trend")
+            <!-- ── Price Chart ── -->
+            <div class="chart-card mb-4">
+                <div class="chart-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h4 class="fw-bold m-0 text-main d-flex align-items-center gap-2" style="font-size:1.1rem;">
+                        <i class="bi bi-graph-up text-primary"></i>
+                        <span id="chartTitle">@(Model.Tags != null && Model.Tags.Any() ? $"{Model.Tags.First()} Market Trend (6M)" : "Market Trend (6M)")</span>
                     </h4>
-                    <span class="badge @(Model.Decision == "BUY" ? "fintech-badge-buy" : Model.Decision == "SELL" ? "fintech-badge-sell" : "fintech-badge-hold") px-3 py-1">
-                        Signal: @Model.Decision
-                    </span>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        @if (Model.ConfidenceScore > 0)
+                        {
+                            <span class="badge fw-bold px-3 py-2"
+                                  style="font-size:.78rem; background:#fff; color:@sectionColor; border:2px solid @sectionColor; letter-spacing:.03em;">
+                                <i class="bi bi-shield-check me-1"></i>AI Conf: @Model.ConfidenceScore%
+                            </span>
+                        }
+                        <span class="badge @(Model.Decision == "BUY" ? "fintech-badge-buy" : Model.Decision == "SELL" ? "fintech-badge-sell" : "fintech-badge-hold") px-3 py-2 fw-bold"
+                              style="font-size:.78rem; letter-spacing:.03em;">
+                            Signal: @Model.Decision
+                        </span>
+                    </div>
                 </div>
-                <div style="height: 280px; position: relative;">
+                <div class="chart-body" style="height:300px; position:relative;">
                     <canvas id="tradingChart"></canvas>
                 </div>
-                <div class="text-muted small mt-3">
-                    <i class="bi bi-info-circle me-1"></i> Market trend data powered by Yahoo Finance API proxy.
+                <div class="chart-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span><i class="bi bi-info-circle me-1"></i> Historical data from Yahoo Finance · 6-month window</span>
+                    <span id="dataPointCount" class="text-muted" style="font-size:.7rem;"></span>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT: Recommendation & Metadata Sidebar -->
+        <!-- RIGHT COLUMN: Sidebar -->
         <div class="col-lg-4">
-            <aside class="d-flex flex-column gap-4">
-                <!-- Action Recommendation Card -->
-                <div class="card recommendation-card p-4 shadow">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-uppercase fw-bold tracking-wider small opacity-75">Analysis Signal</span>
-                        <span class="pulse-badge"></span>
+            <aside class="d-flex flex-column gap-3">
+
+                <!-- ── Recommendation Card ── -->
+                <div class="recommendation-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3" style="position:relative; z-index:1;">
+                        <span class="text-uppercase fw-bold tracking-wider small opacity-75" style="letter-spacing:.1em;">Analysis Signal</span>
+                        <div class="pulse-dot"></div>
                     </div>
-                    <div class="d-flex align-items-center gap-3 my-2">
-                        <i class="bi @decisionIcon display-4"></i>
+                    <div class="d-flex align-items-center gap-3 mb-3" style="position:relative; z-index:1;">
+                        <i class="bi @decisionIcon" style="font-size:3rem; opacity:.9;"></i>
                         <div>
-                            <h2 class="m-0 fw-extrabold display-6 text-white">@Model.Decision</h2>
-                            <p class="m-0 small opacity-75">Recommended Action</p>
+                            <h2 class="m-0 fw-extrabold text-white" style="font-size:2.2rem; line-height:1;">@Model.Decision</h2>
+                            <p class="m-0 small opacity-75 mt-1">Recommended Action</p>
                         </div>
                     </div>
-                </div>
-
-                <!-- Metadata / Author info Card -->
-                <div class="card fintech-card p-4 border-0">
-                    <h5 class="fw-bold mb-3 text-main"><i class="bi bi-info-circle-fill me-2 text-primary"></i>Report Information</h5>
-
-                    <!-- Author -->
-                    <div class="mb-3">
-                        <span class="text-muted small d-block mb-1">Author / Publisher:</span>
-                        @if (string.IsNullOrEmpty(Model.CreatedByName) || Model.CreatedByName == "Deleted User")
-                        {
-                            <span class="author-badge deleted-author">
-                                <i class="bi bi-trash-fill"></i> Deleted Staff
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="author-badge">
-                                <i class="bi bi-person-badge-fill text-primary"></i> @Model.CreatedByName
-                            </span>
-                        }
-                    </div>
-
-                    <!-- Category -->
-                    <div class="mb-3">
-                        <span class="text-muted small d-block mb-1">Category Sector:</span>
-                        <span class="badge bg-secondary px-3 py-2"><i class="bi bi-folder2 me-1"></i>@Model.CategoryName</span>
-                    </div>
-
-                    <!-- Timestamps -->
-                    @if (Model.ModifiedDate.HasValue)
+                    @if (Model.ConfidenceScore > 0)
                     {
-                        <div class="mb-3">
-                            <span class="text-muted small d-block mb-1">Last Updated:</span>
-                            <span class="text-secondary small"><i class="bi bi-clock-history me-1"></i>@Model.ModifiedDate.Value.ToString("MMM dd, yyyy HH:mm") UTC</span>
+                        <div class="mt-3 pt-3 border-top border-white border-opacity-20" style="position:relative; z-index:1;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-bold text-white" style="opacity:.85">AI Confidence Score</span>
+                                <span class="conf-badge">@Model.ConfidenceScore%</span>
+                            </div>
+                            <div class="conf-track">
+                                <div class="conf-fill" style="width:@Model.ConfidenceScore%"></div>
+                            </div>
                         </div>
                     }
                 </div>
 
-                <!-- Related Tickers / Tags -->
+                <!-- ── Report Info Card ── -->
+                <div class="meta-card">
+                    <div class="meta-card-header">
+                        <i class="bi bi-file-earmark-text text-primary"></i>
+                        Report Information
+                    </div>
+                    <div class="meta-card-body p-0">
+                        <div class="meta-row">
+                            <div class="meta-row-icon" style="background:rgba(37,99,235,.1); color:#2563eb;">
+                                <i class="bi bi-person-badge-fill"></i>
+                            </div>
+                            <div>
+                                <div class="meta-row-label">Author / Publisher</div>
+                                <div class="meta-row-value">
+                                    @if (string.IsNullOrEmpty(Model.CreatedByName) || Model.CreatedByName == "Deleted User")
+                                    {
+                                        <span class="text-danger"><i class="bi bi-trash me-1"></i>Deleted Staff</span>
+                                    }
+                                    else
+                                    {
+                                        @Model.CreatedByName
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="meta-row">
+                            <div class="meta-row-icon" style="background:rgba(99,102,241,.1); color:#6366f1;">
+                                <i class="bi bi-folder-fill"></i>
+                            </div>
+                            <div>
+                                <div class="meta-row-label">Category Sector</div>
+                                <div class="meta-row-value">@Model.CategoryName</div>
+                            </div>
+                        </div>
+                        <div class="meta-row">
+                            <div class="meta-row-icon" style="background:rgba(16,185,129,.1); color:#10b981;">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                            <div>
+                                <div class="meta-row-label">Published Date</div>
+                                <div class="meta-row-value">@Model.CreatedDate.ToString("MMM dd, yyyy HH:mm") UTC</div>
+                            </div>
+                        </div>
+                        @if (Model.ModifiedDate.HasValue)
+                        {
+                            <div class="meta-row">
+                                <div class="meta-row-icon" style="background:rgba(245,158,11,.1); color:#f59e0b;">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <div>
+                                    <div class="meta-row-label">Last Updated</div>
+                                    <div class="meta-row-value">@Model.ModifiedDate.Value.ToString("MMM dd, yyyy HH:mm") UTC</div>
+                                </div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.NewsSource))
+                        {
+                            <div class="meta-row">
+                                <div class="meta-row-icon" style="background:rgba(14,165,233,.1); color:#0ea5e9;">
+                                    <i class="bi bi-rss"></i>
+                                </div>
+                                <div>
+                                    <div class="meta-row-label">Data Source</div>
+                                    <div class="meta-row-value">@Model.NewsSource</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- ── Analyzed Assets Card ── -->
                 @if (Model.Tags != null && Model.Tags.Any())
                 {
-                    <div class="card fintech-card p-4 border-0">
-                        <h5 class="fw-bold mb-3 text-main"><i class="bi bi-tags-fill me-2 text-primary"></i>Analyzed Assets</h5>
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach (var tag in Model.Tags)
-                            {
-                                <span class="ticker-pill">
-                                    <i class="bi bi-hash text-muted"></i>@tag
-                                </span>
-                            }
+                    <div class="meta-card">
+                        <div class="meta-card-header">
+                            <i class="bi bi-tags-fill text-primary"></i>
+                            Analyzed Assets
+                        </div>
+                        <div class="meta-card-body">
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var tag in Model.Tags)
+                                {
+                                    <span class="tag-pill">
+                                        <i class="bi bi-hash text-muted" style="font-size:.7rem;"></i>@tag
+                                    </span>
+                                }
+                            </div>
                         </div>
                     </div>
                 }
+
             </aside>
         </div>
     </div>
@@ -408,32 +771,66 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
         (function() {
-            const ctx = document.getElementById('tradingChart');
+            var ctx = document.getElementById('tradingChart');
             if (!ctx) return;
 
-            const decision = "@Model.Decision";
-            const ticker = "@(Model.Tags != null && Model.Tags.Any() ? Model.Tags.First() : "FNTS")";
+            var decision = "@Model.Decision";
+            var ticker = "@(Model.Tags != null && Model.Tags.Any() ? Model.Tags.First() : "FNTS")";
 
-            let chartInstance = null;
+            var chartInstance = null;
+            var MAX_LIVE_POINTS = 50;
 
             function getChartColors(isDark) {
-                let strokeColor = '#374151';
-                let fillColor = 'rgba(55, 65, 81, 0.08)';
+                var strokeColor = '#374151';
+                var fillColor = 'rgba(55, 65, 81, 0.08)';
                 if (decision === "BUY")      { strokeColor = '#10b981'; fillColor = 'rgba(16, 185, 129, 0.08)'; }
                 else if (decision === "SELL") { strokeColor = '#ef4444'; fillColor = 'rgba(239, 68, 68, 0.08)'; }
-                const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
-                const textColor = isDark ? '#cbd5e1' : '#64748b';
-                return { strokeColor, fillColor, gridColor, textColor };
+                var gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
+                var textColor = isDark ? '#cbd5e1' : '#64748b';
+                return { strokeColor: strokeColor, fillColor: fillColor, gridColor: gridColor, textColor: textColor };
             }
 
-            function renderChart(labels, data, source) {
-                const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                const { strokeColor, fillColor, gridColor, textColor } = getChartColors(isDark);
+            function buildDatasets(allLabels, allPrices, livePrices) {
+                var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                var colors = getChartColors(isDark);
 
-                // Update source badge
-                const cardHeader = ctx.closest('.card').querySelector('h4');
-                if (cardHeader && !cardHeader.querySelector('.source-badge')) {
-                    cardHeader.innerHTML += ` <span class="badge bg-secondary bg-opacity-10 text-secondary source-badge" style="font-size:0.7rem;font-weight:500;margin-left:6px;"><i class="bi bi-broadcast me-1"></i>${source}</span>`;
+                return [
+                    {
+                        label: ticker + ' Historical',
+                        data: allPrices,
+                        borderColor: 'rgba(100, 116, 139, 0.35)',
+                        borderWidth: 1.5,
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    },
+                    {
+                        label: ticker + ' (Live)',
+                        data: livePrices,
+                        borderColor: colors.strokeColor,
+                        backgroundColor: colors.fillColor,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 2,
+                        pointHoverRadius: 6
+                    }
+                ];
+            }
+
+            function renderChart(labels, prices, source) {
+                var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                var colors = getChartColors(isDark);
+
+                // Source badge
+                var headerEl = ctx.closest('.chart-card').querySelector('.chart-header');
+                if (headerEl && !headerEl.querySelector('.source-badge')) {
+                    var badge = document.createElement('span');
+                    badge.className = 'badge source-badge';
+                    badge.style.cssText = 'font-size:.7rem;font-weight:500;background:rgba(0,0,0,.06);color:var(--text-muted);padding:.3rem .7rem;';
+                    badge.innerHTML = '<i class="bi bi-broadcast me-1"></i>' + source;
+                    headerEl.appendChild(badge);
                 }
 
                 if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
@@ -442,128 +839,130 @@
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [{
-                            label: ticker + ' (USD)',
-                            data: data,
-                            borderColor: strokeColor,
-                            borderWidth: 2.5,
-                            fill: true,
-                            backgroundColor: fillColor,
-                            tension: 0.35,
-                            pointRadius: 1.5,
-                            pointHoverRadius: 5
-                        }]
+                        datasets: buildDatasets(labels, prices, [])
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        animation: { duration: 0 },
+                        animation: { duration: 600 },
+                        interaction: { mode: 'index', intersect: false },
                         plugins: {
-                            legend: { display: false },
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    color: colors.textColor,
+                                    font: { size: 11, family: 'Inter' },
+                                    boxWidth: 18,
+                                    filter: function(item) { return item.text !== undefined; }
+                                }
+                            },
                             tooltip: {
-                                mode: 'index', intersect: false,
+                                mode: 'index',
+                                intersect: false,
                                 backgroundColor: isDark ? '#1e1b4b' : '#ffffff',
                                 titleColor: isDark ? '#fff' : '#1e1b4b',
                                 bodyColor: isDark ? '#e2e8f0' : '#1e1b4b',
-                                borderColor: strokeColor, borderWidth: 1
+                                borderColor: colors.gridColor,
+                                borderWidth: 1
                             }
                         },
                         scales: {
                             x: {
-                                grid: { color: gridColor },
-                                ticks: { color: textColor, font: { family: 'Inter', size: 10 }, maxTicksLimit: 8 }
+                                grid: { color: colors.gridColor },
+                                ticks: {
+                                    color: colors.textColor,
+                                    font: { family: 'Inter', size: 10 },
+                                    maxTicksLimit: 12,
+                                    maxRotation: 0
+                                }
                             },
                             y: {
-                                grid: { color: gridColor },
-                                ticks: { color: textColor, font: { family: 'Inter', size: 10 } }
+                                grid: { color: colors.gridColor },
+                                ticks: {
+                                    color: colors.textColor,
+                                    font: { family: 'Inter', size: 10 }
+                                }
                             }
                         }
                     }
                 });
 
-                // Re-render chart colors when theme toggles
-                const themeObserver = new MutationObserver(() => {
-                    const currentDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                    const { strokeColor: sc, fillColor: fc, gridColor: gc, textColor: tc } = getChartColors(currentDark);
-                    chartInstance.options.scales.x.grid.color = gc;
-                    chartInstance.options.scales.y.grid.color = gc;
-                    chartInstance.options.scales.x.ticks.color = tc;
-                    chartInstance.options.scales.y.ticks.color = tc;
-                    chartInstance.options.plugins.tooltip.backgroundColor = currentDark ? '#1e1b4b' : '#ffffff';
-                    chartInstance.options.plugins.tooltip.titleColor = currentDark ? '#fff' : '#1e1b4b';
-                    chartInstance.options.plugins.tooltip.bodyColor = currentDark ? '#e2e8f0' : '#1e1b4b';
-                    chartInstance.data.datasets[0].borderColor = sc;
-                    chartInstance.data.datasets[0].backgroundColor = fc;
-                    chartInstance.update();
+                // Theme observer
+                var themeObserver = new MutationObserver(function() {
+                    if (!chartInstance) return;
+                    var cd = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                    var c = getChartColors(cd);
+                    chartInstance.options.scales.x.grid.color = c.gridColor;
+                    chartInstance.options.scales.y.grid.color = c.gridColor;
+                    chartInstance.options.scales.x.ticks.color = c.textColor;
+                    chartInstance.options.scales.y.ticks.color = c.textColor;
+                    chartInstance.options.plugins.tooltip.backgroundColor = cd ? '#1e1b4b' : '#ffffff';
+                    chartInstance.options.plugins.tooltip.titleColor = cd ? '#fff' : '#1e1b4b';
+                    chartInstance.options.plugins.tooltip.bodyColor = cd ? '#e2e8f0' : '#1e1b4b';
+                    chartInstance.options.plugins.legend.labels.color = c.textColor;
+                    if (chartInstance.data.datasets.length > 1) {
+                        chartInstance.data.datasets[1].borderColor = c.strokeColor;
+                        chartInstance.data.datasets[1].backgroundColor = c.fillColor;
+                    }
+                    chartInstance.update('none');
                 });
                 themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
             }
 
-            // ── 1. Fetch initial data from MarketDataService (live tick history) ──
-            fetch(`/api/market/chart/${encodeURIComponent(ticker)}`)
-                .then(response => response.json())
-                .then(data => {
+            // ── 1. Fetch 6-month data from API ──
+            fetch('/api/market/chart/' + encodeURIComponent(ticker))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
                     if (data && data.success && data.prices && data.prices.length > 0) {
-                        renderChart(data.labels, data.prices, data.source || 'Live Market Data');
+                        renderChart(data.labels, data.prices, data.source || 'Yahoo Finance');
+                        var countEl = document.getElementById('dataPointCount');
+                        if (countEl) countEl.textContent = data.prices.length + ' data points loaded';
                         initSignalR();
                     } else {
-                        throw new Error('No live data available yet.');
+                        throw new Error('no data');
                     }
                 })
-                .catch(() => {
-                    // MarketDataService has no history yet (app just started).
-                    // Live ticking will build the chart in real-time.
-                    const emptyLabels = Array.from({ length: 30 }, () => '');
-                    const emptyPrices = Array.from({ length: 30 }, () => null);
-                    renderChart(emptyLabels, emptyPrices, 'Awaiting Live Data…');
+                .catch(function() {
+                    var emptyLabels = Array.from({ length: 30 }, function() { return ''; });
+                    var emptyPrices = Array.from({ length: 30 }, function() { return null; });
+                    renderChart(emptyLabels, emptyPrices, 'Connecting…');
                     initSignalR();
                 });
 
-            // ── 2. SignalR: connect to MarketTickerHub for real-time price updates ──
+            // ── 2. SignalR live ticks ──
             function initSignalR() {
-                const sourceBadge = document.querySelector('.source-badge');
-                if (sourceBadge) sourceBadge.textContent = '⏳ Connecting…';
-
-                const connection = new signalR.HubConnectionBuilder()
+                var connection = new signalR.HubConnectionBuilder()
                     .withUrl('/hubs/marketTicker')
                     .configureLogging(signalR.LogLevel.Warning)
                     .build();
 
                 connection.on('ReceiveMarketTicks', function(ticks) {
-                    const tick = ticks.find(t => t.symbol === ticker);
+                    var tick = ticks.find(function(t) { return t.symbol === ticker; });
                     if (!tick || !chartInstance) return;
 
-                    const now = new Date();
-                    const label = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
+                    var now = new Date();
+                    var label = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    var liveDataset = chartInstance.data.datasets[1];
+                    liveDataset.data.push(tick.price);
                     chartInstance.data.labels.push(label);
-                    chartInstance.data.datasets[0].data.push(tick.price);
 
-                    // Keep max 120 points visible (~6 min of 3-second ticks)
-                    const MAX_POINTS = 120;
-                    if (chartInstance.data.datasets[0].data.length > MAX_POINTS) {
-                        chartInstance.data.labels.shift();
-                        chartInstance.data.datasets[0].data.shift();
+                    if (liveDataset.data.length > MAX_LIVE_POINTS) {
+                        var excess = liveDataset.data.length - MAX_LIVE_POINTS;
+                        liveDataset.data.splice(0, excess);
+                        chartInstance.data.labels.splice(0, excess);
                     }
 
                     chartInstance.update('none');
 
-                    // Update source badge to confirm live
-                    const badge = document.querySelector('.source-badge');
-                    if (badge && !badge.textContent.includes('Live')) {
-                        badge.innerHTML = `<i class="bi bi-broadcast me-1"></i>Live (SignalR)`;
-                    }
+                    var badge = document.querySelector('.source-badge');
+                    if (badge) badge.innerHTML = '<i class="bi bi-broadcast me-1" style="animation:pulse 1s infinite"></i>Live';
                 });
 
-                connection.start()
-                    .then(() => {
-                        const badge = document.querySelector('.source-badge');
-                        if (badge) badge.innerHTML = `<i class="bi bi-broadcast me-1" style="font-weight:bold"></i>Live Market Data`;
-                    })
-                    .catch(() => {
-                        const badge = document.querySelector('.source-badge');
-                        if (badge) badge.innerHTML = `<i class="bi bi-wifi-off me-1"></i>Reconnecting…`;
-                    });
+                connection.start().catch(function() {
+                    var badge = document.querySelector('.source-badge');
+                    if (badge) badge.innerHTML = '<i class="bi bi-wifi-off me-1"></i>Reconnecting…';
+                });
             }
         })();
     </script>

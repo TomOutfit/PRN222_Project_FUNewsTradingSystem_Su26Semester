@@ -170,7 +170,9 @@ public class ReportController : Controller
 
     /// <summary>
     /// GET /api/market/chart/{symbol} — Returns live price history for a symbol.
-    /// Priority: (1) MarketDataService rolling history (3-second ticks), (2) Yahoo Finance chart API, (3) Simulation fallback.
+    /// Priority: (1) Yahoo Finance 6-month historical chart (primary, always populated),
+    ///            (2) MarketDataService rolling live ticks (supplemental),
+    ///            (3) Simulation fallback (last resort).
     /// </summary>
     [AllowAnonymous]
     [HttpGet]
@@ -182,27 +184,6 @@ public class ReportController : Controller
 
         string normalizedSymbol = symbol.Trim().ToUpperInvariant();
 
-        // ── 1. MarketDataService: live 3-second tick history (always available once the app starts) ──
-        if (_marketDataService.HasData(normalizedSymbol))
-        {
-            var history = _marketDataService.GetHistory(normalizedSymbol, maxPoints: 120);
-            if (history.Count > 0)
-            {
-                var labels = history.Select(h => h.Time.ToString("HH:mm:ss")).ToList();
-                var prices = history.Select(h => h.Price).ToList();
-
-                return Ok(new
-                {
-                    success = true,
-                    symbol = normalizedSymbol,
-                    labels = labels,
-                    prices = prices,
-                    source = "Live Market Data (Real-Time)"
-                });
-            }
-        }
-
-        // ── 2. Yahoo Finance: 1-month daily chart ──
         string mappedSymbol = normalizedSymbol switch
         {
             "BTC" => "BTC-USD",
@@ -219,10 +200,11 @@ public class ReportController : Controller
             _ => normalizedSymbol
         };
 
+        // ── 1. Yahoo Finance: 6-month daily chart (primary data source) ──
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Get,
-                $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(mappedSymbol)}?range=1mo&interval=1d");
+                $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(mappedSymbol)}?range=6mo&interval=1d");
             request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
             var response = _httpClient.Send(request);
@@ -266,6 +248,34 @@ public class ReportController : Controller
                         prices.Add(Math.Round(closePrices[i], normalizedSymbol == "BTC" ? 0 : 2));
                     }
 
+                    // Build a dictionary: date → price (for fast lookup)
+                    var priceByDate = new Dictionary<string, double>();
+                    for (int i = 0; i < Math.Min(labels.Count, prices.Count); i++)
+                        priceByDate[labels[i]] = prices[i];
+
+                    // Append any live MarketDataService ticks that are more recent than the last Yahoo date
+                    if (_marketDataService.HasData(normalizedSymbol))
+                    {
+                        var liveHistory = _marketDataService.GetHistory(normalizedSymbol, maxPoints: 300);
+                        if (liveHistory.Count > 0)
+                        {
+                            var lastYahooDate = labels.LastOrDefault();
+                            DateTime lastYahooDateTime = DateTime.MinValue;
+                            if (!string.IsNullOrEmpty(lastYahooDate))
+                                DateTime.TryParseExact(lastYahooDate, "MMM dd", null,
+                                    System.Globalization.DateTimeStyles.None, out lastYahooDateTime);
+
+                            foreach (var tick in liveHistory)
+                            {
+                                if (tick.Time > lastYahooDateTime)
+                                {
+                                    labels.Add(tick.Time.ToString("MMM dd HH:mm"));
+                                    prices.Add(Math.Round(tick.Price, normalizedSymbol == "BTC" ? 0 : 2));
+                                }
+                            }
+                        }
+                    }
+
                     if (prices.Count > 0)
                         return Ok(new { success = true, symbol = normalizedSymbol, labels, prices, source = "Yahoo Finance" });
                 }
@@ -273,14 +283,34 @@ public class ReportController : Controller
         }
         catch { /* swallow — trigger fallback */ }
 
-        // ── 3. Simulation fallback (only when all above fail) ──
-        var fallbackLabels = Enumerable.Range(0, 30)
-            .Select(i => DateTime.UtcNow.AddDays(-29 + i).ToString("MMM dd"))
+        // ── 2. MarketDataService live ticks only (if Yahoo fails) ──
+        if (_marketDataService.HasData(normalizedSymbol))
+        {
+            var history = _marketDataService.GetHistory(normalizedSymbol, maxPoints: 120);
+            if (history.Count > 0)
+            {
+                var labels = history.Select(h => h.Time.ToString("MMM dd HH:mm")).ToList();
+                var prices = history.Select(h => Math.Round(h.Price, normalizedSymbol == "BTC" ? 0 : 2)).ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    symbol = normalizedSymbol,
+                    labels = labels,
+                    prices = prices,
+                    source = "Live Market Data"
+                });
+            }
+        }
+
+        // ── 3. Simulation fallback ──
+        var fallbackLabels = Enumerable.Range(0, 180)
+            .Select(i => DateTime.UtcNow.AddDays(-179 + i).ToString("MMM dd"))
             .ToList();
         var rng = new Random();
         double startPrice = rng.Next(80, 600);
         var fallbackPrices = new List<double>();
-        for (int i = 0; i < 30; i++)
+        for (int i = 0; i < 180; i++)
         {
             double change = (rng.NextDouble() - 0.5) * 8;
             startPrice = Math.Max(10, startPrice + change);

@@ -9,6 +9,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces
         Task<NewsArticle?> GetByIdAsync(int id);
         Task<List<NewsArticle>> GetByCreatorAsync(int accountId);
         Task<List<NewsArticle>> GetByDateRangeAsync(DateTime startUtc, DateTime endUtc);
+        Task<List<NewsArticle>> GetByDateRangeAsync(DateTime startUtc, DateTime endUtc, int? tagId);
         Task<int> CreateWithTagAsync(NewsArticle article, int tagId);
         Task<bool> ToggleStatusAsync(int newsArticleId, int updatedByAccountId);
         Task<List<NewsArticle>> GetActiveReportsAsync(int? categoryId = null, int? tagId = null, string? decision = null);

@@ -22,6 +22,8 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
 
         public async Task CreateTagAsync(Tag tag)
         {
+            tag.TagName = tag.TagName.Trim().ToUpperInvariant();
+
             if (await _repo.ExistsByNameAsync(tag.TagName))
             {
                 throw new InvalidOperationException(
@@ -34,10 +36,11 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
         public async Task UpdateTagAsync(Tag tag)
         {
             var allTags = await _repo.GetAllAsync();
+            var normalizedName = tag.TagName.Trim().ToUpperInvariant();
 
             var duplicate = allTags.Any(t =>
                 t.TagID != tag.TagID &&
-                t.TagName.ToLower() == tag.TagName.ToLower());
+                t.TagName.ToUpperInvariant() == normalizedName);
 
             if (duplicate)
             {
@@ -45,6 +48,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
                     "Tag name already exists.");
             }
 
+            tag.TagName = normalizedName;
             await _repo.UpdateAsync(tag);
         }
 

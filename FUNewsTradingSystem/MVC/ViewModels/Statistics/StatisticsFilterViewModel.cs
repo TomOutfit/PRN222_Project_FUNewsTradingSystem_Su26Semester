@@ -13,5 +13,7 @@ namespace FUNewsTradingSystem_MVC.ViewModels.Statistics
         [DataType(DataType.Date)]
         [Display(Name = "End Date")]
         public DateTime EndDate { get; set; } = DateTime.Today;
+
+        public int? TagId { get; set; }
     }
 }
