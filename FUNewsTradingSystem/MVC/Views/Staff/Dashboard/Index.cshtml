@@ -15,13 +15,14 @@
         margin-bottom: 2rem;
     }
     .welcome-banner::before {
-        content: '📈';
+        content: '';
         position: absolute;
         right: 2rem; top: 50%;
         transform: translateY(-50%);
         font-size: 5rem;
-        opacity: 0.15;
+        opacity: 0.12;
         line-height: 1;
+        /* replaced emoji with CSS — BI icon rendered via JS below */
     }
     .welcome-banner h2 { font-weight: 800; font-size: 1.75rem; margin-bottom: .25rem; }
     .welcome-banner p  { opacity: .85; margin: 0; font-size: .95rem; }
@@ -40,12 +41,16 @@
     .feat-card-bar { height: 5px; width: 100%; }
     .feat-card-body { padding: 1.5rem; }
     .feat-icon {
-        font-size: 2.25rem;
+        font-size: 2rem;
         margin-bottom: .875rem;
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px; height: 52px;
+        border-radius: 14px;
         transition: transform 0.3s ease;
     }
-    .feat-card:hover .feat-icon { transform: scale(1.15) rotate(-8deg); }
+    .feat-card:hover .feat-icon { transform: scale(1.12) rotate(-6deg); }
     .feat-card h5 { font-weight: 700; font-size: 1.05rem; margin-bottom: .4rem; color: var(--text-main); }
     .feat-card p  { font-size: .85rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 1.25rem; }
     .feat-card a.stretched-link::after { z-index: 2; }
@@ -62,10 +67,13 @@
         <div class="feat-card">
             <div class="feat-card-bar" style="background: linear-gradient(90deg,#6d28d9,#9333ea)"></div>
             <div class="feat-card-body">
-                <span class="feat-icon">🤖</span>
+                <span class="feat-icon" style="background:rgba(109,40,217,.12);color:#9333ea;">
+                    <i class="bi bi-cpu-fill"></i>
+                </span>
                 <h5>Run Analysis</h5>
                 <p>Fetch the latest news and generate a BUY / SELL / HOLD trading recommendation powered by AI.</p>
-                <a asp-controller="RunAnalysis" asp-action="Index" class="btn btn-primary btn-sm stretched-link">
+                <a asp-controller="RunAnalysis" asp-action="Index" class="btn btn-sm stretched-link"
+                   style="background:linear-gradient(135deg,#6d28d9,#9333ea);color:#fff;border:none;">
                     <i class="bi bi-play-fill me-1"></i>Get Started
                 </a>
             </div>
@@ -77,11 +85,14 @@
         <div class="feat-card">
             <div class="feat-card-bar" style="background: linear-gradient(90deg,#059669,#10b981)"></div>
             <div class="feat-card-body">
-                <span class="feat-icon">📁</span>
+                <span class="feat-icon" style="background:rgba(5,150,105,.12);color:#059669;">
+                    <i class="bi bi-folder2-open"></i>
+                </span>
                 <h5>Manage Categories</h5>
                 <p>Add, edit, or toggle market sector categories that group news articles for analysis.</p>
-                <a asp-controller="Category" asp-action="Index" class="btn btn-success btn-sm stretched-link">
-                    <i class="bi bi-folder2-open me-1"></i>Open
+                <a asp-controller="Category" asp-action="Index" class="btn btn-sm stretched-link"
+                   style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;">
+                    <i class="bi bi-arrow-right me-1"></i>Open
                 </a>
             </div>
         </div>
@@ -92,11 +103,14 @@
         <div class="feat-card">
             <div class="feat-card-bar" style="background: linear-gradient(90deg,#d97706,#f59e0b)"></div>
             <div class="feat-card-body">
-                <span class="feat-icon">🏷️</span>
+                <span class="feat-icon" style="background:rgba(217,119,6,.12);color:#d97706;">
+                    <i class="bi bi-tags-fill"></i>
+                </span>
                 <h5>Manage Tags</h5>
                 <p>Add and edit stock ticker symbols (tags) used to label and filter trading news articles.</p>
-                <a asp-controller="Tag" asp-action="Index" class="btn btn-warning btn-sm stretched-link">
-                    <i class="bi bi-tags me-1"></i>Open
+                <a asp-controller="Tag" asp-action="Index" class="btn btn-sm stretched-link"
+                   style="background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;border:none;">
+                    <i class="bi bi-arrow-right me-1"></i>Open
                 </a>
             </div>
         </div>
@@ -107,14 +121,17 @@
         <div class="feat-card">
             <div class="feat-card-bar" style="background: linear-gradient(90deg,#0284c7,#38bdf8)"></div>
             <div class="feat-card-body">
-                <span class="feat-icon">📊</span>
+                <span class="feat-icon" style="background:rgba(2,132,199,.12);color:#0284c7;">
+                    <i class="bi bi-journal-text"></i>
+                </span>
                 <h5>
                     My Reports
                     <span class="badge bg-primary ms-1">@reportCount</span>
                 </h5>
                 <p>View your trading analysis history — every BUY / SELL / HOLD recommendation you've generated.</p>
-                <a asp-controller="Staff" asp-action="MyReports" class="btn btn-sm stretched-link" style="background:linear-gradient(135deg,#0284c7,#38bdf8);color:#fff;border:none;">
-                    <i class="bi bi-journal-text me-1"></i>View History
+                <a href="/Staff/MyReports" class="btn btn-sm stretched-link"
+                   style="background:linear-gradient(135deg,#0284c7,#38bdf8);color:#fff;border:none;">
+                    <i class="bi bi-arrow-right me-1"></i>View History
                 </a>
             </div>
         </div>
@@ -123,12 +140,15 @@
     @* 5. My Profile *@
     <div class="col-md-4 col-sm-6">
         <div class="feat-card">
-            <div class="feat-card-bar" style="background: linear-gradient(90deg,var(--brand-1),var(--accent))"></div>
+            <div class="feat-card-bar" style="background: linear-gradient(90deg,#0ea5e9,#6366f1)"></div>
             <div class="feat-card-body">
-                <span class="feat-icon">👤</span>
+                <span class="feat-icon" style="background:rgba(14,165,233,.12);color:#0ea5e9;">
+                    <i class="bi bi-person-circle"></i>
+                </span>
                 <h5>My Profile</h5>
                 <p>Update your display name, change your password, and manage your account settings.</p>
-                <a asp-controller="Staff" asp-action="Profile" class="btn btn-outline-secondary btn-sm stretched-link">
+                <a asp-controller="Staff" asp-action="Profile" class="btn btn-sm stretched-link"
+                   style="background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;">
                     <i class="bi bi-gear me-1"></i>Manage
                 </a>
             </div>
