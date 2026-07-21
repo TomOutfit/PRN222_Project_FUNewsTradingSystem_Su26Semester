@@ -20,4 +20,5 @@ public class ReportDetailViewModel
     public int ConfidenceScore { get; set; }
     public IEnumerable<string> TagNames { get; set; } = Enumerable.Empty<string>();
     public List<string> Tags { get; set; } = new();
+    public bool IsBookmarked { get; set; }
 }

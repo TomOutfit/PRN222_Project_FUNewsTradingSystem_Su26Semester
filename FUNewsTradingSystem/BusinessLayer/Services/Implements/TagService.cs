@@ -54,5 +54,11 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
 
         public async Task DeleteTagAsync(int id)
             => await _repo.DeleteAsync(id);
+
+        public async Task<List<Tag>> GetTagsByCategoryAsync(int categoryId)
+            => await _repo.GetTagsByCategoryAsync(categoryId);
+
+        public async Task<bool> ValidateTagCategoryPairingAsync(int tagId, int categoryId)
+            => await _repo.ValidateTagCategoryPairingAsync(tagId, categoryId);
     }
 }

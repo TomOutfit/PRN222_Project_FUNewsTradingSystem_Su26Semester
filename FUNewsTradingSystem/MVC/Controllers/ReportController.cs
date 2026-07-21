@@ -3,6 +3,7 @@ using System.Net.Http;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_MVC.Extensions;
 using FUNewsTradingSystem_MVC.Helpers;
+using FUNewsTradingSystem_MVC.Models;
 using FUNewsTradingSystem_MVC.ViewModels.Report;
 using FUNewsTradingSystem_MVC.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,7 @@ public class ReportController : Controller
     private readonly IHubContext<NotificationHub> _notificationHub;
     private readonly HttpClient _httpClient;
     private readonly IMarketDataService _marketDataService;
+    private readonly ISavedReportService _savedReportService;
 
     public ReportController(
         INewsArticleService newsService,
@@ -27,7 +29,8 @@ public class ReportController : Controller
         ITagService tagService,
         IHubContext<NotificationHub> notificationHub,
         HttpClient httpClient,
-        IMarketDataService marketDataService)
+        IMarketDataService marketDataService,
+        ISavedReportService savedReportService)
     {
         _newsService = newsService;
         _categoryService = categoryService;
@@ -35,6 +38,7 @@ public class ReportController : Controller
         _notificationHub = notificationHub;
         _httpClient = httpClient;
         _marketDataService = marketDataService;
+        _savedReportService = savedReportService;
     }
 
     /// <summary>
@@ -93,6 +97,10 @@ public class ReportController : Controller
         if (article == null)
             return NotFound();
 
+        var accountId = User.GetAccountId();
+        bool isBookmarked = accountId.HasValue
+            && await _savedReportService.IsBookmarkedAsync(accountId.Value, article.NewsArticleID);
+
         var model = new ReportDetailViewModel
         {
             NewsArticleId = article.NewsArticleID,
@@ -108,7 +116,8 @@ public class ReportController : Controller
             ConfidenceScore = article.ConfidenceScore ?? 0,
             Tags = article.NewsTagList
                 .Select(t => t.Tag.TagName)
-                .ToList()
+                .ToList(),
+            IsBookmarked = isBookmarked
         };
 
         return View("~/Views/Report/Details.cshtml", model);
@@ -177,7 +186,7 @@ public class ReportController : Controller
     [AllowAnonymous]
     [HttpGet]
     [Route("api/market/chart/{symbol}")]
-    public IActionResult GetChartData(string symbol)
+    public IActionResult GetChartData(string symbol, ChartPeriod period = ChartPeriod.SixMonths)
     {
         if (string.IsNullOrWhiteSpace(symbol))
             return BadRequest("Symbol is required.");
@@ -200,11 +209,22 @@ public class ReportController : Controller
             _ => normalizedSymbol
         };
 
-        // ── 1. Yahoo Finance: 6-month daily chart (primary data source) ──
+        var (range, interval) = period switch
+        {
+            ChartPeriod.OneDay => ("1d", "5m"),
+            ChartPeriod.OneWeek => ("1wk", "1h"),
+            ChartPeriod.OneMonth => ("1mo", "1d"),
+            ChartPeriod.ThreeMonths => ("3mo", "1d"),
+            ChartPeriod.SixMonths => ("6mo", "1d"),
+            ChartPeriod.OneYear => ("1y", "1d"),
+            _ => ("6mo", "1d")
+        };
+
+        // ── 1. Yahoo Finance chart (primary data source) ──
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Get,
-                $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(mappedSymbol)}?range=6mo&interval=1d");
+                $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(mappedSymbol)}?range={range}&interval={interval}");
             request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
             var response = _httpClient.Send(request);

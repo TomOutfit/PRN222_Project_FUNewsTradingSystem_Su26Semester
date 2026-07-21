@@ -63,5 +63,20 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Implements
             return await _context.Tags
                 .AnyAsync(t => t.TagName == normalized);
         }
+
+        public async Task<List<Tag>> GetTagsByCategoryAsync(int categoryId)
+        {
+            return await _context.TagCategoryMaps
+                .Where(tcm => tcm.CategoryID == categoryId)
+                .Select(tcm => tcm.Tag)
+                .OrderBy(t => t.TagName)
+                .ToListAsync();
+        }
+
+        public async Task<bool> ValidateTagCategoryPairingAsync(int tagId, int categoryId)
+        {
+            return await _context.TagCategoryMaps
+                .AnyAsync(tcm => tcm.TagID == tagId && tcm.CategoryID == categoryId);
+        }
     }
 }

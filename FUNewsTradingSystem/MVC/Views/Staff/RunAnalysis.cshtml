@@ -73,23 +73,23 @@
 
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
-                    <label asp-for="SelectedTagId" class="form-label">
-                        <i class="bi bi-hash me-1"></i>Ticker Symbol
-                    </label>
-                    <select asp-for="SelectedTagId" class="form-select fintech-form-control" asp-items="Model.AvailableTags">
-                        <option value="">— Select Ticker —</option>
-                    </select>
-                    <span asp-validation-for="SelectedTagId" class="text-danger" style="font-size:.78rem"></span>
-                </div>
-
-                <div class="col-md-6">
                     <label asp-for="SelectedCategoryId" class="form-label">
                         <i class="bi bi-folder2 me-1"></i>Market Sector
                     </label>
-                    <select asp-for="SelectedCategoryId" class="form-select fintech-form-control" asp-items="Model.AvailableCategories">
+                    <select asp-for="SelectedCategoryId" id="SelectedCategoryId" class="form-select fintech-form-control" asp-items="Model.AvailableCategories">
                         <option value="">— Select Sector —</option>
                     </select>
                     <span asp-validation-for="SelectedCategoryId" class="text-danger" style="font-size:.78rem"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="SelectedTagId" class="form-label">
+                        <i class="bi bi-hash me-1"></i>Ticker Symbol
+                    </label>
+                    <select asp-for="SelectedTagId" id="SelectedTagId" class="form-select fintech-form-control" asp-items="Model.AvailableTags" disabled>
+                        <option value="">— Select a sector first —</option>
+                    </select>
+                    <span asp-validation-for="SelectedTagId" class="text-danger" style="font-size:.78rem"></span>
                 </div>
             </div>
 
@@ -136,4 +136,55 @@
     <partial name="_ValidationScriptsPartial" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script src="~/js/run-analysis.js"></script>
+    <script>
+        (function () {
+            var categorySelect = document.getElementById('SelectedCategoryId');
+            var tagSelect = document.getElementById('SelectedTagId');
+
+            if (!categorySelect || !tagSelect) return;
+
+            categorySelect.addEventListener('change', function () {
+                var categoryId = this.value;
+
+                // Always reset tag dropdown first
+                tagSelect.innerHTML = '';
+                tagSelect.disabled = true;
+
+                if (!categoryId) {
+                    var placeholder = document.createElement('option');
+                    placeholder.value = '';
+                    placeholder.textContent = '— Select a sector first —';
+                    tagSelect.appendChild(placeholder);
+                    return;
+                }
+
+                var loading = document.createElement('option');
+                loading.value = '';
+                loading.textContent = 'Loading tickers...';
+                tagSelect.appendChild(loading);
+
+                fetch('/Staff/RunAnalysis/GetTagsByCategory?categoryId=' + encodeURIComponent(categoryId))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        tagSelect.innerHTML = '';
+                        var defaultOpt = document.createElement('option');
+                        defaultOpt.value = '';
+                        defaultOpt.textContent = data.tags.length > 0 ? '— Select Ticker —' : '— No tickers for this sector —';
+                        tagSelect.appendChild(defaultOpt);
+
+                        data.tags.forEach(function (tag) {
+                            var opt = document.createElement('option');
+                            opt.value = tag.id;
+                            opt.textContent = tag.name;
+                            tagSelect.appendChild(opt);
+                        });
+
+                        tagSelect.disabled = data.tags.length === 0;
+                    })
+                    .catch(function () {
+                        tagSelect.innerHTML = '<option value="">— Failed to load tickers —</option>';
+                    });
+            });
+        })();
+    </script>
 }

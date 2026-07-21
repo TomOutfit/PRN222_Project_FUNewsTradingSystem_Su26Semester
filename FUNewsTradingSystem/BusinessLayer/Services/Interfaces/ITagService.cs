@@ -9,5 +9,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
         Task CreateTagAsync(Tag tag);
         Task UpdateTagAsync(Tag tag);
         Task DeleteTagAsync(int id);
+        Task<List<Tag>> GetTagsByCategoryAsync(int categoryId);
+        Task<bool> ValidateTagCategoryPairingAsync(int tagId, int categoryId);
     }
 }

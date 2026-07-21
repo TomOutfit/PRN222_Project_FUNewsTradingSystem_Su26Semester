@@ -99,12 +99,14 @@ builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interf
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.ICategoryRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.CategoryRepository>();
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.ITagRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.TagRepository>();
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.INewsArticleRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.NewsArticleRepository>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces.ISavedReportRepository, FUNewsTradingSystem_BusinessLayer.Repositories.Implements.SavedReportRepository>();
 
 // Services — Scoped
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ISystemAccountService, FUNewsTradingSystem_BusinessLayer.Services.Implements.SystemAccountService>();
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ICategoryService, FUNewsTradingSystem_BusinessLayer.Services.Implements.CategoryService>();
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ITagService, FUNewsTradingSystem_BusinessLayer.Services.Implements.TagService>();
 builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.INewsArticleService, FUNewsTradingSystem_BusinessLayer.Services.Implements.NewsArticleService>();
+builder.Services.AddScoped<FUNewsTradingSystem_BusinessLayer.Services.Interfaces.ISavedReportService, FUNewsTradingSystem_BusinessLayer.Services.Implements.SavedReportService>();
 
 // MarketDataService — singleton shared between BackgroundService and API
 builder.Services.AddSingleton<IMarketDataService, MarketDataService>();

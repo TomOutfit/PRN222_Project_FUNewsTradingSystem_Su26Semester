@@ -39,10 +39,9 @@ public class RunAnalysisController : Controller
     {
         var model = new RunAnalysisViewModel();
 
-        // Populate Ticker dropdown from Tags
-        var tags = await _tagService.GetAllTagsAsync();
+        // Tags start empty — populated dynamically when sector is selected
         model.AvailableTags = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-            tags, "TagID", "TagName");
+            Enumerable.Empty<object>(), "TagID", "TagName");
 
         // Populate Sector dropdown from active Categories
         var categories = await _categoryService.GetActiveAsync();
@@ -50,6 +49,19 @@ public class RunAnalysisController : Controller
             categories, "CategoryID", "CategoryName");
 
         return View("~/Views/Staff/RunAnalysis.cshtml", model);
+    }
+
+    /// <summary>
+    /// GET /Staff/RunAnalysis/GetTagsByCategory?categoryId={id} - Returns tags for selected sector (JSON)
+    /// </summary>
+    [HttpGet("Staff/RunAnalysis/GetTagsByCategory")]
+    public async Task<IActionResult> GetTagsByCategory(int categoryId)
+    {
+        if (categoryId <= 0)
+            return Json(new { tags = Array.Empty<object>() });
+
+        var tags = await _tagService.GetTagsByCategoryAsync(categoryId);
+        return Json(new { tags = tags.Select(t => new { id = t.TagID, name = t.TagName }) });
     }
 
     /// <summary>
@@ -61,6 +73,13 @@ public class RunAnalysisController : Controller
         if (request == null || request.SelectedTagId <= 0 || request.SelectedCategoryId <= 0)
         {
             return Json(new { success = false, errorMessage = "Please select both a ticker and a sector." });
+        }
+
+        // Validate tag-category pairing
+        var isValid = await _tagService.ValidateTagCategoryPairingAsync(request.SelectedTagId, request.SelectedCategoryId);
+        if (!isValid)
+        {
+            return Json(new { success = false, errorMessage = "The selected ticker does not belong to the chosen sector. Please select a valid pairing." });
         }
 
         // Get current user's account ID from claims

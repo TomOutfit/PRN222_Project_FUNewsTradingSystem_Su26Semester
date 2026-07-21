@@ -107,6 +107,9 @@ namespace FUNewsTradingSystem_DataAccessLayer.Migrations
                     b.Property<int>("CategoryID")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ConfidenceScore")
+                        .HasColumnType("int");
+
                     b.Property<int?>("CreatedByID")
                         .HasColumnType("int");
 
@@ -164,6 +167,37 @@ namespace FUNewsTradingSystem_DataAccessLayer.Migrations
                     b.HasIndex("TagID");
 
                     b.ToTable("NewsTag", (string)null);
+                });
+
+            modelBuilder.Entity("FUNewsTradingSystem_DataAccessLayer.Models.SavedReport", b =>
+                {
+                    b.Property<int>("SavedReportID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SavedReportID"));
+
+                    b.Property<int>("AccountID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NewsArticleID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("SavedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("SavedReportID");
+
+                    b.HasIndex("NewsArticleID");
+
+                    b.HasIndex("AccountID", "NewsArticleID")
+                        .IsUnique();
+
+                    b.ToTable("SavedReport", (string)null);
                 });
 
             modelBuilder.Entity("FUNewsTradingSystem_DataAccessLayer.Models.SystemAccount", b =>
@@ -293,6 +327,80 @@ namespace FUNewsTradingSystem_DataAccessLayer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FUNewsTradingSystem_DataAccessLayer.Models.TagCategoryMap", b =>
+                {
+                    b.Property<int>("TagCategoryMapID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TagCategoryMapID"));
+
+                    b.Property<int>("CategoryID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagID")
+                        .HasColumnType("int");
+
+                    b.HasKey("TagCategoryMapID");
+
+                    b.HasIndex("CategoryID");
+
+                    b.HasIndex("TagID", "CategoryID")
+                        .IsUnique();
+
+                    b.ToTable("TagCategoryMap", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            TagCategoryMapID = 1,
+                            CategoryID = 1,
+                            TagID = 1
+                        },
+                        new
+                        {
+                            TagCategoryMapID = 2,
+                            CategoryID = 1,
+                            TagID = 2
+                        },
+                        new
+                        {
+                            TagCategoryMapID = 3,
+                            CategoryID = 1,
+                            TagID = 3
+                        },
+                        new
+                        {
+                            TagCategoryMapID = 4,
+                            CategoryID = 1,
+                            TagID = 4
+                        },
+                        new
+                        {
+                            TagCategoryMapID = 5,
+                            CategoryID = 1,
+                            TagID = 5
+                        },
+                        new
+                        {
+                            TagCategoryMapID = 6,
+                            CategoryID = 1,
+                            TagID = 8
+                        },
+                        new
+                        {
+                            TagCategoryMapID = 7,
+                            CategoryID = 5,
+                            TagID = 6
+                        },
+                        new
+                        {
+                            TagCategoryMapID = 8,
+                            CategoryID = 5,
+                            TagID = 7
+                        });
+                });
+
             modelBuilder.Entity("FUNewsTradingSystem_DataAccessLayer.Models.Category", b =>
                 {
                     b.HasOne("FUNewsTradingSystem_DataAccessLayer.Models.Category", "ParentCategory")
@@ -343,6 +451,44 @@ namespace FUNewsTradingSystem_DataAccessLayer.Migrations
                         .IsRequired();
 
                     b.Navigation("NewsArticle");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("FUNewsTradingSystem_DataAccessLayer.Models.SavedReport", b =>
+                {
+                    b.HasOne("FUNewsTradingSystem_DataAccessLayer.Models.SystemAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FUNewsTradingSystem_DataAccessLayer.Models.NewsArticle", "NewsArticle")
+                        .WithMany()
+                        .HasForeignKey("NewsArticleID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("NewsArticle");
+                });
+
+            modelBuilder.Entity("FUNewsTradingSystem_DataAccessLayer.Models.TagCategoryMap", b =>
+                {
+                    b.HasOne("FUNewsTradingSystem_DataAccessLayer.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FUNewsTradingSystem_DataAccessLayer.Models.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("Tag");
                 });

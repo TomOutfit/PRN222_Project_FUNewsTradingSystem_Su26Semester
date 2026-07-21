@@ -461,24 +461,42 @@
 </style>
 
 <div class="container px-0 report-detail-container">
-    <div class="mb-4">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
         <a asp-controller="Report" asp-action="Index" class="btn fintech-btn-outline btn-sm rounded-pill px-3 back-btn">
             <i class="bi bi-arrow-left me-1"></i> Back to Analysis Reports
         </a>
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <a href="/Account/Login" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.88rem;">
+                <span class="bi bi-box-arrow-in-right"></span>
+                Login / Sign Up
+            </a>
+        }
     </div>
 
     <!-- ═══════════════════════════════════════
          HERO BANNER
     ════════════════════════════════════════ -->
     <div class="report-hero mb-4">
-        <!-- Top row: category + decision pill -->
+        <!-- Top row: category + decision pill + bookmark -->
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <span class="hero-category-badge">
                 <i class="bi bi-folder2-open"></i> @Model.CategoryName
             </span>
-            <div class="decision-pill">
-                <i class="bi @decisionIcon"></i>
-                @decisionLabel
+            <div class="d-flex align-items-center gap-2">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <button id="bookmarkBtn" class="btn btn-sm" title="Save Report"
+                            style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; transition: all 0.2s;"
+                            onclick="toggleBookmark(@Model.NewsArticleId)">
+                        <i id="bookmarkIcon" class="bi bi-bookmark"></i>
+                        <span id="bookmarkLabel">Save</span>
+                    </button>
+                }
+                <div class="decision-pill">
+                    <i class="bi @decisionIcon"></i>
+                    @decisionLabel
+                </div>
             </div>
         </div>
 
@@ -629,11 +647,22 @@
                         </span>
                     </div>
                 </div>
+
+                <!-- Period Selector -->
+                <div class="d-flex gap-2 mb-3 flex-wrap" style="margin-top: 1rem;">
+                    <button class="btn btn-sm fintech-btn-primary period-btn active" data-period="SixMonths" style="padding: 6px 12px; font-size: 0.8rem;">6M</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneDay" style="padding: 6px 12px; font-size: 0.8rem;">1D</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneWeek" style="padding: 6px 12px; font-size: 0.8rem;">1W</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneMonth" style="padding: 6px 12px; font-size: 0.8rem;">1M</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="ThreeMonths" style="padding: 6px 12px; font-size: 0.8rem;">3M</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneYear" style="padding: 6px 12px; font-size: 0.8rem;">1Y</button>
+                </div>
+
                 <div class="chart-body" style="height:300px; position:relative;">
                     <canvas id="tradingChart"></canvas>
                 </div>
                 <div class="chart-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <span><i class="bi bi-info-circle me-1"></i> Historical data from Yahoo Finance · 6-month window</span>
+                    <span><i class="bi bi-info-circle me-1"></i><span id="chartFooter">Historical data from Yahoo Finance · 6-month window</span></span>
                     <span id="dataPointCount" class="text-muted" style="font-size:.7rem;"></span>
                 </div>
             </div>
@@ -766,9 +795,65 @@
     </div>
 </div>
 
+@* Antiforgery token for bookmark AJAX calls *@
+@Html.AntiForgeryToken()
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    @* ── Bookmark toggle ── *@
+    <script>
+        (function () {
+            var isBookmarked = @(Model.IsBookmarked ? "true" : "false");
+            var articleId = @Model.NewsArticleId;
+
+            function setBookmarkState(saved) {
+                isBookmarked = saved;
+                var icon = document.getElementById('bookmarkIcon');
+                var label = document.getElementById('bookmarkLabel');
+                var btn = document.getElementById('bookmarkBtn');
+                if (!icon || !label || !btn) return;
+                if (saved) {
+                    icon.className = 'bi bi-bookmark-fill';
+                    label.textContent = 'Saved';
+                    btn.style.background = 'rgba(16,185,129,0.3)';
+                    btn.style.borderColor = 'rgba(16,185,129,0.6)';
+                } else {
+                    icon.className = 'bi bi-bookmark';
+                    label.textContent = 'Save';
+                    btn.style.background = 'rgba(255,255,255,0.15)';
+                    btn.style.borderColor = 'rgba(255,255,255,0.3)';
+                }
+            }
+
+            // Apply initial state from server
+            setBookmarkState(isBookmarked);
+
+            window.toggleBookmark = function (id) {
+                var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (!token) return;
+
+                fetch('/News/BookmarkReport/' + id, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token.value,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        setBookmarkState(data.bookmarked);
+                    }
+                })
+                .catch(function () {
+                    console.error('Failed to toggle bookmark');
+                });
+            };
+        })();
+    </script>
+
     <script>
         (function() {
             var ctx = document.getElementById('tradingChart');
@@ -964,6 +1049,68 @@
                     if (badge) badge.innerHTML = '<i class="bi bi-wifi-off me-1"></i>Reconnecting…';
                 });
             }
+
+            // ── Period selector button handlers ──
+            var periodBtns = document.querySelectorAll('.period-btn');
+            periodBtns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var period = this.getAttribute('data-period');
+
+                    // Update button states
+                    periodBtns.forEach(function(b) {
+                        b.classList.remove('fintech-btn-primary');
+                        b.classList.add('fintech-btn-outline');
+                    });
+                    this.classList.remove('fintech-btn-outline');
+                    this.classList.add('fintech-btn-primary');
+
+                    // Update title
+                    var periodNames = {
+                        'OneDay': '1D',
+                        'OneWeek': '1W',
+                        'OneMonth': '1M',
+                        'ThreeMonths': '3M',
+                        'SixMonths': '6M',
+                        'OneYear': '1Y'
+                    };
+                    var periodLabels = {
+                        'OneDay': '1-day',
+                        'OneWeek': '1-week',
+                        'OneMonth': '1-month',
+                        'ThreeMonths': '3-month',
+                        'SixMonths': '6-month',
+                        'OneYear': '1-year'
+                    };
+
+                    var titleEl = document.getElementById('chartTitle');
+                    if (titleEl) {
+                        titleEl.textContent = ticker + ' Market Trend (' + periodNames[period] + ')';
+                    }
+                    var footerEl = document.getElementById('chartFooter');
+                    if (footerEl) {
+                        footerEl.textContent = 'Historical data from Yahoo Finance · ' + periodLabels[period] + ' window';
+                    }
+
+                    // Fetch new data with period parameter
+                    fetch('/api/market/chart/' + encodeURIComponent(ticker) + '?period=' + period)
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data && data.success && data.prices && data.prices.length > 0) {
+                                // Clear existing dataset but keep chart structure
+                                chartInstance.data.labels = data.labels;
+                                chartInstance.data.datasets[0].data = data.prices;
+                                chartInstance.data.datasets[1].data = []; // Clear live ticks
+                                chartInstance.update();
+                                var countEl = document.getElementById('dataPointCount');
+                                if (countEl) countEl.textContent = data.prices.length + ' data points loaded';
+                            }
+                        })
+                        .catch(function() {
+                            console.error('Failed to fetch chart data for period:', period);
+                        });
+                });
+            });
         })();
     </script>
 }

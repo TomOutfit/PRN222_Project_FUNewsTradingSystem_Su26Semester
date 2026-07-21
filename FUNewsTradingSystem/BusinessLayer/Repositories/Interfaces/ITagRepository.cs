@@ -25,5 +25,11 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces
         /// <summary>Checks whether any tag with the given name already exists. Returns true regardless of case
         /// since names are stored normalised to uppercase.</summary>
         Task<bool> ExistsByNameAsync(string tagName);
+
+        /// <summary>Returns all tags mapped to the specified category via TagCategoryMap.</summary>
+        Task<List<Tag>> GetTagsByCategoryAsync(int categoryId);
+
+        /// <summary>Returns true if the given tag is mapped to the given category.</summary>
+        Task<bool> ValidateTagCategoryPairingAsync(int tagId, int categoryId);
     }
 }

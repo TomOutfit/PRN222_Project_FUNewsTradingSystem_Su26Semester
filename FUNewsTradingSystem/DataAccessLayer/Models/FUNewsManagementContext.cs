@@ -14,6 +14,8 @@ public class FUNewsManagementContext : DbContext
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<NewsArticle> NewsArticles => Set<NewsArticle>();
     public DbSet<NewsTag> NewsTags => Set<NewsTag>();
+    public DbSet<SavedReport> SavedReports => Set<SavedReport>();
+    public DbSet<TagCategoryMap> TagCategoryMaps => Set<TagCategoryMap>();
 
     /// <summary>
     /// Configures the EF Core model: table names, column constraints, relationships,
@@ -146,6 +148,59 @@ public class FUNewsManagementContext : DbContext
             new Tag { TagID = 6, TagName = "BTC", Note = "Bitcoin" },
             new Tag { TagID = 7, TagName = "ETH", Note = "Ethereum" },
             new Tag { TagID = 8, TagName = "AMZN", Note = "Amazon.com, Inc." }
+        );
+
+        // --- SavedReport ---
+        // Unique per (AccountID, NewsArticleID) — no duplicate bookmarks.
+        // Cascade delete: removing account or article cleans up its saved rows.
+        modelBuilder.Entity<SavedReport>(entity =>
+        {
+            entity.ToTable("SavedReport");
+            entity.HasIndex(e => new { e.AccountID, e.NewsArticleID }).IsUnique();
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+
+            entity.HasOne(sr => sr.Account)
+                  .WithMany()
+                  .HasForeignKey(sr => sr.AccountID)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(sr => sr.NewsArticle)
+                  .WithMany()
+                  .HasForeignKey(sr => sr.NewsArticleID)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- TagCategoryMap ---
+        // Maps which tags belong to which category (sector).
+        // Unique per (TagID, CategoryID) — prevents duplicate pairings.
+        modelBuilder.Entity<TagCategoryMap>(entity =>
+        {
+            entity.ToTable("TagCategoryMap");
+            entity.HasIndex(e => new { e.TagID, e.CategoryID }).IsUnique();
+
+            entity.HasOne(tcm => tcm.Tag)
+                  .WithMany()
+                  .HasForeignKey(tcm => tcm.TagID)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(tcm => tcm.Category)
+                  .WithMany()
+                  .HasForeignKey(tcm => tcm.CategoryID)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // TagCategoryMap seed data: maps tickers to their market sector
+        modelBuilder.Entity<TagCategoryMap>().HasData(
+            // Technology sector (CategoryID=1)
+            new TagCategoryMap { TagCategoryMapID = 1, TagID = 1, CategoryID = 1 }, // AAPL
+            new TagCategoryMap { TagCategoryMapID = 2, TagID = 2, CategoryID = 1 }, // NVDA
+            new TagCategoryMap { TagCategoryMapID = 3, TagID = 3, CategoryID = 1 }, // MSFT
+            new TagCategoryMap { TagCategoryMapID = 4, TagID = 4, CategoryID = 1 }, // GOOGL
+            new TagCategoryMap { TagCategoryMapID = 5, TagID = 5, CategoryID = 1 }, // TSLA
+            new TagCategoryMap { TagCategoryMapID = 6, TagID = 8, CategoryID = 1 }, // AMZN
+            // Cryptocurrencies sector (CategoryID=5)
+            new TagCategoryMap { TagCategoryMapID = 7, TagID = 6, CategoryID = 5 }, // BTC
+            new TagCategoryMap { TagCategoryMapID = 8, TagID = 7, CategoryID = 5 }  // ETH
         );
 
     }

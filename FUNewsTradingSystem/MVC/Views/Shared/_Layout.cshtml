@@ -376,9 +376,26 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "News" && ViewContext.RouteData.Values["action"]?.ToString() == "SavedReports" ? "active" : "")"
+                                           asp-controller="News" asp-action="SavedReports">
+                                            <i class="bi bi-bookmark-fill me-1"></i>Saved Reports
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
                                            asp-controller="Staff" asp-action="Profile">
                                             <i class="bi bi-person-circle me-1"></i>Profile
+                                        </a>
+                                    </li>
+                                }
+
+                                @* LECTURER (ROLE 2) *@
+                                @if (User.IsInRole("2"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "News" && ViewContext.RouteData.Values["action"]?.ToString() == "SavedReports" ? "active" : "")"
+                                           asp-controller="News" asp-action="SavedReports">
+                                            <i class="bi bi-bookmark-fill me-1"></i>Saved Reports
                                         </a>
                                     </li>
                                 }
