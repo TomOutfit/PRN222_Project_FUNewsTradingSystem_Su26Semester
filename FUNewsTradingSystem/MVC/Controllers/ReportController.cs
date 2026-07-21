@@ -10,6 +10,7 @@ using FUNewsTradingSystem_MVC.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using FUNewsTradingSystem_MVC.Hubs;
 using X.PagedList;
 
@@ -24,6 +25,7 @@ public class ReportController : Controller
     private readonly HttpClient _httpClient;
     private readonly IMarketDataService _marketDataService;
     private readonly ISavedReportService _savedReportService;
+    private readonly FUNewsTradingSystem_DataAccessLayer.Models.FUNewsManagementContext _db;
 
     public ReportController(
         INewsArticleService newsService,
@@ -32,7 +34,8 @@ public class ReportController : Controller
         IHubContext<NotificationHub> notificationHub,
         HttpClient httpClient,
         IMarketDataService marketDataService,
-        ISavedReportService savedReportService)
+        ISavedReportService savedReportService,
+        FUNewsTradingSystem_DataAccessLayer.Models.FUNewsManagementContext db)
     {
         _newsService = newsService;
         _categoryService = categoryService;
@@ -41,6 +44,7 @@ public class ReportController : Controller
         _httpClient = httpClient;
         _marketDataService = marketDataService;
         _savedReportService = savedReportService;
+        _db = db;
     }
 
     /// <summary>
@@ -372,6 +376,35 @@ public class ReportController : Controller
         }
 
         return Ok(new { success = true, symbol = normalizedSymbol, labels = fallbackLabels, prices = fallbackPrices, source = "Simulated Trend" });
+    }
+
+    /// <summary>
+    /// GET /Report/DbStatus — Admin-only: check if SavedReport and TagCategoryMap tables exist
+    /// </summary>
+    [Authorize(Policy = "AdminOnly")]
+    [HttpGet]
+    [Route("Report/DbStatus")]
+    public async Task<IActionResult> DbStatus()
+    {
+        var results = new Dictionary<string, object>();
+        try
+        {
+            var savedCount = await _db.SavedReports.CountAsync();
+            results["SavedReport"] = $"OK ({savedCount} rows)";
+        }
+        catch (Exception ex) { results["SavedReport"] = $"MISSING: {ex.Message}"; }
+
+        try
+        {
+            var mapCount = await _db.TagCategoryMaps.CountAsync();
+            results["TagCategoryMap"] = $"OK ({mapCount} rows)";
+        }
+        catch (Exception ex) { results["TagCategoryMap"] = $"MISSING: {ex.Message}"; }
+
+        var pending = (await _db.Database.GetPendingMigrationsAsync()).ToList();
+        results["PendingMigrations"] = pending.Count == 0 ? "None" : string.Join(", ", pending);
+
+        return Json(results);
     }
 
     /// <summary>

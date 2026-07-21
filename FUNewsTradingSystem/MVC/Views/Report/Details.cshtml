@@ -825,7 +825,10 @@
 
             window.toggleBookmark = function (id) {
                 var token = document.querySelector('input[name="__RequestVerificationToken"]');
-                if (!token) return;
+                if (!token) { console.error('No antiforgery token found'); return; }
+
+                var btn = document.getElementById('bookmarkBtn');
+                if (btn) btn.disabled = true;
 
                 fetch('/Report/BookmarkReport/' + id, {
                     method: 'POST',
@@ -838,10 +841,17 @@
                 .then(function (data) {
                     if (data.success) {
                         setBookmarkState(data.bookmarked);
+                    } else {
+                        console.error('Bookmark error:', data.message);
+                        alert('Could not save: ' + (data.message || 'Unknown error'));
                     }
                 })
-                .catch(function () {
-                    console.error('Failed to toggle bookmark');
+                .catch(function (err) {
+                    console.error('Bookmark fetch failed:', err);
+                    alert('Network error — bookmark not saved.');
+                })
+                .finally(function () {
+                    if (btn) btn.disabled = false;
                 });
             };
         })();
