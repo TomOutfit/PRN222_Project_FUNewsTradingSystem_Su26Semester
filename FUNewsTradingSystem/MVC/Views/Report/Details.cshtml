@@ -465,13 +465,6 @@
         <a asp-controller="Report" asp-action="Index" class="btn fintech-btn-outline btn-sm rounded-pill px-3 back-btn">
             <i class="bi bi-arrow-left me-1"></i> Back to Analysis Reports
         </a>
-        @if (!User.Identity.IsAuthenticated)
-        {
-            <a href="/Account/Login" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.88rem;">
-                <span class="bi bi-box-arrow-in-right"></span>
-                Login / Sign Up
-            </a>
-        }
     </div>
 
     <!-- ═══════════════════════════════════════
