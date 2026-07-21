@@ -165,7 +165,7 @@ public class AccountController : Controller
         return role switch
         {
             1 => RedirectToAction("Index", "Staff"),
-            2 => RedirectToAction("Index",     "News"),
+            2 => RedirectToAction("Index",     "Report"),
             3 => LocalRedirect("/Admin/Dashboard"),
             _ => RedirectToAction("Index",     "Home"),
         };
