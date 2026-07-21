@@ -4,19 +4,16 @@ using FUNewsTradingSystem_DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace DataAccessLayer.Migrations
+namespace FUNewsTradingSystem_DataAccessLayer.Migrations
 {
     [DbContext(typeof(FUNewsManagementContext))]
-    [Migration("20260721141122_AddSavedReportAndTagCategoryMap")]
-    partial class AddSavedReportAndTagCategoryMap
+    partial class FUNewsManagementContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
