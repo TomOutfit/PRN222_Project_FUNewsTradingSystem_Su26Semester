@@ -121,7 +121,7 @@
             var token = document.querySelector('input[name="__RequestVerificationToken"]');
             if (!token) return;
 
-            fetch('/News/RemoveBookmark/' + articleId, {
+            fetch('/Report/RemoveBookmark/' + articleId, {
                 method: 'POST',
                 headers: {
                     'RequestVerificationToken': token.value,

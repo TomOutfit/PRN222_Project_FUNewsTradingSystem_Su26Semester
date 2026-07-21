@@ -74,16 +74,26 @@ public class ReportController : Controller
 
         if (savedOnly)
         {
-            var accountId = User.GetAccountId()!.Value;
-            var saved = await _savedReportService.GetUserSavedReportsAsync(accountId);
-            sourceArticles = saved.Select(sr => sr.NewsArticle).Where(a => a != null && a.NewsStatus);
+            try
+            {
+                var accountId = User.GetAccountId()!.Value;
+                var saved = await _savedReportService.GetUserSavedReportsAsync(accountId);
+                sourceArticles = saved.Select(sr => sr.NewsArticle).Where(a => a != null && a.NewsStatus);
 
-            if (categoryId.HasValue)
-                sourceArticles = sourceArticles.Where(a => a.CategoryID == categoryId.Value);
-            if (tagId.HasValue)
-                sourceArticles = sourceArticles.Where(a => a.NewsTagList.Any(t => t.TagID == tagId.Value));
-            if (!string.IsNullOrEmpty(decision))
-                sourceArticles = sourceArticles.Where(a => a.NewsTitle.StartsWith($"[{decision}]", StringComparison.OrdinalIgnoreCase));
+                if (categoryId.HasValue)
+                    sourceArticles = sourceArticles.Where(a => a.CategoryID == categoryId.Value);
+                if (tagId.HasValue)
+                    sourceArticles = sourceArticles.Where(a => a.NewsTagList.Any(t => t.TagID == tagId.Value));
+                if (!string.IsNullOrEmpty(decision))
+                    sourceArticles = sourceArticles.Where(a => a.NewsTitle.StartsWith($"[{decision}]", StringComparison.OrdinalIgnoreCase));
+            }
+            catch
+            {
+                // SavedReport table may not exist yet in production — fall back to all reports
+                savedOnly = false;
+                ViewBag.SavedOnly = false;
+                sourceArticles = await _newsService.GetActiveReportsAsync(categoryId, tagId, decision);
+            }
         }
         else
         {
@@ -120,8 +130,12 @@ public class ReportController : Controller
             return NotFound();
 
         var accountId = User.GetAccountId();
-        bool isBookmarked = accountId.HasValue
-            && await _savedReportService.IsBookmarkedAsync(accountId.Value, article.NewsArticleID);
+        bool isBookmarked = false;
+        if (accountId.HasValue)
+        {
+            try { isBookmarked = await _savedReportService.IsBookmarkedAsync(accountId.Value, article.NewsArticleID); }
+            catch { /* SavedReport table may not exist yet in production */ }
+        }
 
         var model = new ReportDetailViewModel
         {
@@ -358,6 +372,54 @@ public class ReportController : Controller
         }
 
         return Ok(new { success = true, symbol = normalizedSymbol, labels = fallbackLabels, prices = fallbackPrices, source = "Simulated Trend" });
+    }
+
+    /// <summary>
+    /// POST /Report/BookmarkReport/{id} — Toggle bookmark for authenticated users
+    /// </summary>
+    [Authorize(Policy = "StaffOrLecturer")]
+    [HttpPost]
+    [Route("Report/BookmarkReport/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BookmarkReport(int id)
+    {
+        var accountId = User.GetAccountId();
+        if (accountId == null)
+            return Json(new { success = false, message = "Not authenticated" });
+
+        try
+        {
+            var alreadySaved = await _savedReportService.IsBookmarkedAsync(accountId.Value, id);
+            if (alreadySaved)
+            {
+                await _savedReportService.RemoveBookmarkAsync(accountId.Value, id);
+                return Json(new { success = true, bookmarked = false });
+            }
+            await _savedReportService.SaveReportAsync(accountId.Value, id);
+            return Json(new { success = true, bookmarked = true });
+        }
+        catch
+        {
+            return Json(new { success = false, message = "Bookmark feature unavailable — database migration pending." });
+        }
+    }
+
+    /// <summary>
+    /// POST /Report/RemoveBookmark/{id} — Remove bookmark
+    /// </summary>
+    [Authorize(Policy = "StaffOrLecturer")]
+    [HttpPost]
+    [Route("Report/RemoveBookmark/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveBookmark(int id)
+    {
+        var accountId = User.GetAccountId();
+        if (accountId == null)
+            return Json(new { success = false, message = "Not authenticated" });
+
+        try { await _savedReportService.RemoveBookmarkAsync(accountId.Value, id); }
+        catch { return Json(new { success = false, message = "Bookmark feature unavailable — database migration pending." }); }
+        return Json(new { success = true, bookmarked = false });
     }
 
     private string ExtractDecision(string title)
