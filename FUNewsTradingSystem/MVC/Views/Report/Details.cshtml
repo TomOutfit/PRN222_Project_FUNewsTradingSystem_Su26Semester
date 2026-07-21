@@ -788,8 +788,8 @@
     </div>
 </div>
 
-@* Antiforgery token for bookmark AJAX calls *@
-@Html.AntiForgeryToken()
+@* Antiforgery token for bookmark AJAX calls — hidden form so the input is always in DOM *@
+<form id="__AjaxAntiForgeryForm" style="display:none">@Html.AntiForgeryToken()</form>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -837,18 +837,20 @@
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(function (r) { return r.json(); })
+                .then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
                 .then(function (data) {
                     if (data.success) {
                         setBookmarkState(data.bookmarked);
                     } else {
-                        console.error('Bookmark error:', data.message);
                         alert('Could not save: ' + (data.message || 'Unknown error'));
                     }
                 })
                 .catch(function (err) {
+                    alert('Bookmark failed: ' + err.message + '. Check console for details.');
                     console.error('Bookmark fetch failed:', err);
-                    alert('Network error — bookmark not saved.');
                 })
                 .finally(function () {
                     if (btn) btn.disabled = false;

@@ -335,28 +335,59 @@
 
                     <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                         <ul class="navbar-nav flex-grow-1 gap-1">
-                            @* GUEST / LECTURER (ROLE 2) *@
-                            @if (!User.Identity?.IsAuthenticated == true || User.IsInRole("2"))
+                            @{
+                                bool isStaff = User.IsInRole("1");
+                                bool isLecturer = User.IsInRole("2");
+                                bool isAdmin = User.IsInRole("3");
+                                bool isAuth = User.Identity?.IsAuthenticated == true;
+                                string reportActive = ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "";
+                            }
+
+                            @* Reports — visible to everyone except admin *@
+                            @if (!isAdmin)
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
-                                       asp-controller="Report" asp-action="Index">
-                                        <i class="bi bi-newspaper me-1"></i>Reports
-                                    </a>
+                                <li class="nav-item @(isStaff ? "dropdown" : "")">
+                                    @if (isStaff)
+                                    {
+                                        <a class="nav-link d-flex align-items-center gap-1 @reportActive" href="#" role="button"
+                                           data-bs-toggle="dropdown" aria-expanded="false"
+                                           style="padding-right: .5rem;">
+                                            <i class="bi bi-newspaper me-1"></i>Reports
+                                            <i class="bi bi-chevron-down" style="font-size:.65rem; opacity:.7; transition: transform .2s;"></i>
+                                        </a>
+                                        <ul class="dropdown-menu shadow-lg border-0 mt-1 py-1"
+                                            style="min-width: 175px; border-radius: 10px; background: var(--surface-card); border: 1px solid var(--border) !important;">
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3"
+                                                   asp-controller="Report" asp-action="Index"
+                                                   style="font-size: .85rem; font-weight: 500; border-radius: 6px;">
+                                                    <i class="bi bi-newspaper text-primary"></i> All Reports
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider my-1" style="border-color: var(--border);"></li>
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3"
+                                                   href="/Staff/MyReports"
+                                                   style="font-size: .85rem; font-weight: 500; border-radius: 6px;">
+                                                    <i class="bi bi-journal-text text-primary"></i> My Reports
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <a class="nav-link @reportActive" asp-controller="Report" asp-action="Index">
+                                            <i class="bi bi-newspaper me-1"></i>Reports
+                                        </a>
+                                    }
                                 </li>
                             }
 
-                            @if (User.Identity?.IsAuthenticated == true)
+                            @if (isAuth)
                             {
                                 @* STAFF (ROLE 1) *@
-                                @if (User.IsInRole("1"))
+                                @if (isStaff)
                                 {
-                                    <li class="nav-item">
-                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
-                                           asp-controller="Report" asp-action="Index">
-                                            <i class="bi bi-newspaper me-1"></i>Reports
-                                        </a>
-                                    </li>
                                     <li class="nav-item">
                                         <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "RunAnalysis" ? "active" : "")"
                                            asp-controller="RunAnalysis" asp-action="Index">
@@ -376,12 +407,6 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "MyReports" ? "active" : "")"
-                                           href="/Staff/MyReports">
-                                            <i class="bi bi-journal-text me-1"></i>My Reports
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
                                         <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
                                            asp-controller="Staff" asp-action="Profile">
                                             <i class="bi bi-person-circle me-1"></i>Profile
@@ -389,7 +414,7 @@
                                     </li>
                                 }
 
-                                @* LECTURER (ROLE 2) — Reports link already rendered above via GUEST/LECTURER block *@
+                                @* LECTURER (ROLE 2) — Reports link rendered above *@
 
                                 @* ADMIN (ROLE 3) *@
                                 @if (User.IsInRole("3"))

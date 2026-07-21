@@ -48,14 +48,12 @@ public class ReportController : Controller
     }
 
     /// <summary>
-    /// GET /Report, /Report/Index, /News, /News/Index - Public list of active trading analysis reports with filtering & pagination
+    /// GET /Report, /Report/Index - Public list of active trading analysis reports with filtering & pagination
     /// </summary>
     [AllowAnonymous]
     [HttpGet]
     [Route("Report")]
     [Route("Report/Index")]
-    [Route("News")]
-    [Route("News/Index")]
     public async Task<IActionResult> Index(int? page, int? categoryId, int? tagId, string? decision, bool savedOnly = false)
     {
         var pageNumber = PaginationSettings.ValidatePageNumber(page);
@@ -120,12 +118,11 @@ public class ReportController : Controller
     }
 
     /// <summary>
-    /// GET /Report/Detail/{id}, /News/Detail/{id} - Public detailed view of a report
+    /// GET /Report/Detail/{id} - Public detailed view of a report
     /// </summary>
     [AllowAnonymous]
     [HttpGet]
     [Route("Report/Detail/{id}")]
-    [Route("News/Detail/{id}")]
     public async Task<IActionResult> Detail(int id)
     {
         var article = await _newsService.GetReportDetailAsync(id);
