@@ -153,7 +153,7 @@ app.MapHub<FUNewsTradingSystem_MVC.Hubs.NotificationHub>("/hubs/notifications");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}")
+    pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 // ─────────────────────────────────────────────
 // 6. Auto-apply pending EF migrations on startup (best-effort)
