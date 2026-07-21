@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Net.Http;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
+using FUNewsTradingSystem_DataAccessLayer.Models;
 using FUNewsTradingSystem_MVC.Extensions;
 using FUNewsTradingSystem_MVC.Helpers;
 using FUNewsTradingSystem_MVC.Models;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using FUNewsTradingSystem_MVC.Hubs;
+using X.PagedList;
 
 namespace FUNewsTradingSystem_MVC.Controllers;
 
@@ -50,7 +52,7 @@ public class ReportController : Controller
     [Route("Report/Index")]
     [Route("News")]
     [Route("News/Index")]
-    public async Task<IActionResult> Index(int? page, int? categoryId, int? tagId, string? decision)
+    public async Task<IActionResult> Index(int? page, int? categoryId, int? tagId, string? decision, bool savedOnly = false)
     {
         var pageNumber = PaginationSettings.ValidatePageNumber(page);
         var pageSize = PaginationSettings.DefaultPageSize;
@@ -58,15 +60,37 @@ public class ReportController : Controller
         var categories = await _categoryService.GetAllCategoriesAsync();
         var tags = await _tagService.GetAllTagsAsync();
 
+        // savedOnly only works when authenticated
+        if (!User.Identity!.IsAuthenticated) savedOnly = false;
+
         ViewBag.Categories = categories.Where(c => c.IsActive).ToList();
         ViewBag.Tags = tags.ToList();
         ViewBag.SelectedCategory = categoryId;
         ViewBag.SelectedTag = tagId;
         ViewBag.SelectedDecision = decision;
+        ViewBag.SavedOnly = savedOnly;
 
-        var reports = await _newsService.GetActiveReportsAsync(categoryId, tagId, decision);
+        IEnumerable<NewsArticle> sourceArticles;
 
-        var model = reports.Select(a => new ReportListItemViewModel
+        if (savedOnly)
+        {
+            var accountId = User.GetAccountId()!.Value;
+            var saved = await _savedReportService.GetUserSavedReportsAsync(accountId);
+            sourceArticles = saved.Select(sr => sr.NewsArticle).Where(a => a != null && a.NewsStatus);
+
+            if (categoryId.HasValue)
+                sourceArticles = sourceArticles.Where(a => a.CategoryID == categoryId.Value);
+            if (tagId.HasValue)
+                sourceArticles = sourceArticles.Where(a => a.NewsTagList.Any(t => t.TagID == tagId.Value));
+            if (!string.IsNullOrEmpty(decision))
+                sourceArticles = sourceArticles.Where(a => a.NewsTitle.StartsWith($"[{decision}]", StringComparison.OrdinalIgnoreCase));
+        }
+        else
+        {
+            sourceArticles = await _newsService.GetActiveReportsAsync(categoryId, tagId, decision);
+        }
+
+        var model = sourceArticles.Select(a => new ReportListItemViewModel
         {
             NewsArticleId = a.NewsArticleID,
             Decision = ExtractDecision(a.NewsTitle),
@@ -75,9 +99,7 @@ public class ReportController : Controller
             CreatedDate = a.CreatedDate,
             CategoryName = a.Category?.CategoryName ?? "General",
             ConfidenceScore = a.ConfidenceScore ?? 0,
-            TagNames = a.NewsTagList
-                .Select(t => t.Tag.TagName)
-                .ToList()
+            TagNames = a.NewsTagList.Select(t => t.Tag.TagName).ToList()
         }).ToPagedList(pageNumber, pageSize);
 
         return View("~/Views/Report/Index.cshtml", model);
@@ -124,7 +146,7 @@ public class ReportController : Controller
     }
 
     /// <summary>
-    /// GET /Staff/MyReports, /Report/MyReports - Staff member's report creation history
+    /// GET /Staff/MyReports - Staff's own report history
     /// </summary>
     [Authorize(Policy = "StaffOnly")]
     [HttpGet]
@@ -147,9 +169,7 @@ public class ReportController : Controller
         ViewBag.SelectedDecision = decision;
 
         var reports = await _newsService.GetReportsByCreatorAsync(accountId, categoryId, tagId, decision);
-
-        var pagedReports = reports
-            .ToPagedList(pageNumber, pageSize);
+        var pagedReports = reports.ToPagedList(pageNumber, pageSize);
 
         return View("~/Views/Staff/MyReports/Index.cshtml", pagedReports);
     }

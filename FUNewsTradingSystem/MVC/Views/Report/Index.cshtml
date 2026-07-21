@@ -10,6 +10,7 @@
     int? selectedCategory = ViewBag.SelectedCategory as int?;
     int? selectedTag = ViewBag.SelectedTag as int?;
     string selectedDecision = ViewBag.SelectedDecision as string ?? "";
+    bool savedOnly = ViewBag.SavedOnly == true;
 }
 
 <style>
@@ -76,6 +77,7 @@
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
+                    @if (savedOnly) { <input type="hidden" name="savedOnly" value="true" /> }
                     <button type="submit" class="btn fintech-btn-primary flex-grow-1">
                         <i class="bi bi-funnel-fill me-1"></i>Filter
                     </button>
@@ -84,6 +86,29 @@
                     </a>
                 </div>
             </div>
+
+            @if (User.Identity!.IsAuthenticated)
+            {
+                <div class="mt-3 pt-3" style="border-top: 1px solid var(--border);">
+                    <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="savedOnlyToggle"
+                               style="width: 2.5em; height: 1.25em; cursor: pointer;"
+                               @(savedOnly ? "checked" : "")
+                               onchange="this.form.savedOnly.value = this.checked ? 'true' : 'false'; this.form.submit();">
+                        <input type="hidden" name="savedOnly" value="@(savedOnly ? "true" : "false")" />
+                        <label class="form-check-label mb-0" for="savedOnlyToggle"
+                               style="cursor: pointer; font-size: .85rem; font-weight: 600; color: @(savedOnly ? "#059669" : "var(--text-muted)")">
+                            <i class="bi bi-bookmark-fill me-1"></i>Show Saved Only
+                        </label>
+                        @if (savedOnly)
+                        {
+                            <span class="badge" style="background: rgba(16,185,129,.12); color: #059669; border: 1px solid rgba(16,185,129,.25); font-size: .72rem; padding: .3em .6em; border-radius: 8px;">
+                                <i class="bi bi-check-circle me-1"></i>Active
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
         </form>
     </div>
 
