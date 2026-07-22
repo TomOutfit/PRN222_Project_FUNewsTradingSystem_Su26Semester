@@ -31,5 +31,8 @@ namespace FUNewsTradingSystem_BusinessLayer.Repositories.Interfaces
 
         /// <summary>Returns true if the given tag is mapped to the given category.</summary>
         Task<bool> ValidateTagCategoryPairingAsync(int tagId, int categoryId);
+
+        /// <summary>Returns the CategoryID the given tag maps to, or null if no mapping exists.</summary>
+        Task<int?> GetCategoryByTagAsync(int tagId);
     }
 }

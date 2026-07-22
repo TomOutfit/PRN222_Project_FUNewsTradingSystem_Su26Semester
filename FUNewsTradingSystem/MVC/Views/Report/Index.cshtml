@@ -77,7 +77,6 @@
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    @if (savedOnly) { <input type="hidden" name="savedOnly" value="true" /> }
                     <button type="submit" class="btn fintech-btn-primary flex-grow-1">
                         <i class="bi bi-funnel-fill me-1"></i>Filter
                     </button>
@@ -94,8 +93,8 @@
                         <input class="form-check-input" type="checkbox" role="switch" id="savedOnlyToggle"
                                style="width: 2.5em; height: 1.25em; cursor: pointer;"
                                @(savedOnly ? "checked" : "")
-                               onchange="this.form.savedOnly.value = this.checked ? 'true' : 'false'; this.form.submit();">
-                        <input type="hidden" name="savedOnly" value="@(savedOnly ? "true" : "false")" />
+                               onchange="document.getElementById('savedOnlyHidden').value = this.checked ? 'true' : 'false'; this.form.submit();">
+                        <input type="hidden" id="savedOnlyHidden" name="savedOnly" value="@(savedOnly ? "true" : "false")" />
                         <label class="form-check-label mb-0" for="savedOnlyToggle"
                                style="cursor: pointer; font-size: .85rem; font-weight: 600; color: @(savedOnly ? "#059669" : "var(--text-muted)")">
                             <i class="bi bi-bookmark-fill me-1"></i>Show Saved Only

@@ -73,22 +73,32 @@
 
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
-                    <label asp-for="SelectedCategoryId" class="form-label">
+                    <label class="form-label">
                         <i class="bi bi-folder2 me-1"></i>Market Sector
                     </label>
-                    <select asp-for="SelectedCategoryId" id="SelectedCategoryId" class="form-select fintech-form-control" asp-items="Model.AvailableCategories">
-                        <option value="">— Select Sector —</option>
-                    </select>
+                    <div class="position-relative">
+                        <input type="text" id="sectorSearch" class="form-control fintech-form-control mb-1"
+                               placeholder="Type to search sectors..." autocomplete="off"
+                               style="font-size:.85rem;padding:.4rem .75rem;">
+                        <select asp-for="SelectedCategoryId" id="SelectedCategoryId" class="form-select fintech-form-control" asp-items="Model.AvailableCategories" size="1">
+                            <option value="">— All Sectors —</option>
+                        </select>
+                    </div>
                     <span asp-validation-for="SelectedCategoryId" class="text-danger" style="font-size:.78rem"></span>
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="SelectedTagId" class="form-label">
+                    <label class="form-label">
                         <i class="bi bi-hash me-1"></i>Ticker Symbol
                     </label>
-                    <select asp-for="SelectedTagId" id="SelectedTagId" class="form-select fintech-form-control" asp-items="Model.AvailableTags" disabled>
-                        <option value="">— Select a sector first —</option>
-                    </select>
+                    <div class="position-relative">
+                        <input type="text" id="tickerSearch" class="form-control fintech-form-control mb-1"
+                               placeholder="Type to search tickers..." autocomplete="off"
+                               style="font-size:.85rem;padding:.4rem .75rem;">
+                        <select asp-for="SelectedTagId" id="SelectedTagId" class="form-select fintech-form-control" asp-items="Model.AvailableTags">
+                            <option value="">— All Tickers —</option>
+                        </select>
+                    </div>
                     <span asp-validation-for="SelectedTagId" class="text-danger" style="font-size:.78rem"></span>
                 </div>
             </div>
@@ -137,54 +147,90 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script src="~/js/run-analysis.js"></script>
     <script>
-        (function () {
-            var categorySelect = document.getElementById('SelectedCategoryId');
-            var tagSelect = document.getElementById('SelectedTagId');
+    (function () {
+        var categorySelect = document.getElementById('SelectedCategoryId');
+        var tagSelect     = document.getElementById('SelectedTagId');
+        var sectorSearch  = document.getElementById('sectorSearch');
+        var tickerSearch  = document.getElementById('tickerSearch');
 
-            if (!categorySelect || !tagSelect) return;
+        if (!categorySelect || !tagSelect) return;
 
-            categorySelect.addEventListener('change', function () {
-                var categoryId = this.value;
+        // ── Snapshot all options on load ────────────────────────────────────────
+        var allCategoryOptions = Array.from(categorySelect.options).map(function (o) {
+            return { value: o.value, text: o.text };
+        });
+        var allTagOptions = Array.from(tagSelect.options).map(function (o) {
+            return { value: o.value, text: o.text };
+        });
 
-                // Always reset tag dropdown first
-                tagSelect.innerHTML = '';
-                tagSelect.disabled = true;
-
-                if (!categoryId) {
-                    var placeholder = document.createElement('option');
-                    placeholder.value = '';
-                    placeholder.textContent = '— Select a sector first —';
-                    tagSelect.appendChild(placeholder);
-                    return;
+        // ── Search filter helper ────────────────────────────────────────────────
+        function filterSelect(select, allOptions, term) {
+            var lower = term.toLowerCase();
+            select.innerHTML = '';
+            allOptions.forEach(function (o) {
+                if (!term || o.value === '' || o.text.toLowerCase().includes(lower)) {
+                    var opt = document.createElement('option');
+                    opt.value = o.value;
+                    opt.text  = o.text;
+                    select.appendChild(opt);
                 }
-
-                var loading = document.createElement('option');
-                loading.value = '';
-                loading.textContent = 'Loading tickers...';
-                tagSelect.appendChild(loading);
-
-                fetch('/Staff/RunAnalysis/GetTagsByCategory?categoryId=' + encodeURIComponent(categoryId))
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        tagSelect.innerHTML = '';
-                        var defaultOpt = document.createElement('option');
-                        defaultOpt.value = '';
-                        defaultOpt.textContent = data.tags.length > 0 ? '— Select Ticker —' : '— No tickers for this sector —';
-                        tagSelect.appendChild(defaultOpt);
-
-                        data.tags.forEach(function (tag) {
-                            var opt = document.createElement('option');
-                            opt.value = tag.id;
-                            opt.textContent = tag.name;
-                            tagSelect.appendChild(opt);
-                        });
-
-                        tagSelect.disabled = data.tags.length === 0;
-                    })
-                    .catch(function () {
-                        tagSelect.innerHTML = '<option value="">— Failed to load tickers —</option>';
-                    });
             });
-        })();
+        }
+
+        // ── Sector search ───────────────────────────────────────────────────────
+        sectorSearch && sectorSearch.addEventListener('input', function () {
+            filterSelect(categorySelect, allCategoryOptions, this.value);
+        });
+
+        // ── Ticker search ───────────────────────────────────────────────────────
+        tickerSearch && tickerSearch.addEventListener('input', function () {
+            filterSelect(tagSelect, allTagOptions, this.value);
+        });
+
+        // ── Sector → filter tickers (forward direction) ─────────────────────────
+        categorySelect.addEventListener('change', function () {
+            var categoryId = this.value;
+            if (tickerSearch) tickerSearch.value = '';
+
+            if (!categoryId) {
+                // Restore all tickers
+                filterSelect(tagSelect, allTagOptions, '');
+                tagSelect.value = '';
+                return;
+            }
+
+            fetch('/Staff/RunAnalysis/GetTagsByCategory?categoryId=' + encodeURIComponent(categoryId))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    // Rebuild allTagOptions from server result + blank option
+                    var fresh = [{ value: '', text: data.tags.length > 0 ? '— Select Ticker —' : '— No tickers for this sector —' }];
+                    data.tags.forEach(function (t) { fresh.push({ value: String(t.id), text: t.name }); });
+                    allTagOptions = fresh;
+                    filterSelect(tagSelect, allTagOptions, '');
+                    tagSelect.value = '';
+                })
+                .catch(function () {
+                    tagSelect.innerHTML = '<option value="">— Failed to load tickers —</option>';
+                });
+        });
+
+        // ── Ticker → auto-select sector (reverse direction) ─────────────────────
+        tagSelect.addEventListener('change', function () {
+            var tagId = this.value;
+            if (!tagId) return;
+
+            fetch('/Staff/RunAnalysis/GetCategoryByTag?tagId=' + encodeURIComponent(tagId))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.categoryId) {
+                        categorySelect.value = String(data.categoryId);
+                        if (sectorSearch) sectorSearch.value = '';
+                        filterSelect(categorySelect, allCategoryOptions, '');
+                        categorySelect.value = String(data.categoryId);
+                    }
+                })
+                .catch(function () { /* ignore reverse-lookup failure */ });
+        });
+    })();
     </script>
 }

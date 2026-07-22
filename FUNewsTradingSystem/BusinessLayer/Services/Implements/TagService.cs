@@ -60,5 +60,8 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Implements
 
         public async Task<bool> ValidateTagCategoryPairingAsync(int tagId, int categoryId)
             => await _repo.ValidateTagCategoryPairingAsync(tagId, categoryId);
+
+        public async Task<int?> GetCategoryByTagAsync(int tagId)
+            => await _repo.GetCategoryByTagAsync(tagId);
     }
 }

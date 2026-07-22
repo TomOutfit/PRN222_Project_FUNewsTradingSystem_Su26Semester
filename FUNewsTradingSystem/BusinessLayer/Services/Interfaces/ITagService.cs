@@ -11,5 +11,6 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
         Task DeleteTagAsync(int id);
         Task<List<Tag>> GetTagsByCategoryAsync(int categoryId);
         Task<bool> ValidateTagCategoryPairingAsync(int tagId, int categoryId);
+        Task<int?> GetCategoryByTagAsync(int tagId);
     }
 }

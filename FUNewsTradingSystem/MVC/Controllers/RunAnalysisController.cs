@@ -39,11 +39,10 @@ public class RunAnalysisController : Controller
     {
         var model = new RunAnalysisViewModel();
 
-        // Tags start empty — populated dynamically when sector is selected
+        var tags = await _tagService.GetAllTagsAsync();
         model.AvailableTags = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-            Enumerable.Empty<object>(), "TagID", "TagName");
+            tags, "TagID", "TagName");
 
-        // Populate Sector dropdown from active Categories
         var categories = await _categoryService.GetActiveAsync();
         model.AvailableCategories = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
             categories, "CategoryID", "CategoryName");
@@ -62,6 +61,19 @@ public class RunAnalysisController : Controller
 
         var tags = await _tagService.GetTagsByCategoryAsync(categoryId);
         return Json(new { tags = tags.Select(t => new { id = t.TagID, name = t.TagName }) });
+    }
+
+    /// <summary>
+    /// GET /Staff/RunAnalysis/GetCategoryByTag?tagId={id} - Returns category for selected ticker (JSON)
+    /// </summary>
+    [HttpGet("Staff/RunAnalysis/GetCategoryByTag")]
+    public async Task<IActionResult> GetCategoryByTag(int tagId)
+    {
+        if (tagId <= 0)
+            return Json(new { categoryId = (int?)null });
+
+        var categoryId = await _tagService.GetCategoryByTagAsync(tagId);
+        return Json(new { categoryId });
     }
 
     /// <summary>
