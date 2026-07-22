@@ -12,6 +12,8 @@
 -- =====================================================================================
 -- 1. Drop existing tables (in correct order due to FK constraints)
 -- =====================================================================================
+DROP TABLE IF EXISTS "SavedReport" CASCADE;
+DROP TABLE IF EXISTS "TagCategoryMap" CASCADE;
 DROP TABLE IF EXISTS "NewsTag" CASCADE;
 DROP TABLE IF EXISTS "NewsArticle" CASCADE;
 DROP TABLE IF EXISTS "Tag" CASCADE;
@@ -90,6 +92,36 @@ CREATE TABLE "NewsTag" (
         ON DELETE NO ACTION
 );
 
+-- Table: SavedReport
+CREATE TABLE "SavedReport" (
+    "SavedReportID" SERIAL PRIMARY KEY,
+    "AccountID" INTEGER NOT NULL,
+    "NewsArticleID" INTEGER NOT NULL,
+    "SavedDate" TIMESTAMP NOT NULL DEFAULT NOW(),
+    "Notes" VARCHAR(1000),
+    CONSTRAINT "FK_SavedReport_SystemAccount" FOREIGN KEY ("AccountID")
+        REFERENCES "SystemAccount"("AccountID")
+        ON DELETE CASCADE,
+    CONSTRAINT "FK_SavedReport_NewsArticle" FOREIGN KEY ("NewsArticleID")
+        REFERENCES "NewsArticle"("NewsArticleID")
+        ON DELETE CASCADE,
+    CONSTRAINT "UQ_SavedReport_AccountArticle" UNIQUE ("AccountID", "NewsArticleID")
+);
+
+-- Table: TagCategoryMap
+CREATE TABLE "TagCategoryMap" (
+    "TagCategoryMapID" SERIAL PRIMARY KEY,
+    "TagID" INTEGER NOT NULL,
+    "CategoryID" INTEGER NOT NULL,
+    CONSTRAINT "FK_TagCategoryMap_Tag" FOREIGN KEY ("TagID")
+        REFERENCES "Tag"("TagID")
+        ON DELETE CASCADE,
+    CONSTRAINT "FK_TagCategoryMap_Category" FOREIGN KEY ("CategoryID")
+        REFERENCES "Category"("CategoryID")
+        ON DELETE CASCADE,
+    CONSTRAINT "UQ_TagCategoryMap_TagCategory" UNIQUE ("TagID", "CategoryID")
+);
+
 -- =====================================================================================
 -- 3. Seed Data — Base Accounts
 -- =====================================================================================
@@ -100,6 +132,12 @@ VALUES
     ('Mike Trader', 'mike.staff@FUNewsTradingSystem.org', 1, '@@abc123@@_HASH_PLACEHOLDER'),
     ('Dr. Alan Smith', 'alan.lecturer@FUNewsTradingSystem.org', 2, '@@abc123@@_HASH_PLACEHOLDER'),
     ('Prof. Maria Garcia', 'maria.lecturer@FUNewsTradingSystem.org', 2, '@@abc123@@_HASH_PLACEHOLDER');
+
+-- EF Core test accounts (mirrored for prod/demo testing)
+INSERT INTO "SystemAccount" ("AccountName", "AccountEmail", "AccountRole", "AccountPassword")
+VALUES
+    ('Test Staff',    'staff@FUNewsTradingSystem.org',    1, '@@abc123@@_HASH_PLACEHOLDER'),
+    ('Test Lecturer', 'lecturer@FUNewsTradingSystem.org', 2, '@@abc123@@_HASH_PLACEHOLDER');
 
 -- =====================================================================================
 -- 4. Seed Data — Categories
@@ -201,6 +239,152 @@ INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES (2, 5);  -- TSLA
 INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES (3, 1);  -- AAPL
 INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES (4, 6);  -- BTC
 INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES (5, 11); -- PFE
+
+-- =====================================================================================
+-- 8. Seed Data — TagCategoryMap (full mapping: all 105 tags → correct sector)
+-- Base CategoryIDs (fixed SERIAL order from Section 4):
+--   1=Technology, 2=Healthcare, 3=Finance, 4=Energy, 5=Cryptocurrencies, 6=Consumer Goods
+--   7=Software & AI, 8=Semiconductors, 9=Biotechnology, 10=Commercial Banking
+--   11=Green Energy, 12=E-commerce
+-- Base TagIDs (Section 5, fixed order):
+--   1=AAPL,2=NVDA,3=MSFT,4=GOOGL,5=TSLA,6=BTC,7=ETH,8=AMZN,9=META,10=JPM,11=PFE,12=XOM
+-- Bulk TagIDs (Section C, order of VALUES list, starting at 13):
+--   13=NFLX,14=DIS,15=KO,16=PEP,17=MCD,18=SBUX,19=NKE,20=WMT,21=TGT,22=COST,
+--   23=HD,24=LOW,25=BA,26=GE,27=CAT,28=MMM,29=IBM,30=INTC,31=AMD,32=QCOM,
+--   33=ORCL,34=CRM,35=ADBE,36=PYPL,37=V,38=MA,39=BAC,40=WFC,41=GS,42=MS,
+--   43=C,44=UNH,45=JNJ,46=MRNA,47=LLY,48=ABBV,49=CVX,50=COP,51=SLB,
+--   52=NEE,53=DUK,54=T,55=VZ,56=TMUS,57=CMCSA,58=SONY,59=SNAP,60=PINS,
+--   61=UBER,62=LYFT,63=ABNB,64=DASH,65=SHOP,66=SQ,67=COIN,68=RIVN,69=LCID,
+--   70=F,71=GM,72=TM,73=HMC,74=SPOT,75=RBLX,76=U,77=PLTR,78=SNOW,79=DDOG,
+--   80=NET,81=ZM,82=DOCU,83=TEAM,84=NOW,85=WDAY,86=PANW,87=CRWD,88=OKTA,
+--   89=MDB,90=TWLO,91=ETSY,92=EBAY,93=BABA,94=JD,95=PDD,96=SE,97=MELI,
+--   98=SOL,99=ADA,100=DOGE,101=XRP,102=BNB,103=LTC,104=DOT,105=LINK
+-- =====================================================================================
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID") VALUES
+-- ── Technology / Semiconductors / Software & AI ──────────────────────────────────────
+(1,  1),   -- AAPL   → Technology
+(2,  8),   -- NVDA   → Semiconductors
+(3,  7),   -- MSFT   → Software & AI
+(4,  7),   -- GOOGL  → Software & AI
+(5,  1),   -- TSLA   → Technology
+(8,  1),   -- AMZN   → Technology
+(9,  7),   -- META   → Software & AI
+(29, 7),   -- IBM    → Software & AI
+(30, 8),   -- INTC   → Semiconductors
+(31, 8),   -- AMD    → Semiconductors
+(32, 8),   -- QCOM   → Semiconductors
+(33, 7),   -- ORCL   → Software & AI
+(34, 7),   -- CRM    → Software & AI
+(35, 7),   -- ADBE   → Software & AI
+(58, 1),   -- SONY   → Technology
+(59, 7),   -- SNAP   → Software & AI
+(60, 7),   -- PINS   → Software & AI
+(74, 7),   -- SPOT   → Software & AI
+(75, 7),   -- RBLX   → Software & AI
+(76, 7),   -- U      → Software & AI
+(77, 7),   -- PLTR   → Software & AI
+(78, 7),   -- SNOW   → Software & AI
+(79, 7),   -- DDOG   → Software & AI
+(80, 7),   -- NET    → Software & AI
+(81, 7),   -- ZM     → Software & AI
+(82, 7),   -- DOCU   → Software & AI
+(83, 7),   -- TEAM   → Software & AI
+(84, 7),   -- NOW    → Software & AI
+(85, 7),   -- WDAY   → Software & AI
+(86, 7),   -- PANW   → Software & AI
+(87, 7),   -- CRWD   → Software & AI
+(88, 7),   -- OKTA   → Software & AI
+(89, 7),   -- MDB    → Software & AI
+(90, 7),   -- TWLO   → Software & AI
+-- ── Healthcare / Biotechnology ───────────────────────────────────────────────────────
+(11, 2),   -- PFE    → Healthcare
+(44, 2),   -- UNH    → Healthcare
+(45, 2),   -- JNJ    → Healthcare
+(46, 9),   -- MRNA   → Biotechnology
+(47, 2),   -- LLY    → Healthcare
+(48, 9),   -- ABBV   → Biotechnology
+-- ── Finance / Commercial Banking ─────────────────────────────────────────────────────
+(10, 10),  -- JPM    → Commercial Banking
+(36, 3),   -- PYPL   → Finance
+(37, 3),   -- V      → Finance
+(38, 3),   -- MA     → Finance
+(39, 10),  -- BAC    → Commercial Banking
+(40, 10),  -- WFC    → Commercial Banking
+(41, 3),   -- GS     → Finance
+(42, 3),   -- MS     → Finance
+(43, 10),  -- C      → Commercial Banking
+(66, 3),   -- SQ     → Finance
+-- ── Energy / Green Energy ────────────────────────────────────────────────────────────
+(12, 4),   -- XOM    → Energy
+(49, 4),   -- CVX    → Energy
+(50, 4),   -- COP    → Energy
+(51, 4),   -- SLB    → Energy
+(52, 11),  -- NEE    → Green Energy
+(53, 4),   -- DUK    → Energy
+-- ── Consumer Goods / E-commerce ──────────────────────────────────────────────────────
+(14, 6),   -- DIS    → Consumer Goods
+(15, 6),   -- KO     → Consumer Goods
+(16, 6),   -- PEP    → Consumer Goods
+(17, 6),   -- MCD    → Consumer Goods
+(18, 6),   -- SBUX   → Consumer Goods
+(19, 6),   -- NKE    → Consumer Goods
+(20, 6),   -- WMT    → Consumer Goods
+(21, 6),   -- TGT    → Consumer Goods
+(22, 6),   -- COST   → Consumer Goods
+(23, 6),   -- HD     → Consumer Goods
+(24, 6),   -- LOW    → Consumer Goods
+(61, 6),   -- UBER   → Consumer Goods
+(62, 6),   -- LYFT   → Consumer Goods
+(63, 6),   -- ABNB   → Consumer Goods
+(64, 6),   -- DASH   → Consumer Goods
+(65, 12),  -- SHOP   → E-commerce
+(91, 12),  -- ETSY   → E-commerce
+(92, 12),  -- EBAY   → E-commerce
+(93, 12),  -- BABA   → E-commerce
+(94, 12),  -- JD     → E-commerce
+(95, 12),  -- PDD    → E-commerce
+(96, 12),  -- SE     → E-commerce
+(97, 12),  -- MELI   → E-commerce
+-- ── Cryptocurrencies ─────────────────────────────────────────────────────────────────
+(6,  5),   -- BTC    → Cryptocurrencies
+(7,  5),   -- ETH    → Cryptocurrencies
+(67, 5),   -- COIN   → Cryptocurrencies
+(98, 5),   -- SOL    → Cryptocurrencies
+(99, 5),   -- ADA    → Cryptocurrencies
+(100,5),   -- DOGE   → Cryptocurrencies
+(101,5),   -- XRP    → Cryptocurrencies
+(102,5),   -- BNB    → Cryptocurrencies
+(103,5),   -- LTC    → Cryptocurrencies
+(104,5),   -- DOT    → Cryptocurrencies
+(105,5);   -- LINK   → Cryptocurrencies
+
+-- ── Industrials (CategoryID via subquery — SERIAL order not fixed) ───────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+SELECT v.tid, c."CategoryID" FROM "Category" c
+CROSS JOIN (VALUES (25),(26),(27),(28)) AS v(tid)  -- BA, GE, CAT, MMM
+WHERE c."CategoryName" = 'Industrials';
+
+-- ── Telecommunications ────────────────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+SELECT v.tid, c."CategoryID" FROM "Category" c
+CROSS JOIN (VALUES (54),(55),(56),(57)) AS v(tid)  -- T, VZ, TMUS, CMCSA
+WHERE c."CategoryName" = 'Telecommunications';
+
+-- ── Media & Streaming (NFLX, DIS already in Consumer Goods above; add NFLX to Media) ─
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+SELECT 13, c."CategoryID" FROM "Category" c  -- NFLX → Media & Streaming
+WHERE c."CategoryName" = 'Media & Streaming';
+
+-- ── Automotive ───────────────────────────────────────────────────────────────────────
+-- EV makers map to Technology; traditional OEM map to Industrials
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+SELECT v.tid, c."CategoryID" FROM "Category" c
+CROSS JOIN (VALUES (70),(71),(72),(73)) AS v(tid)  -- F, GM, TM, HMC → Industrials
+WHERE c."CategoryName" = 'Industrials';
+
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID") VALUES
+(68, 1),   -- RIVN   → Technology (EV)
+(69, 1);   -- LCID   → Technology (EV)
 
 -- RAISE NOTICE 'FUNewsTradingSystem Database Schema and Seed Data deployed successfully!';
 
@@ -528,7 +712,9 @@ SELECT 'SystemAccount' AS table_name, COUNT(*) AS row_count FROM "SystemAccount"
 UNION ALL SELECT 'Category', COUNT(*) FROM "Category"
 UNION ALL SELECT 'Tag', COUNT(*) FROM "Tag"
 UNION ALL SELECT 'NewsArticle', COUNT(*) FROM "NewsArticle"
-UNION ALL SELECT 'NewsTag', COUNT(*) FROM "NewsTag";
+UNION ALL SELECT 'NewsTag', COUNT(*) FROM "NewsTag"
+UNION ALL SELECT 'SavedReport', COUNT(*) FROM "SavedReport"
+UNION ALL SELECT 'TagCategoryMap', COUNT(*) FROM "TagCategoryMap";
 
 SELECT "NewsStatus", COUNT(*) AS total FROM "NewsArticle" GROUP BY "NewsStatus";
 SELECT SUBSTRING("NewsTitle" FROM 1 FOR 6) AS decision_prefix, COUNT(*) AS total FROM "NewsArticle" GROUP BY 1;
@@ -541,5 +727,22 @@ WHERE a."AccountRole" = 1
 GROUP BY a."AccountName"
 ORDER BY report_count DESC
 LIMIT 10;
+
+-- TagCategoryMap coverage by sector
+SELECT c."CategoryName", COUNT(tcm."TagID") AS mapped_tags
+FROM "TagCategoryMap" tcm
+JOIN "Category" c ON c."CategoryID" = tcm."CategoryID"
+GROUP BY c."CategoryName"
+ORDER BY mapped_tags DESC;
+
+-- Tags without any sector mapping (should be 0)
+SELECT t."TagName" AS unmapped_tag FROM "Tag" t
+WHERE NOT EXISTS (
+    SELECT 1 FROM "TagCategoryMap" tcm WHERE tcm."TagID" = t."TagID"
+);
+
+-- Test accounts present
+SELECT "AccountEmail", "AccountRole" FROM "SystemAccount"
+WHERE "AccountEmail" IN ('staff@FUNewsTradingSystem.org','lecturer@FUNewsTradingSystem.org');
 
 -- RAISE NOTICE '=== BULK SEED COMPLETE ===';
