@@ -174,8 +174,10 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
         private async Task<(PortfolioManagerResponse, TradingAgentsRichData)> RunPythonAdapterAsync(
             string ticker, Func<string, int, Task>? onProgress)
         {
-            var scriptsPath = _configuration["TradingAgents:ScriptsPath"]
-                ?? System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
+            var rawScriptsPath = _configuration["TradingAgents:ScriptsPath"];
+            var scriptsPath = string.IsNullOrEmpty(rawScriptsPath)
+                ? System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts")
+                : rawScriptsPath;
             var scriptPath = System.IO.Path.Combine(scriptsPath, "ta_adapter.py");
             var python = _configuration["TradingAgents:PythonExecutable"] ?? "python3";
             var date = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd");
