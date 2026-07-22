@@ -260,133 +260,8 @@ INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES (5, 11); -- PFE
 --   89=MDB,90=TWLO,91=ETSY,92=EBAY,93=BABA,94=JD,95=PDD,96=SE,97=MELI,
 --   98=SOL,99=ADA,100=DOGE,101=XRP,102=BNB,103=LTC,104=DOT,105=LINK
 -- =====================================================================================
-INSERT INTO "TagCategoryMap" ("TagID", "CategoryID") VALUES
--- ── Technology / Semiconductors / Software & AI ──────────────────────────────────────
-(1,  1),   -- AAPL   → Technology
-(2,  8),   -- NVDA   → Semiconductors
-(3,  7),   -- MSFT   → Software & AI
-(4,  7),   -- GOOGL  → Software & AI
-(5,  1),   -- TSLA   → Technology
-(8,  1),   -- AMZN   → Technology
-(9,  7),   -- META   → Software & AI
-(29, 7),   -- IBM    → Software & AI
-(30, 8),   -- INTC   → Semiconductors
-(31, 8),   -- AMD    → Semiconductors
-(32, 8),   -- QCOM   → Semiconductors
-(33, 7),   -- ORCL   → Software & AI
-(34, 7),   -- CRM    → Software & AI
-(35, 7),   -- ADBE   → Software & AI
-(58, 1),   -- SONY   → Technology
-(59, 7),   -- SNAP   → Software & AI
-(60, 7),   -- PINS   → Software & AI
-(74, 7),   -- SPOT   → Software & AI
-(75, 7),   -- RBLX   → Software & AI
-(76, 7),   -- U      → Software & AI
-(77, 7),   -- PLTR   → Software & AI
-(78, 7),   -- SNOW   → Software & AI
-(79, 7),   -- DDOG   → Software & AI
-(80, 7),   -- NET    → Software & AI
-(81, 7),   -- ZM     → Software & AI
-(82, 7),   -- DOCU   → Software & AI
-(83, 7),   -- TEAM   → Software & AI
-(84, 7),   -- NOW    → Software & AI
-(85, 7),   -- WDAY   → Software & AI
-(86, 7),   -- PANW   → Software & AI
-(87, 7),   -- CRWD   → Software & AI
-(88, 7),   -- OKTA   → Software & AI
-(89, 7),   -- MDB    → Software & AI
-(90, 7),   -- TWLO   → Software & AI
--- ── Healthcare / Biotechnology ───────────────────────────────────────────────────────
-(11, 2),   -- PFE    → Healthcare
-(44, 2),   -- UNH    → Healthcare
-(45, 2),   -- JNJ    → Healthcare
-(46, 9),   -- MRNA   → Biotechnology
-(47, 2),   -- LLY    → Healthcare
-(48, 9),   -- ABBV   → Biotechnology
--- ── Finance / Commercial Banking ─────────────────────────────────────────────────────
-(10, 10),  -- JPM    → Commercial Banking
-(36, 3),   -- PYPL   → Finance
-(37, 3),   -- V      → Finance
-(38, 3),   -- MA     → Finance
-(39, 10),  -- BAC    → Commercial Banking
-(40, 10),  -- WFC    → Commercial Banking
-(41, 3),   -- GS     → Finance
-(42, 3),   -- MS     → Finance
-(43, 10),  -- C      → Commercial Banking
-(66, 3),   -- SQ     → Finance
--- ── Energy / Green Energy ────────────────────────────────────────────────────────────
-(12, 4),   -- XOM    → Energy
-(49, 4),   -- CVX    → Energy
-(50, 4),   -- COP    → Energy
-(51, 4),   -- SLB    → Energy
-(52, 11),  -- NEE    → Green Energy
-(53, 4),   -- DUK    → Energy
--- ── Consumer Goods / E-commerce ──────────────────────────────────────────────────────
-(14, 6),   -- DIS    → Consumer Goods
-(15, 6),   -- KO     → Consumer Goods
-(16, 6),   -- PEP    → Consumer Goods
-(17, 6),   -- MCD    → Consumer Goods
-(18, 6),   -- SBUX   → Consumer Goods
-(19, 6),   -- NKE    → Consumer Goods
-(20, 6),   -- WMT    → Consumer Goods
-(21, 6),   -- TGT    → Consumer Goods
-(22, 6),   -- COST   → Consumer Goods
-(23, 6),   -- HD     → Consumer Goods
-(24, 6),   -- LOW    → Consumer Goods
-(61, 6),   -- UBER   → Consumer Goods
-(62, 6),   -- LYFT   → Consumer Goods
-(63, 6),   -- ABNB   → Consumer Goods
-(64, 6),   -- DASH   → Consumer Goods
-(65, 12),  -- SHOP   → E-commerce
-(91, 12),  -- ETSY   → E-commerce
-(92, 12),  -- EBAY   → E-commerce
-(93, 12),  -- BABA   → E-commerce
-(94, 12),  -- JD     → E-commerce
-(95, 12),  -- PDD    → E-commerce
-(96, 12),  -- SE     → E-commerce
-(97, 12),  -- MELI   → E-commerce
--- ── Cryptocurrencies ─────────────────────────────────────────────────────────────────
-(6,  5),   -- BTC    → Cryptocurrencies
-(7,  5),   -- ETH    → Cryptocurrencies
-(67, 5),   -- COIN   → Cryptocurrencies
-(98, 5),   -- SOL    → Cryptocurrencies
-(99, 5),   -- ADA    → Cryptocurrencies
-(100,5),   -- DOGE   → Cryptocurrencies
-(101,5),   -- XRP    → Cryptocurrencies
-(102,5),   -- BNB    → Cryptocurrencies
-(103,5),   -- LTC    → Cryptocurrencies
-(104,5),   -- DOT    → Cryptocurrencies
-(105,5);   -- LINK   → Cryptocurrencies
-
--- ── Industrials (CategoryID via subquery — SERIAL order not fixed) ───────────────────
-INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
-SELECT v.tid, c."CategoryID" FROM "Category" c
-CROSS JOIN (VALUES (25),(26),(27),(28)) AS v(tid)  -- BA, GE, CAT, MMM
-WHERE c."CategoryName" = 'Industrials';
-
--- ── Telecommunications ────────────────────────────────────────────────────────────────
-INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
-SELECT v.tid, c."CategoryID" FROM "Category" c
-CROSS JOIN (VALUES (54),(55),(56),(57)) AS v(tid)  -- T, VZ, TMUS, CMCSA
-WHERE c."CategoryName" = 'Telecommunications';
-
--- ── Media & Streaming (NFLX, DIS already in Consumer Goods above; add NFLX to Media) ─
-INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
-SELECT 13, c."CategoryID" FROM "Category" c  -- NFLX → Media & Streaming
-WHERE c."CategoryName" = 'Media & Streaming';
-
--- ── Automotive ───────────────────────────────────────────────────────────────────────
--- EV makers map to Technology; traditional OEM map to Industrials
-INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
-SELECT v.tid, c."CategoryID" FROM "Category" c
-CROSS JOIN (VALUES (70),(71),(72),(73)) AS v(tid)  -- F, GM, TM, HMC → Industrials
-WHERE c."CategoryName" = 'Industrials';
-
-INSERT INTO "TagCategoryMap" ("TagID", "CategoryID") VALUES
-(68, 1),   -- RIVN   → Technology (EV)
-(69, 1);   -- LCID   → Technology (EV)
-
--- RAISE NOTICE 'FUNewsTradingSystem Database Schema and Seed Data deployed successfully!';
+-- TagCategoryMap mappings — moved to after Section C (bulk tags must exist first)
+-- See Section C+ below for the full INSERT block
 
 -- =====================================================================================
 -- BULK TEST DATA EXPANSION
@@ -583,6 +458,171 @@ FROM (VALUES
 WHERE NOT EXISTS (SELECT 1 FROM "Tag" t WHERE t."TagName" = v."TagName");
 
 -- RAISE NOTICE 'Section C done: tags added.';
+
+-- =====================================================================================
+-- SECTION C+ — TAG → CATEGORY MAPPINGS
+-- All 105+ tags mapped to their correct sectors.
+-- Uses subquery lookup so IDs are resolved correctly regardless of SERIAL order.
+-- Runs AFTER Section C (bulk tags) so all TagName values are present.
+-- =====================================================================================
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+-- ── Technology / Semiconductors / Software & AI ──────────────────────────────────────
+VALUES
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='AAPL'),   1),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='NVDA'),   8),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MSFT'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='GOOGL'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='TSLA'),   1),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='AMZN'),   1),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='META'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='IBM'),    7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='INTC'),   8),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='AMD'),    8),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='QCOM'),   8),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='ORCL'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='CRM'),    7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='ADBE'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SONY'),   1),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SNAP'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PINS'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SPOT'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='RBLX'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='U'),     7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PLTR'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SNOW'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='DDOG'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='NET'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='ZM'),    7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='DOCU'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='TEAM'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='NOW'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='WDAY'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PANW'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='CRWD'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='OKTA'),  7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MDB'),   7),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='TWLO'),  7)
+ON CONFLICT DO NOTHING;
+
+-- ── Healthcare / Biotechnology ───────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+VALUES
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PFE'),   2),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='UNH'),   2),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='JNJ'),   2),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MRNA'),  9),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='LLY'),   2),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='ABBV'),  9)
+ON CONFLICT DO NOTHING;
+
+-- ── Finance / Commercial Banking ──────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+VALUES
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='JPM'),   10),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PYPL'),  3),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='V'),     3),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MA'),    3),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='BAC'),  10),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='WFC'),  10),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='GS'),    3),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MS'),    3),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='C'),    10),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SQ'),    3)
+ON CONFLICT DO NOTHING;
+
+-- ── Energy / Green Energy ────────────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+VALUES
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='XOM'),    4),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='CVX'),   4),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='COP'),   4),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SLB'),   4),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='NEE'),  11),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='DUK'),   4)
+ON CONFLICT DO NOTHING;
+
+-- ── Consumer Goods / E-commerce ──────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+VALUES
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='DIS'),   6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='KO'),    6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PEP'),   6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MCD'),   6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SBUX'),  6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='NKE'),   6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='WMT'),   6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='TGT'),   6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='COST'),  6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='HD'),    6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='LOW'),   6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='UBER'),  6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='LYFT'),  6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='ABNB'),  6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='DASH'),  6),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SHOP'), 12),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='ETSY'),  12),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='EBAY'),  12),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='BABA'),  12),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='JD'),   12),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PDD'),  12),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SE'),   12),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MELI'), 12)
+ON CONFLICT DO NOTHING;
+
+-- ── Cryptocurrencies ───────────────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+VALUES
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='BTC'),   5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='ETH'),   5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='COIN'),  5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SOL'),    5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='ADA'),   5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='DOGE'),  5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='XRP'),  5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='BNB'),   5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='LTC'),   5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='DOT'),   5),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='LINK'),  5)
+ON CONFLICT DO NOTHING;
+
+-- ── Industrials ─────────────────────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+SELECT (SELECT "TagID" FROM "Tag" WHERE "TagName"=v.tname), c."CategoryID"
+FROM "Category" c
+CROSS JOIN (VALUES ('BA'),('GE'),('CAT'),('MMM')) AS v(tname)
+WHERE c."CategoryName" = 'Industrials'
+ON CONFLICT DO NOTHING;
+
+-- ── Telecommunications ──────────────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+SELECT (SELECT "TagID" FROM "Tag" WHERE "TagName"=v.tname), c."CategoryID"
+FROM "Category" c
+CROSS JOIN (VALUES ('T'),('VZ'),('TMUS'),('CMCSA')) AS v(tname)
+WHERE c."CategoryName" = 'Telecommunications'
+ON CONFLICT DO NOTHING;
+
+-- ── Media & Streaming ───────────────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+SELECT (SELECT "TagID" FROM "Tag" WHERE "TagName"='NFLX'), c."CategoryID"
+FROM "Category" c
+WHERE c."CategoryName" = 'Media & Streaming'
+ON CONFLICT DO NOTHING;
+
+-- ── Automotive ─────────────────────────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+SELECT (SELECT "TagID" FROM "Tag" WHERE "TagName"=v.tname), c."CategoryID"
+FROM "Category" c
+CROSS JOIN (VALUES ('F'),('GM'),('TM'),('HMC')) AS v(tname)
+WHERE c."CategoryName" = 'Industrials'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+VALUES
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='RIVN'),  1),
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='LCID'),  1)
+ON CONFLICT DO NOTHING;
+
+-- RAISE NOTICE 'Section C+ done: TagCategoryMap populated.';
 
 -- =====================================================================================
 -- SECTION D — BULK NEWS ARTICLES + NEWS TAGS
