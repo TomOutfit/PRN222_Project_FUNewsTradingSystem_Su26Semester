@@ -111,9 +111,10 @@
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
-                    SelectedTagId: parseInt(formData.get('SelectedTagId')),
+                    SelectedTagId:      parseInt(formData.get('SelectedTagId')),
                     SelectedCategoryId: parseInt(formData.get('SelectedCategoryId')),
-                    ConnectionId: connectionId
+                    SelectedPipeline:   formData.get('SelectedPipeline') || 'classic',
+                    ConnectionId:       connectionId
                 })
             })
             .then(function (response) {
@@ -131,15 +132,11 @@
                 resultArea.classList.remove('d-none');
                 
                 if (result.success) {
-                    resultArea.innerHTML =  
-                        '<div class="alert alert-success alert-dismissible fade show p-4 shadow-sm animate-fade-in-up glow-on-appear" role="alert" style="border-left: 4px solid #10b981; border-radius: var(--radius-md); animation-duration: 0.5s;">' +
-                            '<h6 class="fw-bold text-success mb-2"><i class="bi bi-check-circle-fill me-2"></i>Analysis Completed Successfully!</h6>' +
-                            '<p class="mb-0 small text-secondary">The multi-agent system has generated the sentiment & fundamental recommendation report. You can view it now.</p>' +
-                            '<a href="/Report/Detail/' + result.newsArticleId + '" class="btn btn-success btn-sm mt-3 px-4 rounded-pill btn-ripple">' +
-                                '<i class="bi bi-file-text me-1"></i>Open Synthesized Report <i class="bi bi-arrow-right ms-1"></i>' +
-                            '</a>' +
-                            '<button type="button" class="btn-close position-absolute top-0 end-0" data-bs-dismiss="alert" aria-label="Close"></button>' +
-                        '</div>';
+                    if (result.pipelineType === 'tradingagents' && result.richData) {
+                        resultArea.innerHTML = buildTradingAgentsCard(result.richData, result.newsArticleId);
+                    } else {
+                        resultArea.innerHTML = buildClassicCard(result.newsArticleId);
+                    }
                 } else {
                     var errorMsg = result.errorMessage || 'An unexpected error occurred.';
                     resultArea.innerHTML =  
@@ -173,6 +170,90 @@
             var el = document.createElement('span');
             el.textContent = String(text);
             return el.innerHTML;
+        }
+
+        function buildClassicCard(articleId) {
+            return (
+                '<div class="alert alert-success alert-dismissible fade show p-4 shadow-sm animate-fade-in-up glow-on-appear" role="alert"' +
+                '     style="border-left:4px solid #10b981;border-radius:var(--radius-md);animation-duration:.5s;">' +
+                    '<h6 class="fw-bold text-success mb-2"><i class="bi bi-check-circle-fill me-2"></i>Analysis Completed Successfully!</h6>' +
+                    '<p class="mb-0 small text-secondary">The multi-agent system has generated the sentiment & fundamental recommendation report. You can view it now.</p>' +
+                    '<a href="/Report/Detail/' + articleId + '" class="btn btn-success btn-sm mt-3 px-4 rounded-pill btn-ripple">' +
+                        '<i class="bi bi-file-text me-1"></i>Open Synthesized Report <i class="bi bi-arrow-right ms-1"></i>' +
+                    '</a>' +
+                    '<button type="button" class="btn-close position-absolute top-0 end-0" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                '</div>'
+            );
+        }
+
+        function buildTradingAgentsCard(rich, articleId) {
+            var d = rich.decision || 'HOLD';
+            var badgeColor = d === 'BUY' ? '#10b981' : d === 'SELL' ? '#ef4444' : '#f59e0b';
+            var pct = Math.min(100, Math.max(0, rich.confidenceScore || 70));
+            var barColor = d === 'BUY' ? '#10b981' : d === 'SELL' ? '#ef4444' : '#f59e0b';
+
+            var sections = [
+                { icon: 'bi-graph-up-arrow',  label: 'Sentiment Analysis',        body: rich.sentimentReport },
+                { icon: 'bi-bar-chart-fill',  label: 'Fundamental Analysis',      body: rich.fundamentalsReport },
+                { icon: 'bi-newspaper',       label: 'News & Macro Report',       body: rich.newsReport },
+                { icon: 'bi-activity',        label: 'Technical Market Analysis', body: rich.marketReport },
+                { icon: 'bi-lightbulb-fill',  label: 'Trader Investment Plan',    body: rich.traderInvestmentPlan },
+                { icon: 'bi-check2-circle',   label: 'Final Trade Decision',      body: rich.finalTradeDecision },
+            ].filter(function(s) { return s.body && s.body.trim(); });
+
+            var accordionId = 'taAccordion';
+            var accordionItems = sections.map(function(s, i) {
+                var collapseId = 'taCollapse' + i;
+                var isFirst = i === 0;
+                return (
+                    '<div class="accordion-item" style="background:var(--surface-card);border:1px solid var(--border);margin-bottom:.5rem;border-radius:10px;overflow:hidden;">' +
+                        '<h2 class="accordion-header">' +
+                            '<button class="accordion-button ' + (isFirst ? '' : 'collapsed') + '" type="button"' +
+                            '        data-bs-toggle="collapse" data-bs-target="#' + collapseId + '"' +
+                            '        style="background:var(--surface-card);color:var(--text-main);font-weight:600;font-size:.875rem;">' +
+                                '<i class="bi ' + s.icon + ' me-2" style="color:var(--accent)"></i>' + escapeHtml(s.label) +
+                            '</button>' +
+                        '</h2>' +
+                        '<div id="' + collapseId + '" class="accordion-collapse collapse ' + (isFirst ? 'show' : '') + '">' +
+                            '<div class="accordion-body p-3">' +
+                                '<pre style="white-space:pre-wrap;font-family:inherit;font-size:.8375rem;line-height:1.7;color:var(--text-secondary);margin:0;">' +
+                                    escapeHtml(s.body) +
+                                '</pre>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>'
+                );
+            }).join('');
+
+            return (
+                '<div class="fintech-card p-4 animate-fade-in-up" style="border-radius:var(--radius-lg);animation-duration:.5s;">' +
+                    '<div class="d-flex align-items-center gap-3 flex-wrap mb-4">' +
+                        '<span class="badge fs-6 px-3 py-2 fw-extrabold" style="background:' + badgeColor + ';color:#fff;border-radius:8px;letter-spacing:.04em;">' + escapeHtml(d) + '</span>' +
+                        '<div>' +
+                            '<div class="fw-bold" style="font-size:1rem;">' + escapeHtml(rich.ticker || '') + ' — TradingAgents Analysis</div>' +
+                            '<div class="text-muted" style="font-size:.78rem;"><i class="bi bi-cpu me-1"></i>Multi-Agents LLM Financial Trading Framework</div>' +
+                        '</div>' +
+                        '<div class="ms-auto text-end">' +
+                            '<div class="text-muted" style="font-size:.72rem;">Confidence</div>' +
+                            '<div class="progress mt-1" style="width:90px;height:7px;border-radius:4px;background:var(--border);">' +
+                                '<div class="progress-bar" style="width:' + pct + '%;background:' + barColor + ';border-radius:4px;"></div>' +
+                            '</div>' +
+                            '<div class="fw-bold mt-1" style="font-size:.78rem;color:' + barColor + ';">' + pct + '%</div>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<div class="accordion accordion-flush" id="' + accordionId + '">' +
+                        accordionItems +
+                    '</div>' +
+
+                    '<div class="mt-4 pt-3" style="border-top:1px solid var(--border);">' +
+                        '<a href="/Report/Detail/' + articleId + '" class="btn fintech-btn-primary px-4">' +
+                            '<i class="bi bi-file-earmark-text me-2"></i>Open Full Report <i class="bi bi-arrow-right ms-1"></i>' +
+                        '</a>' +
+                        '<span class="ms-3 text-muted" style="font-size:.78rem;"><i class="bi bi-check-circle-fill text-success me-1"></i>Saved to reports</span>' +
+                    '</div>' +
+                '</div>'
+            );
         }
     });
 })();

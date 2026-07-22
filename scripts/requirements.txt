@@ -1,0 +1,11 @@
+langchain-core>=0.3.81
+langchain-openai>=0.3.23
+langgraph>=0.4.8
+langgraph-checkpoint-sqlite>=2.0.0
+pandas>=2.3.0
+yfinance>=1.4.1
+stockstats>=0.6.5
+requests>=2.32.4
+python-dotenv>=1.0.0
+pytz>=2025.2
+parsel>=1.10.0

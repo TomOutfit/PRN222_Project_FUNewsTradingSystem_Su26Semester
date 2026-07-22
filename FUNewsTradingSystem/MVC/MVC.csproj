@@ -20,4 +20,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Copy Python adapter scripts to build output for local dev -->
+    <Content Include="..\..\scripts\**"
+             CopyToOutputDirectory="PreserveNewest"
+             Link="scripts\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

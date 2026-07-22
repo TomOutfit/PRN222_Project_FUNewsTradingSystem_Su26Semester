@@ -21,7 +21,17 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 # Use the lightweight ASP.NET Core runtime image to run the app
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
+
+# Install Python 3 for TradingAgents multi-agent pipeline
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
+
+# Copy TradingAgents Python adapter and install dependencies
+COPY scripts /app/scripts
+RUN pip3 install --no-cache-dir --break-system-packages -r /app/scripts/requirements.txt
 
 # Render dynamically assigns a port via the PORT environment variable.
 # We expose 8080 and tell ASP.NET Core to use it.

@@ -107,6 +107,7 @@ public class RunAnalysisController : Controller
                 request.SelectedTagId,
                 request.SelectedCategoryId,
                 accountId.Value,
+                request.SelectedPipeline ?? "classic",
                 async (message, progress) =>
                 {
                     if (!string.IsNullOrEmpty(request.ConnectionId))
@@ -144,7 +145,9 @@ public class RunAnalysisController : Controller
             {
                 success = result.Success,
                 newsArticleId = result.NewsArticleID,
-                errorMessage = result.ErrorMessage
+                errorMessage = result.ErrorMessage,
+                pipelineType = result.PipelineType,
+                richData = result.RichData
             });
         }
         catch (Exception ex)
@@ -162,4 +165,5 @@ public class RunAnalysisRequest
     public int SelectedTagId { get; set; }
     public int SelectedCategoryId { get; set; }
     public string? ConnectionId { get; set; }
+    public string? SelectedPipeline { get; set; }
 }

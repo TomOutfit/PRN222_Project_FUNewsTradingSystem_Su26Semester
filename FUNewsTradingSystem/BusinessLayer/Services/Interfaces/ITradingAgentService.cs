@@ -9,6 +9,9 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
     {
         /// <summary>Runs the full pipeline for the given ticker and sector.</summary>
         /// <inheritdoc cref="FUNewsTradingSystem_BusinessLayer.Services.Implements.TradingAgentService.RunAnalysisAsync"/>
-        Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId, System.Func<string, int, System.Threading.Tasks.Task>? onProgress = null);
+        Task<TradingAgentResult> RunAnalysisAsync(
+            int tagId, int categoryId, int createdByAccountId,
+            string pipeline = "classic",
+            System.Func<string, int, System.Threading.Tasks.Task>? onProgress = null);
     }
 }

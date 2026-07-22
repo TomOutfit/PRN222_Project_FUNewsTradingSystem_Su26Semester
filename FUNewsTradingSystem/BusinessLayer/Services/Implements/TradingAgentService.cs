@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -84,7 +85,10 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
     /// <param name="createdByAccountId">AccountID of the Staff member triggering the pipeline.</param>
     /// <returns>A result object where <c>Success</c> is true and <c>NewsArticleID</c> is populated
     /// on success, or <c>Success</c> is false with an <c>ErrorMessage</c> on any failure.</returns>
-    public async Task<TradingAgentResult> RunAnalysisAsync(int tagId, int categoryId, int createdByAccountId, Func<string, int, Task>? onProgress = null)
+    public async Task<TradingAgentResult> RunAnalysisAsync(
+            int tagId, int categoryId, int createdByAccountId,
+            string pipeline = "classic",
+            Func<string, int, Task>? onProgress = null)
         {
             try
             {
@@ -96,31 +100,38 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 {
                     var context = scope.ServiceProvider.GetRequiredService<FUNewsManagementContext>();
                     var tag = await context.Tags.FindAsync(tagId);
-                    if (tag == null)
-                    {
-                        throw new PipelineException("DB_ERROR");
-                    }
+                    if (tag == null) throw new PipelineException("DB_ERROR");
                     ticker = tag.TagName;
                     companyName = tag.Note ?? "";
                 }
 
-                // 2. Fetch News headlines
-                if (onProgress != null) await onProgress($"Fetching latest news headlines for {ticker}...", 30);
-                var headlines = await FetchNewsAsync(ticker, companyName);
-                
-                // 3. Run Sentiment Agent
-                if (onProgress != null) await onProgress("Processing sentiment evaluation via AI...", 55);
-                var sentimentOutput = await RunSentimentAgentAsync(ticker, headlines);
+                PortfolioManagerResponse portfolioResponse;
+                TradingAgentsRichData? richData = null;
 
-                // 4. Run Fundamental Agent
-                if (onProgress != null) await onProgress("Synthesizing core fundamental analysis...", 75);
-                var fundamentalOutput = await RunFundamentalAgentAsync(ticker, headlines, sentimentOutput);
+                if (pipeline == "tradingagents" && IsPythonAdapterEnabled())
+                {
+                    // ── TradingAgents multi-agent pipeline (Python subprocess) ──
+                    if (onProgress != null)
+                        await onProgress("Launching TradingAgents multi-agent pipeline...", 20);
+                    (portfolioResponse, richData) = await RunPythonAdapterAsync(ticker, onProgress);
+                }
+                else
+                {
+                    // ── Classic 3-agent OpenAI pipeline (unchanged) ──────────────
+                    if (onProgress != null) await onProgress($"Fetching latest news headlines for {ticker}...", 30);
+                    var headlines = await FetchNewsAsync(ticker, companyName);
 
-                // 5. Run Portfolio Manager Agent
-                if (onProgress != null) await onProgress("Generating final portfolio recommendation and report layout...", 90);
-                var portfolioResponse = await RunPortfolioManagerAsync(ticker, sentimentOutput, fundamentalOutput);
+                    if (onProgress != null) await onProgress("Processing sentiment evaluation via AI...", 55);
+                    var sentimentOutput = await RunSentimentAgentAsync(ticker, headlines);
 
-                // 6. Save Report to Database
+                    if (onProgress != null) await onProgress("Synthesizing core fundamental analysis...", 75);
+                    var fundamentalOutput = await RunFundamentalAgentAsync(ticker, headlines, sentimentOutput);
+
+                    if (onProgress != null) await onProgress("Generating final portfolio recommendation and report layout...", 90);
+                    portfolioResponse = await RunPortfolioManagerAsync(ticker, sentimentOutput, fundamentalOutput);
+                }
+
+                // Save to database (shared by both pipelines)
                 if (onProgress != null) await onProgress("Storing completed report in the database...", 95);
                 var newsArticleId = await SaveReportAsync(portfolioResponse, tagId, categoryId, createdByAccountId);
 
@@ -130,7 +141,9 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 {
                     Success = true,
                     NewsArticleID = newsArticleId,
-                    ErrorMessage = null
+                    ErrorMessage = null,
+                    PipelineType = pipeline,
+                    RichData = richData
                 };
             }
             catch (PipelineException ex)
@@ -152,6 +165,149 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 };
             }
         }
+
+        // ── Python adapter helpers ────────────────────────────────────────────
+
+        private bool IsPythonAdapterEnabled()
+            => bool.TryParse(_configuration["TradingAgents:EnablePythonAdapter"], out var v) && v;
+
+        private async Task<(PortfolioManagerResponse, TradingAgentsRichData)> RunPythonAdapterAsync(
+            string ticker, Func<string, int, Task>? onProgress)
+        {
+            var scriptsPath = _configuration["TradingAgents:ScriptsPath"]
+                ?? System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
+            var scriptPath = System.IO.Path.Combine(scriptsPath, "ta_adapter.py");
+            var python = _configuration["TradingAgents:PythonExecutable"] ?? "python3";
+            var date = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd");
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = python,
+                Arguments = $"\"{scriptPath}\" {ticker} {date}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            var openAiKey = _configuration["OpenAI:ApiKey"];
+            if (!string.IsNullOrEmpty(openAiKey))
+                psi.EnvironmentVariables["OPENAI_API_KEY"] = openAiKey;
+
+            using var proc = Process.Start(psi)
+                ?? throw new PipelineException("PYTHON_ERROR: failed to start process");
+
+            // Read stdout/stderr concurrently to avoid deadlocks on large output
+            var stdoutTask = proc.StandardOutput.ReadToEndAsync();
+            var stderrTask = proc.StandardError.ReadToEndAsync();
+
+            // Simulate pipeline stage progress while Python runs (fires every ~30 s)
+            using var cts = new System.Threading.CancellationTokenSource();
+            var progressTask = SimulatePipelineProgressAsync(onProgress, cts.Token);
+
+            await proc.WaitForExitAsync();
+            await cts.CancelAsync();
+            await progressTask.ConfigureAwait(false);
+
+            var stdout = await stdoutTask;
+            var stderr = await stderrTask;
+
+            // Always try to parse stdout first — _fail() writes {"error":"..."} there
+            PythonAdapterOutput? dto = null;
+            if (!string.IsNullOrWhiteSpace(stdout))
+            {
+                try
+                {
+                    dto = JsonSerializer.Deserialize<PythonAdapterOutput>(
+                        stdout, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch (JsonException) { /* stdout was not JSON; fall through to exit-code check */ }
+            }
+
+            // Propagate any error the adapter reported explicitly
+            if (!string.IsNullOrEmpty(dto?.Error))
+                throw new PipelineException($"PYTHON_ERROR: {dto!.Error}");
+
+            if (proc.ExitCode != 0)
+                throw new PipelineException(
+                    $"PYTHON_ERROR: exit {proc.ExitCode} — {TruncateForLog(stderr.Trim(), 300)}");
+
+            if (dto == null)
+                throw new PipelineException("PYTHON_ERROR: no output from adapter");
+
+            var pm = new PortfolioManagerResponse
+            {
+                Decision        = (dto.Decision ?? "HOLD").Trim().ToUpperInvariant(),
+                Title           = dto.Title    ?? $"[HOLD] {ticker} Analysis",
+                Headline        = dto.Headline ?? "",
+                Content         = dto.Content  ?? "",
+                Source          = dto.Source   ?? "TradingAgents",
+                ConfidenceScore = dto.ConfidenceScore ?? 70,
+            };
+            ValidatePortfolioResponse(pm);
+
+            var rich = new TradingAgentsRichData
+            {
+                Decision             = pm.Decision,
+                Signal               = dto.Signal ?? pm.Decision,
+                Ticker               = ticker,
+                ConfidenceScore      = pm.ConfidenceScore,
+                SentimentReport      = dto.SentimentReport,
+                FundamentalsReport   = dto.FundamentalsReport,
+                NewsReport           = dto.NewsReport,
+                MarketReport         = dto.MarketReport,
+                InvestmentPlan       = dto.InvestmentPlan,
+                TraderInvestmentPlan = dto.TraderInvestmentPlan,
+                FinalTradeDecision   = dto.FinalTradeDecision,
+            };
+
+            return (pm, rich);
+        }
+
+        private static async Task SimulatePipelineProgressAsync(
+            Func<string, int, Task>? onProgress, System.Threading.CancellationToken ct)
+        {
+            if (onProgress == null) return;
+            var stages = new (int Pct, string Msg)[]
+            {
+                (30, "Fetching market data (OHLCV, technical indicators)..."),
+                (38, "Social sentiment analyst processing StockTwits and Reddit..."),
+                (46, "News analyst reviewing recent articles and macro data..."),
+                (54, "Fundamentals analyst evaluating earnings and balance sheet..."),
+                (62, "Bull/Bear debate team synthesizing investment thesis..."),
+                (70, "Research manager reviewing debate and drawing conclusions..."),
+                (78, "Trader composing investment plan..."),
+                (84, "Risk management panel reviewing trade parameters..."),
+                (90, "Portfolio manager finalising recommendation..."),
+            };
+            foreach (var (pct, msg) in stages)
+            {
+                try { await Task.Delay(30_000, ct); }
+                catch (OperationCanceledException) { break; }
+                try { await onProgress(msg, pct); }
+                catch { /* SignalR hub errors are non-fatal */ }
+            }
+        }
+
+        private sealed class PythonAdapterOutput
+        {
+            public string? Decision { get; set; }
+            public string? Signal { get; set; }
+            public string? Title { get; set; }
+            public string? Headline { get; set; }
+            public string? Content { get; set; }
+            public string? Source { get; set; }
+            public int? ConfidenceScore { get; set; }
+            public string? MarketReport { get; set; }
+            public string? SentimentReport { get; set; }
+            public string? NewsReport { get; set; }
+            public string? FundamentalsReport { get; set; }
+            public string? InvestmentPlan { get; set; }
+            public string? TraderInvestmentPlan { get; set; }
+            public string? FinalTradeDecision { get; set; }
+            public string? Error { get; set; }
+        }
+
+        // ── Classic pipeline ─────────────────────────────────────────────────
 
         private async Task<string> FetchNewsAsync(string tickerName, string companyName = "")
         {
