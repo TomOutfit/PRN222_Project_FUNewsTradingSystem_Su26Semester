@@ -102,6 +102,14 @@
     string RenderMd(string md)
     {
         if (string.IsNullOrEmpty(md)) return "";
+        // ── Pre-process: normalize inline tables so the line-by-line parser sees them correctly ──
+        // 1. "paragraph text: | Header | Col |" → split text from table onto separate lines
+        md = System.Text.RegularExpressions.Regex.Replace(
+            md, @"^([^|\n]+?)(\|(?:[^|\n]+\|)+)\s*$", "$1\n$2",
+            System.Text.RegularExpressions.RegexOptions.Multiline);
+        // 2. "| row1 | | row2 |" → "| row1 |\n| row2 |"
+        //    Only whitespace between two pipes means a row boundary (not a column separator which has content)
+        md = System.Text.RegularExpressions.Regex.Replace(md, @"(\|)[ \t]+(\|)", "$1\n$2");
         // Bold + italic
         var h = System.Text.RegularExpressions.Regex.Replace(md, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
         h = System.Text.RegularExpressions.Regex.Replace(h, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
@@ -378,15 +386,15 @@
 
     /* ── Metadata sidebar cards ── */
     .meta-card {
-        border: 1px solid var(--border-light);
+        border: 1px solid var(--border);
         border-radius: var(--radius-md);
         overflow: hidden;
         background: var(--surface-card);
-        box-shadow: var(--shadow-xs);
+        box-shadow: var(--shadow-sm);
         transition: box-shadow .2s, transform .2s;
     }
     .meta-card:hover {
-        box-shadow: var(--shadow-sm);
+        box-shadow: var(--shadow-md);
         transform: translateY(-2px);
     }
     .meta-card-header {
@@ -396,21 +404,21 @@
         text-transform: uppercase;
         letter-spacing: .08em;
         color: var(--text-muted);
-        border-bottom: 1px solid var(--border-light);
-        background: rgba(0,0,0,.02);
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
         display: flex;
         align-items: center;
         gap: .5rem;
     }
     .meta-card-body {
-        padding: 1.25rem;
+        padding: 0 1.25rem;
     }
     .meta-row {
         display: flex;
         align-items: flex-start;
-        gap: .6rem;
-        padding: .5rem 0;
-        border-bottom: 1px solid var(--border-light);
+        gap: .75rem;
+        padding: .75rem 0;
+        border-bottom: 1px solid var(--border);
     }
     .meta-row:last-child { border-bottom: none; }
     .meta-row-icon {
@@ -534,6 +542,69 @@
         .report-hero { padding: 1.75rem 1.25rem; }
         .hero-title  { font-size: 1.5rem; }
     }
+
+    /* ── TradingAgents Tab Pills ── */
+    #taTabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        gap: .35rem;
+        padding: .75rem 1rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-bottom: 0;
+        border-radius: 14px 14px 0 0;
+        margin: 0;
+        list-style: none;
+    }
+    #taTabs::-webkit-scrollbar { display: none; }
+    #taTabs .nav-item { margin: 0; flex-shrink: 0; }
+    #taTabs .nav-link {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .45rem 1rem;
+        border-radius: 99px;
+        font-size: .8rem;
+        font-weight: 600;
+        white-space: nowrap;
+        background: transparent;
+        border: 1.5px solid var(--border);
+        color: var(--text-muted);
+        transition: all .2s;
+    }
+    #taTabs .nav-link:hover:not(.active) {
+        background: var(--surface-card);
+        color: var(--text-main);
+        border-color: var(--accent);
+    }
+    #taTabs .nav-link.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(37,99,235,.3);
+    }
+    #taTabContent {
+        background: var(--surface-card);
+        border: 1px solid var(--border) !important;
+        border-radius: 0 0 14px 14px !important;
+        min-height: 220px;
+    }
+    /* Tab Prev/Next nav */
+    .ta-tab-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+    .ta-tab-footer .ta-nav-pos {
+        font-size: .78rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
 </style>
 
 <div class="container px-0 report-detail-container">
@@ -641,23 +712,22 @@
             <article class="card fintech-card p-4 p-md-5 mb-4 border-0">
                 @if (isTradingAgents && taSections.Count > 0)
                 {
-                    <!-- TradingAgents multi-section → tab layout with markdown rendering -->
-                    <ul class="nav nav-tabs flex-wrap mb-0 border-bottom-0" id="taTabs" role="tablist" style="gap:.25rem;">
+                    <!-- TradingAgents multi-section → scrollable pill tabs with markdown rendering -->
+                    <ul class="nav" id="taTabs" role="tablist">
                         @for (int i = 0; i < taSections.Count; i++)
                         {
                             var s = taSections[i];
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link @(i == 0 ? "active" : "") d-flex align-items-center gap-1"
+                                <button class="nav-link @(i == 0 ? "active" : "")"
                                         id="taTab-@i" data-bs-toggle="tab" data-bs-target="#taPane-@i"
-                                        type="button" role="tab" style="font-size:.82rem;padding:.5rem .85rem;">
-                                    <i class="bi @s.icon" style="color:@s.color;font-size:.9rem;"></i>
-                                    <span>@s.label</span>
+                                        type="button" role="tab">
+                                    <i class="bi @s.icon" style="color:@(i == 0 ? "#fff" : s.color);"></i>
+                                    @s.label
                                 </button>
                             </li>
                         }
                     </ul>
-                    <div class="tab-content border border-top-0 rounded-bottom p-4" id="taTabContent"
-                         style="border-color:var(--border)!important;min-height:220px;">
+                    <div class="tab-content p-4" id="taTabContent">
                         @for (int i = 0; i < taSections.Count; i++)
                         {
                             var s = taSections[i];
@@ -672,6 +742,16 @@
                                 </div>
                             </div>
                         }
+                        <!-- Prev / Next tab navigation -->
+                        <div class="ta-tab-footer">
+                            <button id="taNavPrev" class="btn fintech-btn-outline btn-sm px-3" onclick="taNavigate(-1)" disabled>
+                                <i class="bi bi-arrow-left me-1"></i>Previous
+                            </button>
+                            <span class="ta-nav-pos" id="taNavPos">1 / @taSections.Count</span>
+                            <button id="taNavNext" class="btn fintech-btn-primary btn-sm px-3" onclick="taNavigate(1)">
+                                Next<i class="bi bi-arrow-right ms-1"></i>
+                            </button>
+                        </div>
                     </div>
                 }
                 else if (isParsed)
@@ -963,6 +1043,47 @@
                     if (btn) btn.disabled = false;
                 });
             };
+        })();
+    </script>
+
+    @* ── TradingAgents tab Prev/Next navigation ── *@
+    <script>
+        (function () {
+            var taTabBtns = Array.from(document.querySelectorAll('#taTabs .nav-link'));
+            if (!taTabBtns.length) return;
+
+            function updateNav() {
+                var idx  = taTabBtns.findIndex(function (t) { return t.classList.contains('active'); });
+                var pos  = document.getElementById('taNavPos');
+                var prev = document.getElementById('taNavPrev');
+                var next = document.getElementById('taNavNext');
+                if (pos)  pos.textContent = (idx + 1) + ' / ' + taTabBtns.length;
+                if (prev) prev.disabled = (idx === 0);
+                if (next) next.disabled = (idx === taTabBtns.length - 1);
+                // Fix icon color on active tab (icon should be white when active)
+                taTabBtns.forEach(function (btn, i) {
+                    var icon = btn.querySelector('i');
+                    if (icon) icon.style.color = btn.classList.contains('active') ? '#fff' : '';
+                });
+            }
+
+            window.taNavigate = function (dir) {
+                var idx = taTabBtns.findIndex(function (t) { return t.classList.contains('active'); });
+                var newIdx = idx + dir;
+                if (newIdx < 0 || newIdx >= taTabBtns.length) return;
+                taTabBtns[newIdx].click();
+                // Scroll to top of article card
+                var article = document.querySelector('article.fintech-card');
+                if (article) {
+                    var top = article.getBoundingClientRect().top + window.scrollY - 80;
+                    window.scrollTo({ top: top, behavior: 'smooth' });
+                }
+            };
+
+            taTabBtns.forEach(function (btn) {
+                btn.addEventListener('shown.bs.tab', updateNav);
+            });
+            updateNav();
         })();
     </script>
 

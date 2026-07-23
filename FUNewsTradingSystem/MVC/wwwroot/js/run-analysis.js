@@ -420,6 +420,11 @@
 
         function renderMd(text) {
             if (!text) return '';
+            // Pre-process: normalize inline tables
+            // 1. Split "text: | Col | Col |" → "text:\n| Col | Col |"
+            text = text.replace(/^([^|\n]+?)(\|(?:[^|\n]+\|)+)\s*$/mg, '$1\n$2');
+            // 2. Split "| row1 | | row2 |" → "| row1 |\n| row2 |"
+            text = text.replace(/(\|)[ \t]+(\|)/g, '$1\n$2');
             var lines    = text.split('\n');
             var html     = [];
             var inList   = false;
