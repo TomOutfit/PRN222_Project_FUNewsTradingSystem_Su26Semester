@@ -202,12 +202,27 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             };
             // Normalise provider name and set the env var the library reads
             var normalizedProvider = provider.ToLowerInvariant() switch {
-                "groq"              => "groq",
+                "groq"               => "groq",
                 "google" or "gemini" => "google",
-                _                   => "openai"
+                _                    => "openai"
             };
             psi.EnvironmentVariables["TRADINGAGENTS_LLM_PROVIDER"] = normalizedProvider;
             _logger.LogInformation("[TradingAgents] LLM provider: {Provider}", normalizedProvider);
+
+            // Override model names — DEFAULT_CONFIG defaults to OpenAI names (gpt-5.5/gpt-5.4-mini)
+            // which cause 404 errors on Groq/Google APIs. Set provider-appropriate models via the
+            // env vars that default_config._apply_env_overrides already knows how to read.
+            if (normalizedProvider == "groq")
+            {
+                psi.EnvironmentVariables["TRADINGAGENTS_DEEP_THINK_LLM"]  = "llama-3.3-70b-versatile";
+                psi.EnvironmentVariables["TRADINGAGENTS_QUICK_THINK_LLM"] = "llama-3.1-8b-instant";
+            }
+            else if (normalizedProvider == "google")
+            {
+                psi.EnvironmentVariables["TRADINGAGENTS_DEEP_THINK_LLM"]  = "gemini-2.5-flash";
+                psi.EnvironmentVariables["TRADINGAGENTS_QUICK_THINK_LLM"] = "gemini-2.0-flash";
+            }
+            // openai: keep library defaults (gpt-5.5 / gpt-5.4-mini)
 
             // Forward the correct API key for the selected provider
             if (normalizedProvider == "groq")
