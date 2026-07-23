@@ -19,6 +19,13 @@ def main():
     ticker = sys.argv[1].upper().strip()
     date = sys.argv[2] if len(sys.argv) > 2 else _yesterday()
 
+    # Validate API key early — gives a clear error instead of a buried traceback
+    openai_key = os.environ.get("OPENAI_API_KEY", "")
+    if not openai_key:
+        _fail("OPENAI_API_KEY is not set — the C# host must forward OpenAI:ApiKey to the subprocess")
+    if openai_key.startswith("YOUR_") or len(openai_key) < 20:
+        _fail(f"OPENAI_API_KEY looks like a placeholder (length={len(openai_key)}) — provide a real API key")
+
     try:
         from tradingagents.default_config import DEFAULT_CONFIG
         from tradingagents.graph.trading_graph import TradingAgentsGraph
@@ -27,7 +34,22 @@ def main():
 
     config = DEFAULT_CONFIG.copy()
     ta = TradingAgentsGraph(debug=False, config=config)
-    state, signal = ta.propagate(ticker, date)
+
+    try:
+        state, signal = ta.propagate(ticker, date)
+    except Exception as e:
+        import traceback as _tb
+        tb = _tb.format_exc()
+        combined = (str(e) + tb).lower()
+        if "authenticationerror" in combined or "incorrect api key" in combined \
+                or "invalid api key" in combined or ": 401" in combined:
+            _fail(f"OpenAI authentication failed — check OPENAI_API_KEY. Detail: {e}")
+        elif "ratelimiterror" in combined or "rate limit" in combined or ": 429" in combined:
+            _fail(f"OpenAI rate limit exceeded — try again later. Detail: {e}")
+        elif "connectionerror" in combined or "timeout" in combined:
+            _fail(f"Network error reaching OpenAI API. Detail: {e}")
+        else:
+            _fail(f"Agent pipeline error: {e}\n\nTraceback:\n{tb.strip()}")
 
     decision = _to_decision(signal)
     content = _build_content(state)

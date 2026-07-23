@@ -200,6 +200,10 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 CreateNoWindow = true,
             };
             var openAiKey = _configuration["OpenAI:ApiKey"];
+            if (string.IsNullOrEmpty(openAiKey) || openAiKey.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase))
+                _logger.LogWarning("[TradingAgents] OPENAI_API_KEY is not configured or is a placeholder — Python adapter will fail with AuthenticationError");
+            else
+                _logger.LogInformation("[TradingAgents] OPENAI_API_KEY is configured ({Len} chars)", openAiKey.Length);
             if (!string.IsNullOrEmpty(openAiKey))
                 psi.EnvironmentVariables["OPENAI_API_KEY"] = openAiKey;
 
@@ -242,16 +246,29 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             // Propagate any error the adapter reported explicitly
             if (!string.IsNullOrEmpty(dto?.Error))
             {
-                _logger.LogError("[TradingAgents] Adapter reported error: {Error}", dto!.Error);
-                throw new PipelineException($"PYTHON_ERROR: {dto!.Error}");
+                var adapterErr = dto!.Error;
+                _logger.LogError("[TradingAgents] Adapter error: {Error}", adapterErr);
+                var lowerErr = adapterErr.ToLowerInvariant();
+                string errPrefix = lowerErr.Contains("authentication") || lowerErr.Contains("api key") || lowerErr.Contains("401")
+                    ? "OpenAI Auth Error — "
+                    : lowerErr.Contains("rate limit") || lowerErr.Contains("429")
+                        ? "OpenAI Rate Limit — "
+                        : lowerErr.Contains("import error") || lowerErr.Contains("no module")
+                            ? "Python Dependency Error — "
+                            : "";
+                throw new PipelineException($"PYTHON_ERROR: {errPrefix}{adapterErr}");
             }
 
             if (proc.ExitCode != 0)
             {
-                _logger.LogError("[TradingAgents] Process exited {Code}.\nSTDERR: {Stderr}\nSTDOUT: {Stdout}",
-                    proc.ExitCode, TruncateForLog(stderr.Trim(), 500), TruncateForLog(stdout.Trim(), 300));
+                var fullStderr = stderr.Trim();
+                // Log full output (no truncation) so Render logs contain the complete traceback
+                _logger.LogError("[TradingAgents] Process exited {Code}.\n=== STDERR ===\n{Stderr}\n=== STDOUT ===\n{Stdout}",
+                    proc.ExitCode, fullStderr, stdout.Trim());
+                // Show the most informative stream in the UI error
+                var displayErr = string.IsNullOrEmpty(fullStderr) ? stdout.Trim() : fullStderr;
                 throw new PipelineException(
-                    $"PYTHON_ERROR: exit {proc.ExitCode} — {TruncateForLog(stderr.Trim(), 300)}");
+                    $"PYTHON_ERROR: exit {proc.ExitCode} — {TruncateForLog(displayErr, 800)}");
             }
 
             if (dto == null)
