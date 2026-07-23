@@ -76,26 +76,74 @@
     var taSections = new System.Collections.Generic.List<(string icon, string color, string label, string body)>();
     if (isTradingAgents)
     {
+        var colorPalette = new[] {
+            ("#0ea5e9", "bi-graph-up-arrow"),                 // Sky Blue
+            ("#8b5cf6", "bi-bar-chart-fill"),                 // Purple
+            ("#0284c7", "bi-file-earmark-spreadsheet-fill"), // Cyan
+            ("#f97316", "bi-newspaper"),                      // Deep Orange
+            ("#10b981", "bi-lightbulb-fill"),                 // Emerald Green
+            ("#ec4899", "bi-globe2"),                         // Pink
+            ("#eab308", "bi-activity"),                       // Amber
+            ("#6366f1", "bi-calculator-fill"),                // Indigo
+            ("#ef4444", "bi-shield-exclamation-fill"),        // Red
+            ("#14b8a6", "bi-compass-fill")                    // Teal
+        };
+
         var iconMap = new System.Collections.Generic.Dictionary<string, (string icon, string color)>
         {
-            { "Sentiment",   ("bi-graph-up-arrow", "#38bdf8") },
-            { "Fundamental", ("bi-bar-chart-fill", "#a78bfa") },
-            { "News",        ("bi-newspaper",      "#fb923c") },
-            { "Technical",   ("bi-activity",       "#fbbf24") },
-            { "Trader",      ("bi-lightbulb-fill", "#34d399") },
-            { "Final",       ("bi-check2-circle",  sectionColor) },
+            { "Sentiment",   ("bi-graph-up-arrow",               "#0ea5e9") }, // Sky Blue
+            { "Fundamental", ("bi-bar-chart-fill",               "#8b5cf6") }, // Purple
+            { "Financial",   ("bi-file-earmark-spreadsheet-fill","#0284c7") }, // Cyan
+            { "Table",       ("bi-file-earmark-spreadsheet-fill","#0284c7") }, // Cyan
+            { "Macro",       ("bi-globe2",                       "#ec4899") }, // Pink
+            { "News",        ("bi-newspaper",                    "#f97316") }, // Deep Orange
+            { "Technical",   ("bi-activity",                     "#eab308") }, // Amber
+            { "Risk",        ("bi-shield-exclamation-fill",      "#ef4444") }, // Red
+            { "Trader",      ("bi-lightbulb-fill",               "#10b981") }, // Emerald
+            { "Valuation",   ("bi-calculator-fill",              "#6366f1") }, // Indigo
+            { "Strategy",    ("bi-compass-fill",                 "#14b8a6") }, // Teal
+            { "Final",       ("bi-check2-circle",                sectionColor) },
         };
-        foreach (var part in Model.NewsContent.Split(new[] { "\n\n---\n\n" }, System.StringSplitOptions.RemoveEmptyEntries))
+
+        var parts = Model.NewsContent.Split(new[] { "\n\n---\n\n" }, System.StringSplitOptions.RemoveEmptyEntries);
+        for (int i = 0; i < parts.Length; i++)
         {
+            var part = parts[i];
             var trimmed = part.Trim();
             var nl      = trimmed.IndexOf('\n');
             var heading = (nl > 0 ? trimmed.Substring(0, nl) : trimmed).TrimStart('#').Trim();
             var body    = nl > 0 ? trimmed.Substring(nl + 1).Trim() : "";
-            var matched = ("bi-file-text", sectionColor);
+
+            var fallback = colorPalette[i % colorPalette.Length];
+            var matched = (fallback.Item2, fallback.Item1);
+
             foreach (var kv in iconMap)
-                if (heading.IndexOf(kv.Key, System.StringComparison.OrdinalIgnoreCase) >= 0) { matched = kv.Value; break; }
+            {
+                if (heading.IndexOf(kv.Key, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    matched = kv.Value;
+                    break;
+                }
+            }
             taSections.Add((matched.Item1, matched.Item2, heading, body));
         }
+    }
+
+    string GetTagColor(string tag, int index = 0)
+    {
+        var tagColors = new[] {
+            (bg: "rgba(14, 165, 233, 0.12)", border: "rgba(14, 165, 233, 0.3)", text: "#0284c7"), // Cyan
+            (bg: "rgba(139, 92, 246, 0.12)", border: "rgba(139, 92, 246, 0.3)", text: "#7c3aed"), // Purple
+            (bg: "rgba(16, 185, 129, 0.12)", border: "rgba(16, 185, 129, 0.3)", text: "#059669"), // Green
+            (bg: "rgba(249, 115, 22, 0.12)", border: "rgba(249, 115, 22, 0.3)", text: "#ea580c"), // Orange
+            (bg: "rgba(236, 72, 153, 0.12)", border: "rgba(236, 72, 153, 0.3)", text: "#db2777"), // Pink
+            (bg: "rgba(234, 179, 8, 0.15)",  border: "rgba(234, 179, 8, 0.35)", text: "#b45309"), // Amber
+            (bg: "rgba(20, 184, 166, 0.12)", border: "rgba(20, 184, 166, 0.3)", text: "#0d9488"), // Teal
+            (bg: "rgba(99, 102, 241, 0.12)", border: "rgba(99, 102, 241, 0.3)", text: "#4f46e5")  // Indigo
+        };
+        int hash = Math.Abs((tag ?? "").GetHashCode() + index);
+        var c = tagColors[hash % tagColors.Length];
+        return $"background:{c.bg}; border:1px solid {c.border}; color:{c.text};";
     }
 
     // ── Markdown → HTML renderer (bold, italic, inline code, headers, lists, tables) ──
@@ -562,41 +610,51 @@
         flex-wrap: nowrap;
         overflow-x: auto;
         scrollbar-width: none;
-        gap: .35rem;
-        padding: .75rem 1rem;
+        gap: .5rem;
+        padding: .85rem 1rem;
         background: var(--surface);
         border: 1px solid var(--border);
         border-bottom: 0;
-        border-radius: 14px 14px 0 0;
+        border-radius: 16px 16px 0 0;
         margin: 0;
         list-style: none;
+        scroll-behavior: smooth;
     }
     #taTabs::-webkit-scrollbar { display: none; }
     #taTabs .nav-item { margin: 0; flex-shrink: 0; }
     #taTabs .nav-link {
         display: inline-flex;
         align-items: center;
-        gap: .4rem;
-        padding: .45rem 1rem;
+        gap: .45rem;
+        padding: .5rem 1.15rem;
         border-radius: 99px;
-        font-size: .8rem;
+        font-size: .82rem;
         font-weight: 600;
         white-space: nowrap;
-        background: transparent;
+        background: var(--surface-card);
         border: 1.5px solid var(--border);
-        color: var(--text-muted);
-        transition: all .2s;
+        color: var(--text-main);
+        transition: all .22s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    #taTabs .nav-link i {
+        color: var(--tab-color);
+        font-size: .92rem;
+        transition: color .2s;
     }
     #taTabs .nav-link:hover:not(.active) {
-        background: var(--surface-card);
-        color: var(--text-main);
-        border-color: var(--accent);
+        border-color: var(--tab-color);
+        background: rgba(0,0,0,0.03);
+        transform: translateY(-1px);
     }
     #taTabs .nav-link.active {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #fff;
-        box-shadow: 0 4px 12px rgba(37,99,235,.3);
+        background: var(--tab-color) !important;
+        border-color: var(--tab-color) !important;
+        color: #fff !important;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15), 0 0 0 2px rgba(255,255,255,0.25) inset;
+    }
+    #taTabs .nav-link.active i {
+        color: #fff !important;
     }
     #taTabContent {
         background: var(--surface-card);
@@ -671,9 +729,10 @@
             {
                 <div class="stat-item">
                     <span class="stat-value d-flex flex-wrap justify-content-center gap-1">
-                        @foreach (var t in Model.Tags)
+                        @for (int ti = 0; ti < Model.Tags.Count; ti++)
                         {
-                            <span style="background:#fff; color:#1a1a2e; font-size:.72rem; font-weight:700; padding:.15rem .55rem; border-radius:30px; white-space:nowrap;">@t</span>
+                            var t = Model.Tags[ti];
+                            <span style="@GetTagColor(t, ti) font-size:.72rem; font-weight:700; padding:.2rem .65rem; border-radius:30px; white-space:nowrap;">@t</span>
                         }
                     </span>
                     <span class="stat-label">Assets Tracked</span>
@@ -733,8 +792,9 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link @(i == 0 ? "active" : "")"
                                         id="taTab-@i" data-bs-toggle="tab" data-bs-target="#taPane-@i"
-                                        type="button" role="tab">
-                                    <i class="bi @s.icon" style="color:@(i == 0 ? "#fff" : s.color);"></i>
+                                        type="button" role="tab"
+                                        style="--tab-color: @s.color;">
+                                    <i class="bi @s.icon"></i>
                                     @s.label
                                 </button>
                             </li>
@@ -970,10 +1030,11 @@
                         </div>
                         <div class="meta-card-body p-3">
                             <div class="d-flex flex-wrap gap-2">
-                                @foreach (var tag in Model.Tags)
+                                @for (int ti = 0; ti < Model.Tags.Count; ti++)
                                 {
-                                    <span class="tag-pill">
-                                        <i class="bi bi-hash text-muted" style="font-size:.7rem;"></i>@tag
+                                    var tag = Model.Tags[ti];
+                                    <span class="tag-pill" style="@GetTagColor(tag, ti)">
+                                        <i class="bi bi-hash opacity-75" style="font-size:.7rem;"></i>@tag
                                     </span>
                                 }
                             </div>
@@ -1057,11 +1118,22 @@
         })();
     </script>
 
-    @* ── TradingAgents tab Prev/Next navigation ── *@
+    @* ── TradingAgents tab Prev/Next navigation & auto-centering ── *@
     <script>
         (function () {
             var taTabBtns = Array.from(document.querySelectorAll('#taTabs .nav-link'));
             if (!taTabBtns.length) return;
+
+            function centerActiveTab(activeBtn) {
+                var container = document.getElementById('taTabs');
+                if (container && activeBtn) {
+                    var containerWidth = container.clientWidth;
+                    var activeLeft = activeBtn.offsetLeft;
+                    var activeWidth = activeBtn.offsetWidth;
+                    var targetScroll = activeLeft - (containerWidth / 2) + (activeWidth / 2);
+                    container.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
+                }
+            }
 
             function updateNav() {
                 var idx  = taTabBtns.findIndex(function (t) { return t.classList.contains('active'); });
@@ -1071,11 +1143,11 @@
                 if (pos)  pos.textContent = (idx + 1) + ' / ' + taTabBtns.length;
                 if (prev) prev.disabled = (idx === 0);
                 if (next) next.disabled = (idx === taTabBtns.length - 1);
-                // Fix icon color on active tab (icon should be white when active)
-                taTabBtns.forEach(function (btn, i) {
-                    var icon = btn.querySelector('i');
-                    if (icon) icon.style.color = btn.classList.contains('active') ? '#fff' : '';
-                });
+
+                var activeTab = taTabBtns[idx];
+                if (activeTab) {
+                    centerActiveTab(activeTab);
+                }
             }
 
             window.taNavigate = function (dir) {
@@ -1083,7 +1155,8 @@
                 var newIdx = idx + dir;
                 if (newIdx < 0 || newIdx >= taTabBtns.length) return;
                 taTabBtns[newIdx].click();
-                // Scroll to top of article card
+
+                // Scroll browser window to top of article card
                 var article = document.querySelector('article.fintech-card');
                 if (article) {
                     var top = article.getBoundingClientRect().top + window.scrollY - 80;
@@ -1093,6 +1166,9 @@
 
             taTabBtns.forEach(function (btn) {
                 btn.addEventListener('shown.bs.tab', updateNav);
+                btn.addEventListener('click', function () {
+                    centerActiveTab(this);
+                });
             });
             updateNav();
         })();

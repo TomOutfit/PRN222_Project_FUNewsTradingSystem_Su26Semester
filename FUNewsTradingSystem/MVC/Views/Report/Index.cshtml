@@ -92,6 +92,23 @@
         if (inList)  sb.Append("</ul>");
         return sb.ToString();
     }
+
+    string GetTagColor(string tag, int index = 0)
+    {
+        var tagColors = new[] {
+            (bg: "rgba(14, 165, 233, 0.12)", border: "rgba(14, 165, 233, 0.3)", text: "#0284c7"), // Cyan
+            (bg: "rgba(139, 92, 246, 0.12)", border: "rgba(139, 92, 246, 0.3)", text: "#7c3aed"), // Purple
+            (bg: "rgba(16, 185, 129, 0.12)", border: "rgba(16, 185, 129, 0.3)", text: "#059669"), // Green
+            (bg: "rgba(249, 115, 22, 0.12)", border: "rgba(249, 115, 22, 0.3)", text: "#ea580c"), // Orange
+            (bg: "rgba(236, 72, 153, 0.12)", border: "rgba(236, 72, 153, 0.3)", text: "#db2777"), // Pink
+            (bg: "rgba(234, 179, 8, 0.15)",  border: "rgba(234, 179, 8, 0.35)", text: "#b45309"), // Amber
+            (bg: "rgba(20, 184, 166, 0.12)", border: "rgba(20, 184, 166, 0.3)", text: "#0d9488"), // Teal
+            (bg: "rgba(99, 102, 241, 0.12)", border: "rgba(99, 102, 241, 0.3)", text: "#4f46e5")  // Indigo
+        };
+        int hash = Math.Abs((tag ?? "").GetHashCode() + index);
+        var c = tagColors[hash % tagColors.Length];
+        return $"background:{c.bg}; border:1px solid {c.border}; color:{c.text};";
+    }
 }
 
 <style>
@@ -265,9 +282,13 @@
                                 <span class="badge" style="background:@(isMultiAgent ? "rgba(124,58,237,.15)" : "rgba(37,99,235,.12)");color:@(isMultiAgent ? "#7c3aed" : "#2563eb");border:1px solid @(isMultiAgent ? "rgba(124,58,237,.3)" : "rgba(37,99,235,.25)");font-size:.72rem;">
                                     <i class="bi @(isMultiAgent ? "bi-cpu-fill" : "bi-robot") me-1"></i>@(isMultiAgent ? "Multi-Agent" : "Classic")
                                 </span>
-                                @foreach (var tag in item.TagNames)
+                                @{
+                                    var tagList = item.TagNames.ToList();
+                                }
+                                @for (int ti = 0; ti < tagList.Count; ti++)
                                 {
-                                    <span class="badge bg-light text-secondary border">
+                                    var tag = tagList[ti];
+                                    <span class="badge" style="@GetTagColor(tag, ti) font-size:.72rem;">
                                         <i class="bi bi-hash"></i>@tag
                                     </span>
                                 }
