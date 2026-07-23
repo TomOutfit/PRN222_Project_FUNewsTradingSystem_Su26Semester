@@ -161,7 +161,17 @@
         return sb.ToString();
     }
 
-    // ── Compute fake key stats for visual richness ──
+    // ── Safe inline markdown (bold + italic only, HTML-encoded first) ──
+    string InlineMd(string? text) {
+        if (string.IsNullOrEmpty(text)) return "";
+        var s = System.Net.WebUtility.HtmlEncode(text);
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*\*(.+?)\*\*",     "<strong>$1</strong>");
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*([^\n*]+?)\*",    "<em>$1</em>");
+        return s;
+    }
+
+    // ── Compute confidence color ──
     var confColor = Model.ConfidenceScore switch
     {
         >= 80 => "#10b981",
@@ -648,7 +658,7 @@
         {
             <p class="hero-headline mb-0">
                 <i class="bi bi-quote" style="font-size:1.2rem; opacity:.6;"></i>
-                @Model.Headline
+                @Html.Raw(InlineMd(Model.Headline))
             </p>
         }
 
@@ -765,7 +775,7 @@
                                 </div>
                                 <h4 class="fw-bold mb-0 text-main" style="font-size:1.05rem;">Market Sentiment</h4>
                             </div>
-                            <p class="section-body mb-0">@sentimentContent</p>
+                            <div class="section-body">@Html.Raw(RenderMd(sentimentContent))</div>
                         </div>
                         <div class="analysis-section-card p-4" style="border-left-color: var(--brand-1);">
                             <div class="d-flex align-items-center gap-3 mb-3">
@@ -774,7 +784,7 @@
                                 </div>
                                 <h4 class="fw-bold mb-0 text-main" style="font-size:1.05rem;">Fundamental Indicators</h4>
                             </div>
-                            <p class="section-body mb-0">@fundamentalContent</p>
+                            <div class="section-body">@Html.Raw(RenderMd(fundamentalContent))</div>
                         </div>
                         <div class="analysis-section-card p-4" style="border-left-color: #ef4444;">
                             <div class="d-flex align-items-center gap-3 mb-3">
@@ -783,7 +793,7 @@
                                 </div>
                                 <h4 class="fw-bold mb-0 text-main" style="font-size:1.05rem;">Key Risk Warnings</h4>
                             </div>
-                            <p class="section-body mb-0">@riskContent</p>
+                            <div class="section-body">@Html.Raw(RenderMd(riskContent))</div>
                         </div>
                     </div>
                 }
@@ -791,11 +801,9 @@
                 {
                     @if (!string.IsNullOrWhiteSpace(Model.NewsContent))
                     {
-                        var paragraphs = Model.NewsContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var para in paragraphs)
-                        {
-                            <p class="text-main lh-lg mb-3" style="text-align:justify; font-size:.95rem; line-height:1.7;">@para</p>
-                        }
+                        <div class="section-body" style="font-size:.95rem;line-height:1.75;color:var(--text-main);">
+                            @Html.Raw(RenderMd(Model.NewsContent))
+                        </div>
                     }
                     else
                     {

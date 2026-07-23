@@ -11,6 +11,16 @@
     int? selectedTag = ViewBag.SelectedTag as int?;
     string selectedDecision = ViewBag.SelectedDecision as string ?? "";
     bool savedOnly = ViewBag.SavedOnly == true;
+
+    // Safe inline markdown: HTML-encodes first, then converts **bold** and *italic* only.
+    string InlineMd(string? text) {
+        if (string.IsNullOrEmpty(text)) return "";
+        var s = System.Net.WebUtility.HtmlEncode(text);
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*\*(.+?)\*\*",     "<strong>$1</strong>");
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*([^\n*]+?)\*",    "<em>$1</em>");
+        return s;
+    }
 }
 
 <style>
@@ -170,7 +180,7 @@
                         </h5>
 
                         <p class="card-text text-muted mb-3">
-                            @item.Headline
+                            @Html.Raw(InlineMd(item.Headline))
                         </p>
 
                         <div class="d-flex justify-content-between align-items-center">
