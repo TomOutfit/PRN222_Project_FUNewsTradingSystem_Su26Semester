@@ -534,7 +534,33 @@ FROM (VALUES
     ('JD','JD.com, Inc.'), ('PDD','PDD Holdings Inc.'), ('SE','Sea Limited'),
     ('MELI','MercadoLibre, Inc.'), ('SOL','Solana'), ('ADA','Cardano'),
     ('DOGE','Dogecoin'), ('XRP','Ripple'), ('BNB','Binance Coin'),
-    ('LTC','Litecoin'), ('DOT','Polkadot'), ('LINK','Chainlink')
+    ('LTC','Litecoin'), ('DOT','Polkadot'), ('LINK','Chainlink'),
+    -- ── Vietnamese Stock Market (HOSE / HNX / VN30) ──────────────────────
+    ('FPT','FPT Corporation (Tập đoàn FPT)'),
+    ('VNM','Vinamilk (Công ty CP Sữa Việt Nam)'),
+    ('VIC','Vingroup Joint Stock Company (Tập đoàn Vingroup)'),
+    ('VHM','Vinhomes Joint Stock Company (Công ty CP Vinhomes)'),
+    ('VCB','Vietcombank (Ngân hàng TMCP Ngoại thương Việt Nam)'),
+    ('BID','BIDV (Ngân hàng TMCP Đầu tư và Phát triển Việt Nam)'),
+    ('CTG','VietinBank (Ngân hàng TMCP Công thương Việt Nam)'),
+    ('TCB','Techcombank (Ngân hàng TMCP Kỹ thương Việt Nam)'),
+    ('MBB','MBBank (Ngân hàng TMCP Quân đội)'),
+    ('VPB','VPBank (Ngân hàng TMCP Việt Nam Thịnh Vượng)'),
+    ('HPG','Hoa Phat Group (Tập đoàn Hòa Phát)'),
+    ('MWG','Mobile World Investment Corp (Thế Giới Di Động)'),
+    ('MSN','Masan Group (Tập đoàn Masan)'),
+    ('GAS','PV GAS (Tổng Công ty Khí Việt Nam)'),
+    ('PLX','Petrolimex (Tập đoàn Xăng dầu Việt Nam)'),
+    ('VJC','VietJet Aviation JSC (VietJet Air)'),
+    ('HVN','Vietnam Airlines (Tổng Công ty Hàng không Việt Nam)'),
+    ('SSI','SSI Securities Corporation (Chứng khoán SSI)'),
+    ('VND','VNDIRECT Securities Corporation (Chứng khoán VNDIRECT)'),
+    ('REE','Refrigeration Electrical Engineering (Cơ Điện Lạnh)'),
+    ('PNJ','Phu Nhuan Jewelry JSC (Vàng bạc Đá quý Phú Nhuận)'),
+    ('STB','Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)'),
+    ('DGC','Duc Giang Chemicals Group (Hóa chất Đức Giang)'),
+    ('VRE','Vincom Retail Joint Stock Company (Vincom Retail)'),
+    ('SAB','Sabeco (Tổng Công ty CP Bia - Rượu - Nước giải khát Sài Gòn)')
 ) AS v(TagName, Note)
 WHERE NOT EXISTS (SELECT 1 FROM Tag t WHERE t.TagName = v.TagName);
 GO

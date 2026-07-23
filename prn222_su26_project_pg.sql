@@ -453,7 +453,33 @@ FROM (VALUES
     ('JD','JD.com, Inc.'), ('PDD','PDD Holdings Inc.'), ('SE','Sea Limited'),
     ('MELI','MercadoLibre, Inc.'), ('SOL','Solana'), ('ADA','Cardano'),
     ('DOGE','Dogecoin'), ('XRP','Ripple'), ('BNB','Binance Coin'),
-    ('LTC','Litecoin'), ('DOT','Polkadot'), ('LINK','Chainlink')
+    ('LTC','Litecoin'), ('DOT','Polkadot'), ('LINK','Chainlink'),
+    -- ── Vietnamese Stock Market (HOSE / HNX / VN30) ──────────────────────
+    ('FPT','FPT Corporation (Tập đoàn FPT)'),
+    ('VNM','Vinamilk (Công ty CP Sữa Việt Nam)'),
+    ('VIC','Vingroup Joint Stock Company (Tập đoàn Vingroup)'),
+    ('VHM','Vinhomes Joint Stock Company (Công ty CP Vinhomes)'),
+    ('VCB','Vietcombank (Ngân hàng TMCP Ngoại thương Việt Nam)'),
+    ('BID','BIDV (Ngân hàng TMCP Đầu tư và Phát triển Việt Nam)'),
+    ('CTG','VietinBank (Ngân hàng TMCP Công thương Việt Nam)'),
+    ('TCB','Techcombank (Ngân hàng TMCP Kỹ thương Việt Nam)'),
+    ('MBB','MBBank (Ngân hàng TMCP Quân đội)'),
+    ('VPB','VPBank (Ngân hàng TMCP Việt Nam Thịnh Vượng)'),
+    ('HPG','Hoa Phat Group (Tập đoàn Hòa Phát)'),
+    ('MWG','Mobile World Investment Corp (Thế Giới Di Động)'),
+    ('MSN','Masan Group (Tập đoàn Masan)'),
+    ('GAS','PV GAS (Tổng Công ty Khí Việt Nam)'),
+    ('PLX','Petrolimex (Tập đoàn Xăng dầu Việt Nam)'),
+    ('VJC','VietJet Aviation JSC (VietJet Air)'),
+    ('HVN','Vietnam Airlines (Tổng Công ty Hàng không Việt Nam)'),
+    ('SSI','SSI Securities Corporation (Chứng khoán SSI)'),
+    ('VND','VNDIRECT Securities Corporation (Chứng khoán VNDIRECT)'),
+    ('REE','Refrigeration Electrical Engineering (Cơ Điện Lạnh)'),
+    ('PNJ','Phu Nhuan Jewelry JSC (Vàng bạc Đá quý Phú Nhuận)'),
+    ('STB','Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)'),
+    ('DGC','Duc Giang Chemicals Group (Hóa chất Đức Giang)'),
+    ('VRE','Vincom Retail Joint Stock Company (Vincom Retail)'),
+    ('SAB','Sabeco (Tổng Công ty CP Bia - Rượu - Nước giải khát Sài Gòn)')
 ) AS v("TagName", "Note")
 WHERE NOT EXISTS (SELECT 1 FROM "Tag" t WHERE t."TagName" = v."TagName");
 
@@ -620,6 +646,98 @@ INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
 VALUES
 ((SELECT "TagID" FROM "Tag" WHERE "TagName"='RIVN'),  1),
 ((SELECT "TagID" FROM "Tag" WHERE "TagName"='LCID'),  1)
+ON CONFLICT DO NOTHING;
+
+-- ── Vietnamese Stock Market Mappings ────────────────────────────────────────────────
+INSERT INTO "TagCategoryMap" ("TagID", "CategoryID")
+VALUES
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='FPT'),    7), -- Software & AI
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='VCB'),   10), -- Commercial Banking
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='BID'),   10), -- Commercial Banking
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='CTG'),   10), -- Commercial Banking
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='TCB'),   10), -- Commercial Banking
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MBB'),   10), -- Commercial Banking
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='VPB'),   10), -- Commercial Banking
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='STB'),   10), -- Commercial Banking
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='VNM'),    6), -- Consumer Goods
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MSN'),    6), -- Consumer Goods
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SAB'),    6), -- Consumer Goods
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PNJ'),    6), -- Consumer Goods
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='MWG'),   12), -- E-commerce / Retail
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='HPG'),    1), -- Materials / Technology
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='DGC'),    1), -- Materials
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='GAS'),    4), -- Energy
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='PLX'),    4), -- Energy
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='SSI'),    3), -- Finance
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='VND'),    3), -- Finance
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='VIC'),    1), -- Real Estate / Tech
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='VHM'),    1), -- Real Estate
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='VRE'),    6), -- Retail / Real Estate
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='VJC'),    6), -- Transportation
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='HVN'),    6), -- Transportation
+((SELECT "TagID" FROM "Tag" WHERE "TagName"='REE'),    4)  -- Green Energy
+ON CONFLICT DO NOTHING;
+
+-- ── Vietnamese Stock Market Featured Articles ──────────────────────────────────────
+INSERT INTO "NewsArticle" ("NewsTitle", "Headline", "CreatedDate", "NewsContent", "NewsSource", "CategoryID", "NewsStatus", "CreatedByID", "UpdatedByID", "ModifiedDate", "ConfidenceScore")
+VALUES
+('[BUY] FPT Automated Analysis',
+ 'FPT bứt phá doanh thu từ mảng AI và xuất khẩu phần mềm sang thị trường Nhật Bản, Mỹ.',
+ NOW() - INTERVAL '1 day',
+ '### Executive Summary**: We assign a Strong Buy rating to FPT. The action plan is to accumulate on pullbacks toward the support level.' || E'\n\n' ||
+ '(1) Sentiment view: Tâm lý thị trường dành cho FPT cực kỳ tích cực. Dòng tiền khối ngoại và các quỹ đầu tư lớn liên tục mua ròng nhờ triển vọng tăng trưởng doanh thu 20%+ mỗi năm từ thị trường nước ngoài.' || E'\n\n' ||
+ '(2) Fundamental view: Doanh thu xuất khẩu phần mềm đạt mốc kỷ lục nhờ mở rộng hợp tác chiến lược về AI với NVIDIA. Biên lợi nhuận gộp duy trì ổn định ở mức 38-40%, dòng tiền từ hoạt động kinh doanh rất mạnh mẽ.' || E'\n\n' ||
+ '(3) Key risk warnings: Biến động tỷ giá JPY/VND ảnh hưởng nhẹ tới doanh thu chuyển đổi từ thị trường Nhật Bản và áp lực cạnh tranh thu hút nhân sự công nghệ.',
+ 'TradingAgents Multi-Agent + gpt-4o',
+ 7, TRUE, 1, 1, NOW() - INTERVAL '1 day', 92),
+
+('[BUY] HPG Automated Analysis',
+ 'Hòa Phát đẩy nhanh tiến độ đại dự án Dung Quất 2, sản lượng thép HRC tăng trưởng mạnh.',
+ NOW() - INTERVAL '3 days',
+ '### Executive Summary**: We assign a Buy rating to HPG. Target price set at 32,000 VND as Dung Quat 2 complex comes online.' || E'\n\n' ||
+ '(1) Sentiment view: Giao dịch sôi động với khối lượng lớn. Giới phân tích đánh giá cao năng lực cạnh tranh về chi phí sản xuất thép của HPG so với các đối thủ trong khu vực.' || E'\n\n' ||
+ '(2) Fundamental view: Dự án Dung Quất 2 giúp nâng công suất thép thô lên 14 triệu tấn/năm, tối ưu hóa chi phí sản xuất trên mỗi đơn vị sản phẩm. Tỷ lệ nợ/vốn chủ sở hữu ở mức an toàn.' || E'\n\n' ||
+ '(3) Key risk warnings: Giá quặng sắt và than cốc đầu vào tăng đột biến cùng rủi ro thuế chống bán phá giá từ các thị trường xuất khẩu.',
+ 'TradingAgents Multi-Agent + gpt-4o',
+ 1, TRUE, 2, 2, NOW() - INTERVAL '3 days', 88),
+
+('[HOLD] VCB Automated Analysis',
+ 'Vietcombank duy trì chất lượng tài sản hàng đầu toàn ngành ngân hàng Việt Nam.',
+ NOW() - INTERVAL '4 days',
+ '### Executive Summary**: We assign a Hold rating to VCB. Vietcombank remains the premium banking asset in Vietnam with industry-leading LDR and NPL coverage ratio.' || E'\n\n' ||
+ '(1) Sentiment view: Cổ phiếu trụ cột giữ nhịp thị trường VN-Index. Nhà đầu tư tổ chức đánh giá cao tính an toàn và uy tín hàng đầu của VCB.' || E'\n\n' ||
+ '(2) Fundamental view: Tỷ lệ nợ xấu (NPL) duy trì dưới 1%, tỷ lệ bao phủ nợ xấu vượt 200%, cao nhất hệ thống ngân hàng. NIM ổn định nhờ chi phí vốn thấp và lượng CASA dồi dào.' || E'\n\n' ||
+ '(3) Key risk warnings: Tăng trưởng tín dụng toàn ngành chậm lại do cầu hấp thụ vốn của nền kinh tế chưa hồi phục hoàn toàn.',
+ 'TradingAgents Multi-Agent + gpt-4o',
+ 10, TRUE, 1, 1, NOW() - INTERVAL '4 days', 85),
+
+('[BUY] VNM Automated Analysis',
+ 'Vinamilk đẩy mạnh tái cấu trúc thương hiệu và mở rộng thị phần nội địa.',
+ NOW() - INTERVAL '6 days',
+ '### Executive Summary**: We assign a Buy rating to VNM with high dividend yield appeal.' || E'\n\n' ||
+ '(1) Sentiment view: Cổ phiếu thu hút các nhà đầu tư giá trị nhờ cổ tức tiền mặt cao và ổn định hàng năm (30-40%).' || E'\n\n' ||
+ '(2) Fundamental view: Giá bột sữa nguyên liệu thế giới giảm giúp cải thiện biên lợi nhuận gộp. Hệ thống nhận diện thương hiệu mới giúp tiếp cận hiệu quả thế hệ người tiêu dùng Gen Z.' || E'\n\n' ||
+ '(3) Key risk warnings: Áp lực cạnh tranh từ các thương hiệu sữa ngoại nhập và sữa hạt thế hệ mới.',
+ 'TradingAgents Multi-Agent + gpt-4o',
+ 6, TRUE, 3, 3, NOW() - INTERVAL '6 days', 82),
+
+('[HOLD] MWG Automated Analysis',
+ 'Bách Hóa Xanh đạt điểm hòa vốn, Thế Giới Di Động tối ưu hóa chuỗi cửa hàng.',
+ NOW() - INTERVAL '8 days',
+ '### Executive Summary**: We assign a Hold rating to MWG as Bach Hoa Xanh transitions into a profitable growth engine.' || E'\n\n' ||
+ '(1) Sentiment view: Nhà đầu tư theo dõi sát sao tiến độ phát hành riêng lẻ cổ phần Bách Hóa Xanh cho nhà đầu tư chiến lược.' || E'\n\n' ||
+ '(2) Fundamental view: Bách Hóa Xanh đạt doanh thu trung bình/cửa hàng/tháng vượt 1.8 tỷ VNĐ, đóng góp tích cực vào lợi nhuận tập đoàn. Chuỗi ICT đóng bớt các cửa hàng hiệu quả thấp để tập trung tối ưu doanh thu/m2.' || E'\n\n' ||
+ '(3) Key risk warnings: Sức mua các mặt hàng không thiết yếu (ICT & Điện máy) phục hồi chậm.',
+ 'TradingAgents Multi-Agent + gpt-4o',
+ 12, TRUE, 2, 2, NOW() - INTERVAL '8 days', 80);
+
+-- Map NewsArticles to Vietnam Stock Tags
+INSERT INTO "NewsTag" ("NewsArticleID", "TagID") VALUES
+((SELECT "NewsArticleID" FROM "NewsArticle" WHERE "NewsTitle"='[BUY] FPT Automated Analysis' LIMIT 1), (SELECT "TagID" FROM "Tag" WHERE "TagName"='FPT')),
+((SELECT "NewsArticleID" FROM "NewsArticle" WHERE "NewsTitle"='[BUY] HPG Automated Analysis' LIMIT 1), (SELECT "TagID" FROM "Tag" WHERE "TagName"='HPG')),
+((SELECT "NewsArticleID" FROM "NewsArticle" WHERE "NewsTitle"='[HOLD] VCB Automated Analysis' LIMIT 1), (SELECT "TagID" FROM "Tag" WHERE "TagName"='VCB')),
+((SELECT "NewsArticleID" FROM "NewsArticle" WHERE "NewsTitle"='[BUY] VNM Automated Analysis' LIMIT 1), (SELECT "TagID" FROM "Tag" WHERE "TagName"='VNM')),
+((SELECT "NewsArticleID" FROM "NewsArticle" WHERE "NewsTitle"='[HOLD] MWG Automated Analysis' LIMIT 1), (SELECT "TagID" FROM "Tag" WHERE "TagName"='MWG'))
 ON CONFLICT DO NOTHING;
 
 -- RAISE NOTICE 'Section C+ done: TagCategoryMap populated.';
