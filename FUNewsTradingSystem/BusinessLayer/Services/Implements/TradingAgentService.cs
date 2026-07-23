@@ -220,7 +220,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             else if (normalizedProvider == "google")
             {
                 psi.EnvironmentVariables["TRADINGAGENTS_DEEP_THINK_LLM"]  = "gemini-2.5-flash";
-                psi.EnvironmentVariables["TRADINGAGENTS_QUICK_THINK_LLM"] = "gemini-2.0-flash";
+                psi.EnvironmentVariables["TRADINGAGENTS_QUICK_THINK_LLM"] = "gemini-3.1-flash-lite";
             }
             // openai: keep library defaults (gpt-5.5 / gpt-5.4-mini)
 
@@ -611,7 +611,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 "google" or "gemini" => (
                     "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
                     _configuration["Google:ApiKey"] ?? "",
-                    "gemini-2.0-flash"),
+                    "gemini-3.1-flash-lite"),
                 _ => (
                     _configuration["OpenAI:BaseUrl"] ?? "https://api.openai.com/v1/chat/completions",
                     _configuration["OpenAI:ApiKey"] ?? "",
