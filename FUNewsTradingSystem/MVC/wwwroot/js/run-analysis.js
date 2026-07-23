@@ -263,11 +263,12 @@
                     resultArea.innerHTML = buildClassicCard(result.newsArticleId);
                 }
             } else {
-                var errorMsg    = result.errorMessage || 'An unexpected error occurred.';
-                var lowerError  = errorMsg.toLowerCase();
-                var isRateLimit = lowerError.indexOf('rate limit') >= 0 || lowerError.indexOf('429') >= 0 || lowerError.indexOf('resource_exhausted') >= 0;
-                var isAuth      = lowerError.indexOf('authentication') >= 0 || lowerError.indexOf('api key') >= 0 || lowerError.indexOf('401') >= 0;
-                var providerSel = (document.getElementById('SelectedProvider') || {}).value || 'openai';
+                var errorMsg      = result.errorMessage || 'An unexpected error occurred.';
+                var lowerError    = errorMsg.toLowerCase();
+                var isRateLimit   = lowerError.indexOf('rate limit') >= 0 || lowerError.indexOf('429') >= 0 || lowerError.indexOf('resource_exhausted') >= 0;
+                var isAuth        = lowerError.indexOf('authentication') >= 0 || lowerError.indexOf('api key') >= 0 || lowerError.indexOf('401') >= 0;
+                var isNoMarketData = lowerError.indexOf('no market data') >= 0 || lowerError.indexOf('returned no rows') >= 0 || lowerError.indexOf('market data unavailable') >= 0;
+                var providerSel   = (document.getElementById('SelectedProvider') || {}).value || 'openai';
                 var rateLimitHint = '';
                 if (isRateLimit) {
                     if (providerSel === 'openai') {
@@ -278,7 +279,11 @@
                         rateLimitHint = '<strong>Rate limit / quota exhausted on Google Gemini</strong> — your free-tier daily quota is used up. Switch to <strong>Groq</strong> (Llama, free tier) or <strong>OpenAI</strong> and retry, or wait until quota resets tomorrow.';
                     }
                 }
-                var extraHint = isRateLimit
+                var extraHint = isNoMarketData
+                    ? '<p class="mb-0 small text-warning mt-2"><i class="bi bi-info-circle-fill me-1"></i>' +
+                      '<strong>Yahoo Finance Market Data Unavailable</strong> — Yahoo Finance does not provide historical OHLCV chart bars for ticker <strong>' + escapeHtml(currentTicker) + '</strong>. ' +
+                      'Please switch to the <strong>Classic — 3-Agent Pipeline</strong> above, which performs complete fundamental, news, and sentiment analysis for all global and Vietnamese stocks without requiring US market charts!</p>'
+                    : isRateLimit
                     ? '<p class="mb-0 small text-info mt-2"><i class="bi bi-lightning-charge me-1"></i>' + rateLimitHint + '</p>'
                     : isAuth
                     ? '<p class="mb-0 small text-warning mt-2"><i class="bi bi-key me-1"></i>' +
