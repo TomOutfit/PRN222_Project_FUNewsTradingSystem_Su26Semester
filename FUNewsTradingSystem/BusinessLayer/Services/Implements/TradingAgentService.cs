@@ -128,13 +128,13 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                     var headlines = await FetchNewsAsync(ticker, companyName);
 
                     if (onProgress != null) await onProgress("Processing sentiment evaluation via AI...", 55);
-                    var sentimentOutput = await RunSentimentAgentAsync(ticker, headlines);
+                    var sentimentOutput = await RunSentimentAgentAsync(ticker, headlines, provider ?? "openai");
 
                     if (onProgress != null) await onProgress("Synthesizing core fundamental analysis...", 75);
-                    var fundamentalOutput = await RunFundamentalAgentAsync(ticker, headlines, sentimentOutput);
+                    var fundamentalOutput = await RunFundamentalAgentAsync(ticker, headlines, sentimentOutput, provider ?? "openai");
 
                     if (onProgress != null) await onProgress("Generating final portfolio recommendation and report layout...", 90);
-                    portfolioResponse = await RunPortfolioManagerAsync(ticker, sentimentOutput, fundamentalOutput);
+                    portfolioResponse = await RunPortfolioManagerAsync(ticker, sentimentOutput, fundamentalOutput, provider ?? "openai");
                 }
 
                 // Save to database (shared by both pipelines)
@@ -492,7 +492,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             }
         }
 
-        private async Task<string> RunSentimentAgentAsync(string ticker, string headlines)
+        private async Task<string> RunSentimentAgentAsync(string ticker, string headlines, string provider = "openai")
         {
             if (IsOpenAiMockEnabled())
             {
@@ -505,7 +505,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
 
             try
             {
-                return await CallOpenAiAsync(prompt);
+                return await CallOpenAiAsync(prompt, provider);
             }
             catch (PipelineException ex) when (CanFallbackToMock(ex))
             {
@@ -513,7 +513,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             }
         }
 
-        private async Task<string> RunFundamentalAgentAsync(string ticker, string headlines, string sentimentOutput)
+        private async Task<string> RunFundamentalAgentAsync(string ticker, string headlines, string sentimentOutput, string provider = "openai")
         {
             if (IsOpenAiMockEnabled())
             {
@@ -527,7 +527,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
 
             try
             {
-                return await CallOpenAiAsync(prompt);
+                return await CallOpenAiAsync(prompt, provider);
             }
             catch (PipelineException ex) when (CanFallbackToMock(ex))
             {
@@ -536,9 +536,10 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
         }
 
         private async Task<PortfolioManagerResponse> RunPortfolioManagerAsync(
-            string ticker, 
-            string sentimentOutput, 
-            string fundamentalOutput)
+            string ticker,
+            string sentimentOutput,
+            string fundamentalOutput,
+            string provider = "openai")
         {
             if (IsOpenAiMockEnabled())
             {
@@ -552,7 +553,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
 
             try
             {
-                var rawResponse = await CallOpenAiAsync(prompt);
+                var rawResponse = await CallOpenAiAsync(prompt, provider);
                 var preprocessed = PreprocessJsonResponse(rawResponse);
 
                 PortfolioManagerResponse? result;
@@ -582,11 +583,29 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             }
         }
 
-        private async Task<string> CallOpenAiAsync(string prompt)
+        // Groq and Gemini expose OpenAI-compatible REST endpoints, so the same
+        // HTTP call works for all three providers — only URL, key, and model differ.
+        private (string baseUrl, string apiKey, string model) ResolveLlmConfig(string provider)
         {
-            var apiKey = _configuration["OpenAI:ApiKey"];
-            var baseUrl = _configuration["OpenAI:BaseUrl"] ?? "https://api.openai.com/v1/chat/completions";
-            var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+            return (provider ?? "openai").ToLowerInvariant() switch {
+                "groq" => (
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    _configuration["Groq:ApiKey"] ?? "",
+                    "llama-3.3-70b-versatile"),
+                "google" or "gemini" => (
+                    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+                    _configuration["Google:ApiKey"] ?? "",
+                    "gemini-2.0-flash"),
+                _ => (
+                    _configuration["OpenAI:BaseUrl"] ?? "https://api.openai.com/v1/chat/completions",
+                    _configuration["OpenAI:ApiKey"] ?? "",
+                    _configuration["OpenAI:Model"] ?? "gpt-4o")
+            };
+        }
+
+        private async Task<string> CallOpenAiAsync(string prompt, string provider = "openai")
+        {
+            var (baseUrl, apiKey, model) = ResolveLlmConfig(provider);
 
             var openAiRequest = new OpenAiRequest
             {

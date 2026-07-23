@@ -105,27 +105,17 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label class="form-label fw-semibold">
                         <i class="bi bi-cpu me-1"></i>Analysis Engine
                     </label>
                     <select name="SelectedPipeline" id="SelectedPipeline" class="form-select fintech-form-control">
-                        <option value="classic">Classic — 3-Agent OpenAI Pipeline (Fast &middot; ~15s)</option>
+                        <option value="classic">Classic — 3-Agent Pipeline (Fast &middot; ~15s)</option>
                         <option value="tradingagents">Multi-Agents LLM Framework (Deep &middot; 3–8 min)</option>
                     </select>
                     <div id="engineHint" class="form-text mt-1" style="font-size:.78rem"></div>
                 </div>
-                <div class="col-md-4" id="taDepthWrapper" style="display:none">
-                    <label class="form-label fw-semibold">
-                        <i class="bi bi-sliders me-1"></i>Depth
-                    </label>
-                    <select name="SelectedDepth" id="SelectedDepth" class="form-select fintech-form-control">
-                        <option value="fast">Fast — 1 debate round (~3 min)</option>
-                        <option value="balanced">Balanced — 2 debate rounds (~6 min)</option>
-                    </select>
-                    <div class="form-text mt-1" style="font-size:.78rem">More rounds = deeper analysis.</div>
-                </div>
-                <div class="col-md-3" id="taProviderWrapper" style="display:none">
+                <div class="col-md-3">
                     <label class="form-label fw-semibold">
                         <i class="bi bi-lightning-charge me-1"></i>LLM Provider
                     </label>
@@ -134,7 +124,17 @@
                         <option value="groq">Groq (Llama — fast/free)</option>
                         <option value="google">Google Gemini</option>
                     </select>
-                    <div class="form-text mt-1" style="font-size:.78rem">Switch if rate-limited.</div>
+                    <div class="form-text mt-1" style="font-size:.78rem">Switch provider if rate-limited.</div>
+                </div>
+                <div class="col-md-3" id="taDepthWrapper" style="display:none">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-sliders me-1"></i>Depth
+                    </label>
+                    <select name="SelectedDepth" id="SelectedDepth" class="form-select fintech-form-control">
+                        <option value="fast">Fast — 1 debate round (~3 min)</option>
+                        <option value="balanced">Balanced — 2 rounds (~6 min)</option>
+                    </select>
+                    <div class="form-text mt-1" style="font-size:.78rem">More rounds = deeper analysis.</div>
                 </div>
             </div>
 
@@ -319,21 +319,18 @@
                 });
         });
 
-        // ── Engine hint + depth/provider toggle ────────────────────────────────
-        var engineSelect    = document.getElementById('SelectedPipeline');
-        var engineHint      = document.getElementById('engineHint');
-        var taDepthWrapper  = document.getElementById('taDepthWrapper');
-        var taProviderWrapper = document.getElementById('taProviderWrapper');
+        // ── Engine hint + depth toggle (provider is always visible) ────────────
+        var engineSelect   = document.getElementById('SelectedPipeline');
+        var engineHint     = document.getElementById('engineHint');
+        var taDepthWrapper = document.getElementById('taDepthWrapper');
         function applyEngineChoice(val) {
             if (val === 'tradingagents') {
                 engineHint.innerHTML = '<i class="bi bi-info-circle me-1" style="color:var(--accent)"></i>'
                     + '12 agents &middot; yfinance + FRED + StockTwits + Polymarket real data. Expect 3–8 min.';
-                if (taDepthWrapper)    taDepthWrapper.style.display    = '';
-                if (taProviderWrapper) taProviderWrapper.style.display = '';
+                if (taDepthWrapper) taDepthWrapper.style.display = '';
             } else {
                 engineHint.innerHTML = '';
-                if (taDepthWrapper)    taDepthWrapper.style.display    = 'none';
-                if (taProviderWrapper) taProviderWrapper.style.display = 'none';
+                if (taDepthWrapper) taDepthWrapper.style.display = 'none';
             }
         }
         engineSelect && engineSelect.addEventListener('change', function () { applyEngineChoice(this.value); });
