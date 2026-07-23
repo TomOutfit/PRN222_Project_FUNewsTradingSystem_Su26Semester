@@ -105,25 +105,36 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-7">
+                <div class="col-md-5">
                     <label class="form-label fw-semibold">
                         <i class="bi bi-cpu me-1"></i>Analysis Engine
                     </label>
                     <select name="SelectedPipeline" id="SelectedPipeline" class="form-select fintech-form-control">
                         <option value="classic">Classic — 3-Agent OpenAI Pipeline (Fast &middot; ~15s)</option>
-                        <option value="tradingagents">Multi-Agents LLM Financial Trading Framework (Deep &middot; 3–8 min)</option>
+                        <option value="tradingagents">Multi-Agents LLM Framework (Deep &middot; 3–8 min)</option>
                     </select>
                     <div id="engineHint" class="form-text mt-1" style="font-size:.78rem"></div>
                 </div>
-                <div class="col-md-5" id="taDepthWrapper" style="display:none">
+                <div class="col-md-4" id="taDepthWrapper" style="display:none">
                     <label class="form-label fw-semibold">
-                        <i class="bi bi-sliders me-1"></i>Analysis Depth
+                        <i class="bi bi-sliders me-1"></i>Depth
                     </label>
                     <select name="SelectedDepth" id="SelectedDepth" class="form-select fintech-form-control">
                         <option value="fast">Fast — 1 debate round (~3 min)</option>
                         <option value="balanced">Balanced — 2 debate rounds (~6 min)</option>
                     </select>
-                    <div class="form-text mt-1" style="font-size:.78rem">More rounds = deeper bull/bear analysis but slower.</div>
+                    <div class="form-text mt-1" style="font-size:.78rem">More rounds = deeper analysis.</div>
+                </div>
+                <div class="col-md-3" id="taProviderWrapper" style="display:none">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-lightning-charge me-1"></i>LLM Provider
+                    </label>
+                    <select name="SelectedProvider" id="SelectedProvider" class="form-select fintech-form-control">
+                        <option value="openai">OpenAI (GPT)</option>
+                        <option value="groq">Groq (Llama — fast/free)</option>
+                        <option value="google">Google Gemini</option>
+                    </select>
+                    <div class="form-text mt-1" style="font-size:.78rem">Switch if rate-limited.</div>
                 </div>
             </div>
 
@@ -162,13 +173,14 @@
                 <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
                     <i class="bi bi-cpu-fill text-success"></i>
                     <span>TradingAgents — Live Agent Status</span>
-                    <span class="badge ms-2" style="background:#00441b;color:#00ff64;font-size:.7rem;font-weight:600;">RUNNING</span>
+                    <span class="badge ms-2 ta-running-badge" style="background:#00441b;color:#00ff64;font-size:.7rem;font-weight:600;letter-spacing:.05em;">RUNNING</span>
                 </h6>
                 <div class="row g-3">
+                    @* Left: Agent Status table *@
                     <div class="col-md-5">
-                        <div class="rounded-3 p-3 font-monospace" style="background:#0a0a0a;border:1px solid rgba(0,255,100,.15);font-size:.72rem;">
+                        <div class="rounded-3 p-3 font-monospace h-100" style="background:#0a0a0a;border:1px solid rgba(0,255,100,.15);font-size:.70rem;">
                             <div class="mb-2 text-center" style="color:#00ff64;border-bottom:1px solid rgba(0,255,100,.15);padding-bottom:6px;letter-spacing:.05em;">─ Agent Status ─</div>
-                            <table class="w-100" style="border-collapse:separate;border-spacing:0 2px;">
+                            <table class="w-100" style="border-collapse:separate;border-spacing:0 1px;">
                                 <thead>
                                     <tr>
                                         <th style="color:#66ff99;padding:2px 5px;font-weight:600">Team</th>
@@ -180,21 +192,46 @@
                             </table>
                         </div>
                     </div>
+                    @* Right: Messages & Tools + progress bar *@
                     <div class="col-md-7 d-flex flex-column">
-                        <div id="taProgressLogs" class="rounded-3 p-3 font-monospace flex-grow-1"
-                             style="background:#0d0d0d;border:1px solid rgba(255,255,255,.08);font-size:.72rem;color:#ccc;max-height:200px;overflow-y:auto;line-height:1.6;">
-                            <span style="color:#555">// Waiting for agents...</span>
-                        </div>
-                        <div class="mt-2">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span id="taProgressMsg" class="text-muted" style="font-size:.75rem">Starting...</span>
-                                <span id="taProgressPct" class="fw-bold" style="font-size:.75rem;color:#00ff64">0%</span>
+                        <div class="rounded-3 d-flex flex-column font-monospace flex-grow-1"
+                             style="background:#0d0d0d;border:1px solid rgba(255,255,255,.08);font-size:.70rem;">
+                            <div class="text-center py-2 fw-bold"
+                                 style="color:#66cc99;border-bottom:1px solid rgba(255,255,255,.08);letter-spacing:.05em;">─ Messages &amp; Tools ─</div>
+                            <div id="taMsgScroll" style="overflow-y:auto;max-height:260px;">
+                                <table class="w-100" style="border-collapse:collapse;">
+                                    <thead>
+                                        <tr style="position:sticky;top:0;background:#0d0d0d;z-index:1;">
+                                            <th style="padding:3px 8px;color:#555;font-weight:500;white-space:nowrap;">Time</th>
+                                            <th style="padding:3px 8px;color:#555;font-weight:500;white-space:nowrap;">Type</th>
+                                            <th style="padding:3px 8px;color:#555;font-weight:500;">Content</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="taMsgTbody">
+                                        <tr class="ta-placeholder"><td colspan="3" style="padding:8px;color:#444;">// Waiting for agents...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="progress" style="height:5px;background:#1a1a1a;border-radius:3px;">
-                                <div id="taProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
-                                     style="width:0%;background:#00c951;border-radius:3px;"></div>
+                            <div class="px-3 py-2 mt-auto" style="border-top:1px solid rgba(255,255,255,.06)">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span id="taProgressMsg" class="text-muted" style="font-size:.70rem">Starting...</span>
+                                    <span id="taProgressPct" class="fw-bold" style="font-size:.70rem;color:#00ff64">0%</span>
+                                </div>
+                                <div class="progress" style="height:4px;background:#1a1a1a;border-radius:3px;">
+                                    <div id="taProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                         style="width:0%;background:#00c951;border-radius:3px;"></div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                @* Current Report — populated with finalTradeDecision once the run completes *@
+                <div id="taCurrentReport" class="mt-3 d-none">
+                    <div class="rounded-3 font-monospace" style="background:#0a0a0a;border:1px solid rgba(0,255,100,.1);">
+                        <div class="text-center py-2 fw-bold"
+                             style="color:#66cc99;border-bottom:1px solid rgba(0,255,100,.1);letter-spacing:.05em;font-size:.70rem;">─ Current Report ─</div>
+                        <div id="taReportContent"
+                             style="padding:12px;color:#ccc;font-size:.70rem;max-height:200px;overflow-y:auto;line-height:1.6;white-space:pre-wrap;"></div>
                     </div>
                 </div>
             </div>
@@ -282,18 +319,21 @@
                 });
         });
 
-        // ── Engine hint + depth toggle ──────────────────────────────────────────
-        var engineSelect   = document.getElementById('SelectedPipeline');
-        var engineHint     = document.getElementById('engineHint');
-        var taDepthWrapper = document.getElementById('taDepthWrapper');
+        // ── Engine hint + depth/provider toggle ────────────────────────────────
+        var engineSelect    = document.getElementById('SelectedPipeline');
+        var engineHint      = document.getElementById('engineHint');
+        var taDepthWrapper  = document.getElementById('taDepthWrapper');
+        var taProviderWrapper = document.getElementById('taProviderWrapper');
         function applyEngineChoice(val) {
             if (val === 'tradingagents') {
                 engineHint.innerHTML = '<i class="bi bi-info-circle me-1" style="color:var(--accent)"></i>'
-                    + '12 agents &middot; yfinance + FRED + StockTwits + Polymarket real data. Expect 3–8 minutes.';
-                if (taDepthWrapper) taDepthWrapper.style.display = '';
+                    + '12 agents &middot; yfinance + FRED + StockTwits + Polymarket real data. Expect 3–8 min.';
+                if (taDepthWrapper)    taDepthWrapper.style.display    = '';
+                if (taProviderWrapper) taProviderWrapper.style.display = '';
             } else {
                 engineHint.innerHTML = '';
-                if (taDepthWrapper) taDepthWrapper.style.display = 'none';
+                if (taDepthWrapper)    taDepthWrapper.style.display    = 'none';
+                if (taProviderWrapper) taProviderWrapper.style.display = 'none';
             }
         }
         engineSelect && engineSelect.addEventListener('change', function () { applyEngineChoice(this.value); });

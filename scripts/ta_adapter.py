@@ -19,12 +19,28 @@ def main():
     ticker = sys.argv[1].upper().strip()
     date = sys.argv[2] if len(sys.argv) > 2 else _yesterday()
 
-    # Validate API key early — gives a clear error instead of a buried traceback
-    openai_key = os.environ.get("OPENAI_API_KEY", "")
-    if not openai_key:
-        _fail("OPENAI_API_KEY is not set — the C# host must forward OpenAI:ApiKey to the subprocess")
-    if openai_key.startswith("YOUR_") or len(openai_key) < 20:
-        _fail(f"OPENAI_API_KEY looks like a placeholder (length={len(openai_key)}) — provide a real API key")
+    # Validate provider-specific API key early — clear error instead of buried traceback
+    provider = os.environ.get("TRADINGAGENTS_LLM_PROVIDER", "openai").lower()
+    if provider in ("openai", ""):
+        key = os.environ.get("OPENAI_API_KEY", "")
+        if not key:
+            _fail("OPENAI_API_KEY is not set — the C# host must forward OpenAI:ApiKey to the subprocess")
+        if key.startswith("YOUR_") or len(key) < 20:
+            _fail(f"OPENAI_API_KEY looks like a placeholder (length={len(key)}) — provide a real API key")
+    elif provider == "groq":
+        key = os.environ.get("GROQ_API_KEY", "")
+        if not key:
+            _fail("GROQ_API_KEY is not set — required when using Groq provider")
+        if key.startswith("YOUR_") or len(key) < 10:
+            _fail(f"GROQ_API_KEY looks like a placeholder (length={len(key)})")
+    elif provider in ("google", "gemini"):
+        key = os.environ.get("GOOGLE_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+        if not key:
+            _fail("GOOGLE_API_KEY is not set — required when using Google Gemini provider")
+        if key.startswith("YOUR_") or len(key) < 10:
+            _fail(f"GOOGLE_API_KEY looks like a placeholder (length={len(key)})")
+    else:
+        _fail(f"Unknown LLM provider: {provider!r} — expected 'openai', 'groq', or 'google'")
 
     try:
         from tradingagents.default_config import DEFAULT_CONFIG
@@ -43,11 +59,11 @@ def main():
         combined = (str(e) + tb).lower()
         if "authenticationerror" in combined or "incorrect api key" in combined \
                 or "invalid api key" in combined or ": 401" in combined:
-            _fail(f"OpenAI authentication failed — check OPENAI_API_KEY. Detail: {e}")
+            _fail(f"Authentication failed for provider '{provider}' — check your API key. Detail: {e}")
         elif "ratelimiterror" in combined or "rate limit" in combined or ": 429" in combined:
-            _fail(f"OpenAI rate limit exceeded — try again later. Detail: {e}")
+            _fail(f"Rate limit exceeded on provider '{provider}' — try switching to 'groq' or 'google' in the provider dropdown. Detail: {e}")
         elif "connectionerror" in combined or "timeout" in combined:
-            _fail(f"Network error reaching OpenAI API. Detail: {e}")
+            _fail(f"Network error reaching the '{provider}' API endpoint. Detail: {e}")
         else:
             _fail(f"Agent pipeline error: {e}\n\nTraceback:\n{tb.strip()}")
 

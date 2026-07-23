@@ -13,6 +13,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
             int tagId, int categoryId, int createdByAccountId,
             string pipeline = "classic",
             System.Func<string, int, System.Threading.Tasks.Task>? onProgress = null,
-            string? depth = "fast");
+            string? depth = "fast",
+            string? provider = "openai");
     }
 }

@@ -52,11 +52,15 @@ services:
         value: "python3"
       - key: TradingAgents__ScriptsPath
         value: "/app/scripts"
-      # C# forwards OpenAI__ApiKey → OPENAI_API_KEY to the Python subprocess automatically
+      # Provider API keys — C# forwards the right one based on user's provider dropdown selection
+      # Set whichever provider(s) you want to enable; leave others as sync:false (unset)
+      - key: Groq__ApiKey
+        sync: false
+      - key: Google__ApiKey
+        sync: false
+      # Retry budget — helps absorb transient 429 rate-limit spikes without aborting a run
+      - key: TRADINGAGENTS_LLM_MAX_RETRIES
+        value: "3"
       # Debate/risk rounds are overridden per-request by the depth selector (fast=1, balanced=2)
-      - key: TRADINGAGENTS_MAX_DEBATE_ROUNDS
-        value: "1"
-      - key: TRADINGAGENTS_MAX_RISK_ROUNDS
-        value: "1"
 
 

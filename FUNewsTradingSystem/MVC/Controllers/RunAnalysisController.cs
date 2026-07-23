@@ -76,9 +76,10 @@ public class RunAnalysisController : Controller
         if (!accountId.HasValue)
             return Json(new { success = false, errorMessage = "Unable to identify current user." });
 
-        var connectionId = request.ConnectionId ?? "";
+        var connectionId = request.ConnectionId  ?? "";
         var pipeline     = request.SelectedPipeline ?? "classic";
         var depth        = request.SelectedDepth    ?? "fast";
+        var provider     = request.SelectedProvider ?? "openai";
         var tagId        = request.SelectedTagId;
         var categoryId   = request.SelectedCategoryId;
         var userId       = accountId.Value;
@@ -111,7 +112,8 @@ public class RunAnalysisController : Controller
                             await _progressHub.Clients.Client(connectionId)
                                 .SendAsync("ReceiveProgress", message, progress);
                     },
-                    depth);
+                    depth,
+                    provider);
 
                 // Broadcast new report to all public visitors
                 if (result.Success && result.NewsArticleID.HasValue)
@@ -174,5 +176,6 @@ public class RunAnalysisRequest
     public int SelectedCategoryId { get; set; }
     public string? ConnectionId    { get; set; }
     public string? SelectedPipeline { get; set; }
-    public string? SelectedDepth   { get; set; }   // "fast" | "balanced"
+    public string? SelectedDepth    { get; set; }   // "fast" | "balanced"
+    public string? SelectedProvider { get; set; }   // "openai" | "groq" | "google"
 }

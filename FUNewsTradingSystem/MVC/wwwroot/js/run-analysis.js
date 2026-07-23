@@ -4,34 +4,70 @@
 (function () {
     'use strict';
 
-    // ── Agent table definition (mirrors TradingAgents teams) ──────────────────
+    // ── Agent table (matches TradingAgents actual teams) ──────────────────────
     var TA_AGENTS = [
-        { id: 'market',  team: 'Analyst Team',   agent: 'Market Analyst'       },
-        { id: 'social',  team: 'Analyst Team',   agent: 'Social Analyst'       },
-        { id: 'news',    team: 'Analyst Team',   agent: 'News Analyst'         },
-        { id: 'fund',    team: 'Analyst Team',   agent: 'Fundamentals Analyst' },
-        { id: 'bull',    team: 'Research Team',  agent: 'Bull Researcher'      },
-        { id: 'bear',    team: 'Research Team',  agent: 'Bear Researcher'      },
-        { id: 'rmgr',    team: 'Research Team',  agent: 'Research Manager'     },
-        { id: 'trader',  team: 'Trading Team',   agent: 'Trader'               },
-        { id: 'risk',    team: 'Risk Mgmt',      agent: 'Risk Analysts'        },
-        { id: 'pm',      team: 'Portfolio Mgmt', agent: 'Portfolio Manager'    },
+        { id: 'market',  team: 'Analyst Team',       agent: 'Market Analyst'       },
+        { id: 'social',  team: 'Analyst Team',        agent: 'Social Analyst'       },
+        { id: 'news',    team: 'Analyst Team',         agent: 'News Analyst'         },
+        { id: 'fund',    team: 'Analyst Team',         agent: 'Fundamentals Analyst' },
+        { id: 'bull',    team: 'Research Team',        agent: 'Bull Researcher'      },
+        { id: 'bear',    team: 'Research Team',        agent: 'Bear Researcher'      },
+        { id: 'rmgr',    team: 'Research Team',        agent: 'Research Manager'     },
+        { id: 'trader',  team: 'Trading Team',         agent: 'Trader'               },
+        { id: 'risky',   team: 'Risk Management',      agent: 'Risky Analyst'        },
+        { id: 'neutral', team: 'Risk Management',      agent: 'Neutral Analyst'      },
+        { id: 'safe',    team: 'Risk Management',      agent: 'Safe Analyst'         },
+        { id: 'pm',      team: 'Portfolio Management', agent: 'Portfolio Manager'    },
     ];
 
-    // Map progress % to which agent is currently active
+    // Map progress % → currently active agent ID (null = not started yet)
     function activeAgentId(pct) {
         if (pct >= 90) return 'pm';
-        if (pct >= 84) return 'risk';
-        if (pct >= 78) return 'trader';
+        if (pct >= 88) return 'safe';
+        if (pct >= 84) return 'neutral';
+        if (pct >= 80) return 'risky';
+        if (pct >= 76) return 'trader';
         if (pct >= 70) return 'rmgr';
         if (pct >= 65) return 'bear';
-        if (pct >= 62) return 'bull';
+        if (pct >= 60) return 'bull';
         if (pct >= 54) return 'fund';
         if (pct >= 46) return 'news';
         if (pct >= 38) return 'social';
         if (pct >= 30) return 'market';
         return null;
     }
+
+    // Simulated Messages & Tools entries per agent stage
+    var TA_STAGE_MSGS = {
+        market: [
+            { type: 'Tool',      msg: function (t, d) { return "get_stock_data({'ticker': '" + t + "', 'curr_date': '" + d + "'})"; } },
+            { type: 'Tool',      msg: function (t)    { return "get_indicators({'ticker': '" + t + "'})"; } },
+            { type: 'Reasoning', msg: function ()     { return 'Analyzing OHLCV data and technical indicators...'; } },
+        ],
+        social: [
+            { type: 'Tool',      msg: function (t, d) { return "get_stocktwits_data({'ticker': '" + t + "', 'curr_date': '" + d + "'})"; } },
+            { type: 'Reasoning', msg: function ()     { return 'Processing social media sentiment from StockTwits...'; } },
+        ],
+        news: [
+            { type: 'Tool',      msg: function (t, d) { return "get_stock_news_openai({'ticker': '" + t + "', 'curr_date': '" + d + "'})"; } },
+            { type: 'Tool',      msg: function (t, d) { return "get_global_news_openai({'curr_date': '" + d + "'})"; } },
+            { type: 'Tool',      msg: function (t, d) { return "get_google_news({'query': '" + t + "', 'curr_date': '" + d + "'})"; } },
+            { type: 'Reasoning', msg: function ()     { return 'Reviewing recent news articles and macroeconomic data...'; } },
+        ],
+        fund: [
+            { type: 'Tool',      msg: function (t)    { return "get_fundamentals({'ticker': '" + t + "'})"; } },
+            { type: 'Tool',      msg: function (t)    { return "get_balance_sheet({'ticker': '" + t + "'})"; } },
+            { type: 'Reasoning', msg: function ()     { return 'Evaluating earnings, balance sheet, and competitive positioning...'; } },
+        ],
+        bull:    [{ type: 'Reasoning', msg: function () { return 'Bull researcher constructing long investment thesis...'; } }],
+        bear:    [{ type: 'Reasoning', msg: function () { return 'Bear researcher identifying downside risks and short arguments...'; } }],
+        rmgr:    [{ type: 'Reasoning', msg: function () { return 'Research manager synthesizing bull/bear debate conclusions...'; } }],
+        trader:  [{ type: 'Reasoning', msg: function () { return 'Trader composing investment plan with entry and exit criteria...'; } }],
+        risky:   [{ type: 'Reasoning', msg: function () { return 'Risky analyst evaluating high-upside aggressive scenario...'; } }],
+        neutral: [{ type: 'Reasoning', msg: function () { return 'Neutral analyst balancing risk-reward at current price levels...'; } }],
+        safe:    [{ type: 'Reasoning', msg: function () { return 'Safe analyst stress-testing downside and position sizing...'; } }],
+        pm:      [{ type: 'Report',    msg: function () { return 'Portfolio manager finalizing trade recommendation and confidence score...'; } }],
+    };
 
     document.addEventListener('DOMContentLoaded', function () {
         var btnRunAnalysis  = document.getElementById('btnRunAnalysis');
@@ -47,12 +83,19 @@
         var taPct           = document.getElementById('taProgressPct');
         var taMsg           = document.getElementById('taProgressMsg');
         var taAgentTbody    = document.getElementById('taAgentTbody');
+        var taMsgTbody      = document.getElementById('taMsgTbody');
+        var taMsgScroll     = document.getElementById('taMsgScroll');
+        var taCurrentReport = document.getElementById('taCurrentReport');
+        var taReportContent = document.getElementById('taReportContent');
 
         if (!btnRunAnalysis || !form) return;
 
         var currentPipeline = 'classic';
+        var currentTicker   = '';
+        var currentDate     = '';
+        var lastActiveAgent = null;
 
-        // ── Build TradingAgents agent table rows ───────────────────────────────
+        // ── Build agent table rows on page load ────────────────────────────────
         if (taAgentTbody) {
             TA_AGENTS.forEach(function (a) {
                 var tr = document.createElement('tr');
@@ -60,26 +103,80 @@
                 tr.innerHTML =
                     '<td style="padding:2px 6px;color:#88ff88">' + escapeHtml(a.team)  + '</td>' +
                     '<td style="padding:2px 6px;color:#ccffcc">' + escapeHtml(a.agent) + '</td>' +
-                    '<td id="taStatus-' + a.id + '" style="padding:2px 6px;color:#666">⏳ pending</td>';
+                    '<td id="taStatus-' + a.id + '" style="padding:2px 6px;color:#555">pending</td>';
                 taAgentTbody.appendChild(tr);
             });
         }
 
+        // ── Agent table updater ────────────────────────────────────────────────
         function updateAgentTable(pct) {
             if (!taAgentTbody) return;
             var active = activeAgentId(pct);
+
+            // Bug fix: when active is null (pct < 30) all agents stay pending
+            if (active === null) {
+                TA_AGENTS.forEach(function (a) {
+                    var cell = document.getElementById('taStatus-' + a.id);
+                    if (cell) { cell.style.color = '#555'; cell.textContent = 'pending'; }
+                });
+                return;
+            }
+
+            // Emit Messages & Tools rows when a new agent becomes active
+            if (active !== lastActiveAgent) {
+                lastActiveAgent = active;
+                var msgs = TA_STAGE_MSGS[active];
+                if (msgs) {
+                    msgs.forEach(function (m) {
+                        addMsgRow(m.type, m.msg(currentTicker, currentDate));
+                    });
+                }
+            }
+
             var passedActive = false;
             TA_AGENTS.forEach(function (a) {
                 var cell = document.getElementById('taStatus-' + a.id);
                 if (!cell) return;
                 if (a.id === active) {
-                    cell.innerHTML = '<span style="color:#00ff64;animation:ta-blink 1s infinite">⚡ in_progress</span>';
                     passedActive = true;
+                    cell.innerHTML = '<span style="color:#00ff64;animation:ta-blink 1s infinite">↓ in_progress</span>';
                 } else if (!passedActive) {
-                    cell.innerHTML = '<span style="color:#00cc44">✅ completed</span>';
+                    cell.style.color = '#00cc44';
+                    cell.textContent = 'completed';
                 } else {
-                    cell.innerHTML = '<span style="color:#555">⏳ pending</span>';
+                    cell.style.color = '#555';
+                    cell.textContent = 'pending';
                 }
+            });
+        }
+
+        // ── Messages & Tools table ─────────────────────────────────────────────
+        var TYPE_COLORS = { Tool: '#00ff64', Reasoning: '#38bdf8', Report: '#f59e0b' };
+
+        function addMsgRow(type, content) {
+            if (!taMsgTbody) return;
+            // Remove placeholder row on first real message
+            var placeholder = taMsgTbody.querySelector('.ta-placeholder');
+            if (placeholder) placeholder.remove();
+            var now   = new Date().toLocaleTimeString('en-US', { hour12: false });
+            var color = TYPE_COLORS[type] || '#ccc';
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td style="padding:3px 8px;color:#666;white-space:nowrap;vertical-align:top;border-bottom:1px solid rgba(255,255,255,.04);">' + now + '</td>' +
+                '<td style="padding:3px 8px;white-space:nowrap;vertical-align:top;border-bottom:1px solid rgba(255,255,255,.04);"><span style="color:' + color + ';font-weight:600;">' + type + '</span></td>' +
+                '<td style="padding:3px 8px;color:#ccc;font-size:.68rem;word-break:break-all;border-bottom:1px solid rgba(255,255,255,.04);">' + escapeHtml(content) + '</td>';
+            taMsgTbody.appendChild(tr);
+            if (taMsgScroll) taMsgScroll.scrollTop = taMsgScroll.scrollHeight;
+        }
+
+        function resetMsgTable() {
+            if (taMsgTbody) taMsgTbody.innerHTML = '<tr class="ta-placeholder"><td colspan="3" style="padding:8px;color:#444;">// Waiting for agents...</td></tr>';
+        }
+
+        function resetAgentTable() {
+            TA_AGENTS.forEach(function (a) {
+                var cell = document.getElementById('taStatus-' + a.id);
+                if (cell) { cell.style.color = '#555'; cell.innerHTML = 'pending'; }
             });
         }
 
@@ -106,29 +203,45 @@
                 progressLogs.scrollTo({ top: progressLogs.scrollHeight, behavior: 'smooth' });
             }
 
-            // TradingAgents-specific panel
+            // TradingAgents panel
             if (currentPipeline === 'tradingagents' && taPanel) {
                 taPanel.classList.remove('d-none');
-                if (taBar)  { taBar.style.width = progress + '%'; }
-                if (taPct)  { taPct.textContent = progress + '%'; }
-                if (taMsg)  { taMsg.textContent  = message; }
+                if (taBar) taBar.style.width  = progress + '%';
+                if (taPct) taPct.textContent  = progress + '%';
+                if (taMsg) taMsg.textContent  = message;
                 updateAgentTable(progress);
             }
         });
 
-        // ── Final result delivered via SignalR (avoids HTTP timeout) ──────────
+        // ── Final result via SignalR (avoids Render 30s HTTP timeout) ──────────
         connection.on('ReceiveAnalysisResult', function (result) {
             loadingSpinner.classList.add('d-none');
             btnRunAnalysis.disabled = false;
             btnRunAnalysis.classList.remove('disabled');
             btnRunAnalysis.style.transform = '';
 
-            // Mark all agents done on success
-            if (currentPipeline === 'tradingagents' && result.success) {
-                updateAgentTable(100);
-                if (taBar) taBar.style.width = '100%';
-                if (taPct) taPct.textContent = '100%';
-                if (taMsg) taMsg.textContent  = 'Analysis complete!';
+            if (currentPipeline === 'tradingagents' && taPanel) {
+                var badge = taPanel.querySelector('.ta-running-badge');
+                if (result.success) {
+                    // Mark all agents completed
+                    TA_AGENTS.forEach(function (a) {
+                        var cell = document.getElementById('taStatus-' + a.id);
+                        if (cell) { cell.style.color = '#00cc44'; cell.textContent = 'completed'; }
+                    });
+                    if (taBar) taBar.style.width  = '100%';
+                    if (taPct) taPct.textContent  = '100%';
+                    if (taMsg) taMsg.textContent  = 'Analysis complete!';
+                    if (badge) { badge.textContent = 'DONE'; badge.style.background = '#003311'; }
+                    // Populate Current Report section with final trade decision
+                    if (taCurrentReport && taReportContent && result.richData && result.richData.finalTradeDecision) {
+                        taReportContent.textContent = result.richData.finalTradeDecision;
+                        taCurrentReport.classList.remove('d-none');
+                    }
+                    addMsgRow('Report', 'Pipeline complete — report saved to database.');
+                } else {
+                    if (badge) { badge.textContent = 'FAILED'; badge.style.background = '#3a0000'; badge.style.color = '#ff6464'; }
+                    addMsgRow('Report', 'Pipeline failed: ' + (result.errorMessage || 'unknown error'));
+                }
             }
 
             resultArea.classList.remove('d-none');
@@ -139,12 +252,23 @@
                     resultArea.innerHTML = buildClassicCard(result.newsArticleId);
                 }
             } else {
-                var errorMsg = result.errorMessage || 'An unexpected error occurred.';
+                var errorMsg   = result.errorMessage || 'An unexpected error occurred.';
+                var lowerError = errorMsg.toLowerCase();
+                var isRateLimit = lowerError.indexOf('rate limit') >= 0 || lowerError.indexOf('429') >= 0;
+                var isAuth      = lowerError.indexOf('authentication') >= 0 || lowerError.indexOf('api key') >= 0 || lowerError.indexOf('401') >= 0;
+                var extraHint   = isRateLimit
+                    ? '<p class="mb-0 small text-info mt-2"><i class="bi bi-lightning-charge me-1"></i>' +
+                      '<strong>Rate limit hit</strong> — switch to <strong>Groq</strong> (Llama, free tier) or <strong>Google Gemini</strong> in the LLM Provider dropdown and retry.</p>'
+                    : isAuth
+                    ? '<p class="mb-0 small text-warning mt-2"><i class="bi bi-key me-1"></i>' +
+                      'Check that the API key for the selected provider is set correctly in the Render dashboard env vars.</p>'
+                    : '';
                 resultArea.innerHTML =
                     '<div class="alert alert-danger alert-dismissible fade show p-4 shadow-sm animate-fade-in-up" role="alert"' +
                     '     style="border-left:4px solid #ef4444;border-radius:var(--radius-md);animation-duration:.5s;">' +
                         '<h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Analysis Pipeline Failed</h6>' +
                         '<p class="mb-0 small text-secondary">' + escapeHtml(errorMsg) + '</p>' +
+                        extraHint +
                         '<button type="button" class="btn-close position-absolute top-0 end-0" data-bs-dismiss="alert" aria-label="Close"></button>' +
                     '</div>';
                 shakeElement(resultArea);
@@ -170,6 +294,15 @@
 
             var formData = new FormData(form);
             currentPipeline = formData.get('SelectedPipeline') || 'classic';
+            lastActiveAgent = null;
+
+            // Capture ticker text + yesterday's date for Messages & Tools display
+            var tagSelect   = document.getElementById('SelectedTagId');
+            var selectedOpt = tagSelect && tagSelect.options[tagSelect.selectedIndex];
+            currentTicker   = selectedOpt ? (selectedOpt.text || '').split(' ')[0].trim() : 'TICKER';
+            var yesterday   = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            currentDate = yesterday.toISOString().slice(0, 10);
 
             btnRunAnalysis.disabled = true;
             btnRunAnalysis.classList.add('disabled');
@@ -179,7 +312,7 @@
             resultArea.classList.add('d-none');
             resultArea.innerHTML = '';
 
-            // Reset progress areas
+            // Reset generic progress bar
             if (progressArea && progressBar && progressPercent && progressLogs) {
                 progressArea.classList.remove('d-none');
                 progressArea.style.opacity = '0';
@@ -201,12 +334,12 @@
                 if (taBar) taBar.style.width = '0%';
                 if (taPct) taPct.textContent = '0%';
                 if (taMsg) taMsg.textContent  = 'Starting...';
-                if (taAgentTbody) {
-                    TA_AGENTS.forEach(function (a) {
-                        var cell = document.getElementById('taStatus-' + a.id);
-                        if (cell) cell.innerHTML = '<span style="color:#555">⏳ pending</span>';
-                    });
-                }
+                if (taCurrentReport) taCurrentReport.classList.add('d-none');
+                if (taReportContent) taReportContent.textContent = '';
+                var badge = taPanel.querySelector('.ta-running-badge');
+                if (badge) { badge.textContent = 'RUNNING'; badge.style.background = '#00441b'; badge.style.color = '#00ff64'; }
+                resetAgentTable();
+                resetMsgTable();
             }
 
             var token = form.querySelector('[name="__RequestVerificationToken"]');
@@ -220,17 +353,15 @@
                     SelectedTagId:      parseInt(formData.get('SelectedTagId')),
                     SelectedCategoryId: parseInt(formData.get('SelectedCategoryId')),
                     SelectedPipeline:   currentPipeline,
-                    SelectedDepth:      formData.get('SelectedDepth') || 'fast',
+                    SelectedDepth:      formData.get('SelectedDepth')    || 'fast',
+                    SelectedProvider:   formData.get('SelectedProvider') || 'openai',
                     ConnectionId:       connectionId
                 })
             })
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                if (data.started) {
-                    // Background job started — result will arrive via ReceiveAnalysisResult
-                    return;
-                }
-                // Synchronous validation error (returned before background job started)
+                if (data.started) return; // waiting for ReceiveAnalysisResult via SignalR
+                // Synchronous validation error
                 loadingSpinner.classList.add('d-none');
                 btnRunAnalysis.disabled = false;
                 btnRunAnalysis.classList.remove('disabled');
@@ -245,7 +376,6 @@
                     '</div>';
             })
             .catch(function () {
-                // Unreachable in normal flow — POST returns near-instantly now
                 loadingSpinner.classList.add('d-none');
                 btnRunAnalysis.disabled = false;
                 btnRunAnalysis.classList.remove('disabled');
@@ -288,7 +418,7 @@
         }
 
         function buildTradingAgentsCard(rich, articleId) {
-            var d = rich.decision || 'HOLD';
+            var d          = rich.decision || 'HOLD';
             var badgeColor = d === 'BUY' ? '#10b981' : d === 'SELL' ? '#ef4444' : '#f59e0b';
             var pct        = Math.min(100, Math.max(0, rich.confidenceScore || 70));
 
@@ -303,7 +433,7 @@
 
             var accordionItems = sections.map(function (s, i) {
                 var collapseId = 'taCollapse' + i;
-                var isFirst = i === 0;
+                var isFirst    = i === 0;
                 return (
                     '<div class="accordion-item" style="background:var(--surface-card);border:1px solid var(--border);margin-bottom:.5rem;border-radius:10px;overflow:hidden;">' +
                         '<h2 class="accordion-header">' +

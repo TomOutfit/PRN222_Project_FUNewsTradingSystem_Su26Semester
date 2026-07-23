@@ -93,7 +93,8 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             int tagId, int categoryId, int createdByAccountId,
             string pipeline = "classic",
             Func<string, int, Task>? onProgress = null,
-            string? depth = "fast")
+            string? depth = "fast",
+            string? provider = "openai")
         {
             try
             {
@@ -118,7 +119,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                     // ── TradingAgents multi-agent pipeline (Python subprocess) ──
                     if (onProgress != null)
                         await onProgress("Launching TradingAgents multi-agent pipeline...", 20);
-                    (portfolioResponse, richData) = await RunPythonAdapterAsync(ticker, onProgress, depth ?? "fast");
+                    (portfolioResponse, richData) = await RunPythonAdapterAsync(ticker, onProgress, depth ?? "fast", provider ?? "openai");
                 }
                 else
                 {
@@ -177,7 +178,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             => bool.TryParse(_configuration["TradingAgents:EnablePythonAdapter"], out var v) && v;
 
         private async Task<(PortfolioManagerResponse, TradingAgentsRichData)> RunPythonAdapterAsync(
-            string ticker, Func<string, int, Task>? onProgress, string depth = "fast")
+            string ticker, Func<string, int, Task>? onProgress, string depth = "fast", string provider = "openai")
         {
             var rawScriptsPath = _configuration["TradingAgents:ScriptsPath"];
             var scriptsPath = string.IsNullOrEmpty(rawScriptsPath)
@@ -199,13 +200,49 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 RedirectStandardError = true,
                 CreateNoWindow = true,
             };
-            var openAiKey = _configuration["OpenAI:ApiKey"];
-            if (string.IsNullOrEmpty(openAiKey) || openAiKey.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase))
-                _logger.LogWarning("[TradingAgents] OPENAI_API_KEY is not configured or is a placeholder — Python adapter will fail with AuthenticationError");
-            else
-                _logger.LogInformation("[TradingAgents] OPENAI_API_KEY is configured ({Len} chars)", openAiKey.Length);
-            if (!string.IsNullOrEmpty(openAiKey))
-                psi.EnvironmentVariables["OPENAI_API_KEY"] = openAiKey;
+            // Normalise provider name and set the env var the library reads
+            var normalizedProvider = provider.ToLowerInvariant() switch {
+                "groq"              => "groq",
+                "google" or "gemini" => "google",
+                _                   => "openai"
+            };
+            psi.EnvironmentVariables["TRADINGAGENTS_LLM_PROVIDER"] = normalizedProvider;
+            _logger.LogInformation("[TradingAgents] LLM provider: {Provider}", normalizedProvider);
+
+            // Forward the correct API key for the selected provider
+            if (normalizedProvider == "groq")
+            {
+                var groqKey = _configuration["Groq:ApiKey"];
+                if (string.IsNullOrEmpty(groqKey) || groqKey.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase))
+                    _logger.LogWarning("[TradingAgents] GROQ_API_KEY is not configured — adapter will fail");
+                else
+                {
+                    _logger.LogInformation("[TradingAgents] GROQ_API_KEY configured ({Len} chars)", groqKey.Length);
+                    psi.EnvironmentVariables["GROQ_API_KEY"] = groqKey;
+                }
+            }
+            else if (normalizedProvider == "google")
+            {
+                var googleKey = _configuration["Google:ApiKey"];
+                if (string.IsNullOrEmpty(googleKey) || googleKey.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase))
+                    _logger.LogWarning("[TradingAgents] GOOGLE_API_KEY is not configured — adapter will fail");
+                else
+                {
+                    _logger.LogInformation("[TradingAgents] GOOGLE_API_KEY configured ({Len} chars)", googleKey.Length);
+                    psi.EnvironmentVariables["GOOGLE_API_KEY"] = googleKey;
+                }
+            }
+            else // openai (default)
+            {
+                var openAiKey = _configuration["OpenAI:ApiKey"];
+                if (string.IsNullOrEmpty(openAiKey) || openAiKey.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase))
+                    _logger.LogWarning("[TradingAgents] OPENAI_API_KEY is not configured or is a placeholder — Python adapter will fail with AuthenticationError");
+                else
+                {
+                    _logger.LogInformation("[TradingAgents] OPENAI_API_KEY configured ({Len} chars)", openAiKey.Length);
+                    psi.EnvironmentVariables["OPENAI_API_KEY"] = openAiKey;
+                }
+            }
 
             // Depth controls debate/risk rounds: fast=1, balanced=2
             var rounds = depth == "balanced" ? "2" : "1";
