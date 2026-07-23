@@ -37,6 +37,7 @@ RUN pip3 install --no-cache-dir --break-system-packages -r /app/scripts/requirem
 # We expose 8080 and tell ASP.NET Core to use it.
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
 
 # Command to run the application
 ENTRYPOINT ["dotnet", "MVC.dll"]

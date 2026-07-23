@@ -14,6 +14,8 @@ services:
         value: Production
       - key: ASPNETCORE_HTTP_PORTS
         value: "8080"
+      - key: DOTNET_USE_POLLING_FILE_WATCHER
+        value: "true"
 
       # ── PostgreSQL (OnRender Free Tier) ────────────────────────────────────
       # Paste your Internal Database URL from the PostgreSQL Overview page
