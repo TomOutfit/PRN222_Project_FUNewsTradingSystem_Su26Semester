@@ -992,49 +992,63 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             using (var scope = _serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<FUNewsManagementContext>();
-                using (var transaction = await context.Database.BeginTransactionAsync())
+                var strategy = context.Database.CreateExecutionStrategy();
+
+                return await Microsoft.EntityFrameworkCore.ExecutionStrategyExtensions.ExecuteAsync(strategy, async () =>
                 {
-                    try
+                    using (var transaction = await context.Database.BeginTransactionAsync())
                     {
-                        var tag = await context.Tags.FindAsync(tagId);
-                        if (tag == null)
+                        try
                         {
-                            throw new PipelineException("DB_ERROR");
+                            var tag = await context.Tags.FindAsync(tagId);
+                            if (tag == null)
+                            {
+                                throw new PipelineException($"DB_ERROR: Tag ID {tagId} not found in database");
+                            }
+
+                            int? validCreatedById = null;
+                            if (createdByAccountId > 0)
+                            {
+                                var accountExists = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(context.SystemAccounts, a => a.AccountID == createdByAccountId);
+                                if (accountExists) validCreatedById = createdByAccountId;
+                            }
+
+                            var article = new NewsArticle
+                            {
+                                NewsTitle = $"[{response.Decision}] {tag.TagName} Automated Analysis",
+                                Headline = response.Headline,
+                                NewsContent = response.Content,
+                                NewsSource = response.Source,
+                                CategoryID = categoryId,
+                                CreatedByID = validCreatedById,
+                                CreatedDate = DateTime.UtcNow,
+                                NewsStatus = true,
+                                ConfidenceScore = response.ConfidenceScore
+                            };
+
+                            context.NewsArticles.Add(article);
+                            await context.SaveChangesAsync();
+
+                            var newsTag = new NewsTag
+                            {
+                                NewsArticleID = article.NewsArticleID,
+                                TagID = tagId
+                            };
+                            context.NewsTags.Add(newsTag);
+                            await context.SaveChangesAsync();
+
+                            await transaction.CommitAsync();
+                            return article.NewsArticleID;
                         }
-
-                        var article = new NewsArticle
+                        catch (Exception ex)
                         {
-                            NewsTitle = $"[{response.Decision}] {tag.TagName} Automated Analysis",
-                            Headline = response.Headline,
-                            NewsContent = response.Content,
-                            NewsSource = response.Source,
-                            CategoryID = categoryId,
-                            CreatedByID = createdByAccountId,
-                            CreatedDate = DateTime.UtcNow,
-                            NewsStatus = true,
-                            ConfidenceScore = response.ConfidenceScore
-                        };
-
-                        context.NewsArticles.Add(article);
-                        await context.SaveChangesAsync();
-
-                        var newsTag = new NewsTag
-                        {
-                            NewsArticleID = article.NewsArticleID,
-                            TagID = tagId
-                        };
-                        context.NewsTags.Add(newsTag);
-                        await context.SaveChangesAsync();
-
-                        await transaction.CommitAsync();
-                        return article.NewsArticleID;
+                            await transaction.RollbackAsync();
+                            _logger.LogError(ex, "SaveReportAsync failed for TagID={TagId}, CategoryID={CategoryId}, CreatedByAccountId={CreatedByAccountId}. InnerError: {InnerError}", tagId, categoryId, createdByAccountId, ex.InnerException?.Message ?? ex.Message);
+                            if (ex is PipelineException) throw;
+                            throw new PipelineException($"DB_ERROR: {ex.InnerException?.Message ?? ex.Message}", ex);
+                        }
                     }
-                    catch (Exception ex) when (!(ex is PipelineException))
-                    {
-                        await transaction.RollbackAsync();
-                        throw new PipelineException("DB_ERROR", ex);
-                    }
-                }
+                });
             }
         }
     }

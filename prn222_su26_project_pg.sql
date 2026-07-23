@@ -903,4 +903,14 @@ WHERE NOT EXISTS (
 SELECT "AccountEmail", "AccountRole" FROM "SystemAccount"
 WHERE "AccountEmail" IN ('staff@FUNewsTradingSystem.org','lecturer@FUNewsTradingSystem.org');
 
--- RAISE NOTICE '=== BULK SEED COMPLETE ===';
+-- =====================================================================================
+-- SECTION F — RESET POSTGRESQL SEQUENCES TO PREVENT DUPLICATE KEY DB_ERROR
+-- =====================================================================================
+SELECT setval(pg_get_serial_sequence('"NewsArticle"', 'NewsArticleID'), COALESCE((SELECT MAX("NewsArticleID") FROM "NewsArticle"), 1));
+SELECT setval(pg_get_serial_sequence('"Tag"', 'TagID'), COALESCE((SELECT MAX("TagID") FROM "Tag"), 1));
+SELECT setval(pg_get_serial_sequence('"Category"', 'CategoryID'), COALESCE((SELECT MAX("CategoryID") FROM "Category"), 1));
+SELECT setval(pg_get_serial_sequence('"SystemAccount"', 'AccountID'), COALESCE((SELECT MAX("AccountID") FROM "SystemAccount"), 1));
+SELECT setval(pg_get_serial_sequence('"SavedReport"', 'SavedReportID'), COALESCE((SELECT MAX("SavedReportID") FROM "SavedReport"), 1));
+SELECT setval(pg_get_serial_sequence('"TagCategoryMap"', 'TagCategoryMapID'), COALESCE((SELECT MAX("TagCategoryMapID") FROM "TagCategoryMap"), 1));
+
+-- RAISE NOTICE '=== BULK SEED & SEQUENCE SYNC COMPLETE ===';

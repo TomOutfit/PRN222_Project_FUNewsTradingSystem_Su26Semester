@@ -171,6 +171,27 @@ try
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<FUNewsManagementContext>();
     db.Database.Migrate();
+
+    if (app.Environment.EnvironmentName == "Production" || db.Database.IsNpgsql())
+    {
+        try
+        {
+            db.Database.ExecuteSqlRaw(@"
+                SELECT setval(pg_get_serial_sequence('""NewsArticle""', 'NewsArticleID'), COALESCE((SELECT MAX(""NewsArticleID"") FROM ""NewsArticle""), 1));
+                SELECT setval(pg_get_serial_sequence('""Tag""', 'TagID'), COALESCE((SELECT MAX(""TagID"") FROM ""Tag""), 1));
+                SELECT setval(pg_get_serial_sequence('""Category""', 'CategoryID'), COALESCE((SELECT MAX(""CategoryID"") FROM ""Category""), 1));
+                SELECT setval(pg_get_serial_sequence('""SystemAccount""', 'AccountID'), COALESCE((SELECT MAX(""AccountID"") FROM ""SystemAccount""), 1));
+                SELECT setval(pg_get_serial_sequence('""SavedReport""', 'SavedReportID'), COALESCE((SELECT MAX(""SavedReportID"") FROM ""SavedReport""), 1));
+                SELECT setval(pg_get_serial_sequence('""TagCategoryMap""', 'TagCategoryMapID'), COALESCE((SELECT MAX(""TagCategoryMapID"") FROM ""TagCategoryMap""), 1));
+            ");
+        }
+        catch (Exception seqEx)
+        {
+            var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("Startup");
+            logger.LogWarning(seqEx, "PostgreSQL sequence sync skipped or failed: {Message}", seqEx.Message);
+        }
+    }
 }
 catch (Exception ex)
 {
