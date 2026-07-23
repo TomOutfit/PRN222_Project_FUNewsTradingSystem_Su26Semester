@@ -4,6 +4,15 @@
 (function () {
     'use strict';
 
+    // Distinct color per team for high-contrast terminal UI
+    var TEAM_COLORS = {
+        'Analyst Team':         '#38bdf8',  // sky blue
+        'Research Team':        '#c084fc',  // purple
+        'Trading Team':         '#fbbf24',  // amber
+        'Risk Management':      '#fb923c',  // orange
+        'Portfolio Management': '#34d399',  // emerald
+    };
+
     // ── Agent table (matches TradingAgents actual teams) ──────────────────────
     var TA_AGENTS = [
         { id: 'market',  team: 'Analyst Team',       agent: 'Market Analyst'       },
@@ -50,7 +59,7 @@
         ],
         news: [
             { type: 'Tool',      msg: function (t, d) { return "get_stock_news_openai({'ticker': '" + t + "', 'curr_date': '" + d + "'})"; } },
-            { type: 'Tool',      msg: function (t, d) { return "get_global_news_openai({'curr_date': '" + d + "'})"; } },
+            { type: 'Tool',      msg: function (_t, d) { return "get_global_news_openai({'curr_date': '" + d + "'})"; } },
             { type: 'Tool',      msg: function (t, d) { return "get_google_news({'query': '" + t + "', 'curr_date': '" + d + "'})"; } },
             { type: 'Reasoning', msg: function ()     { return 'Reviewing recent news articles and macroeconomic data...'; } },
         ],
@@ -98,12 +107,13 @@
         // ── Build agent table rows on page load ────────────────────────────────
         if (taAgentTbody) {
             TA_AGENTS.forEach(function (a) {
+                var tc = TEAM_COLORS[a.team] || '#7ec8e3';
                 var tr = document.createElement('tr');
                 tr.id = 'taRow-' + a.id;
                 tr.innerHTML =
-                    '<td style="padding:2px 6px;color:#88ff88">' + escapeHtml(a.team)  + '</td>' +
-                    '<td style="padding:2px 6px;color:#ccffcc">' + escapeHtml(a.agent) + '</td>' +
-                    '<td id="taStatus-' + a.id + '" style="padding:2px 6px;color:#555">pending</td>';
+                    '<td style="padding:2px 6px;color:' + tc + ';font-weight:600">' + escapeHtml(a.team)  + '</td>' +
+                    '<td style="padding:2px 6px;color:#dde6f0">' + escapeHtml(a.agent) + '</td>' +
+                    '<td id="taStatus-' + a.id + '" style="padding:2px 6px;color:#3d5878">·· pending</td>';
                 taAgentTbody.appendChild(tr);
             });
         }
@@ -117,7 +127,7 @@
             if (active === null) {
                 TA_AGENTS.forEach(function (a) {
                     var cell = document.getElementById('taStatus-' + a.id);
-                    if (cell) { cell.style.color = '#555'; cell.textContent = 'pending'; }
+                    if (cell) { cell.style.color = '#3d5878'; cell.textContent = '·· pending'; }
                 });
                 return;
             }
@@ -144,14 +154,14 @@
                     cell.style.color = '#00cc44';
                     cell.textContent = 'completed';
                 } else {
-                    cell.style.color = '#555';
-                    cell.textContent = 'pending';
+                    cell.style.color = '#3d5878';
+                    cell.textContent = '·· pending';
                 }
             });
         }
 
         // ── Messages & Tools table ─────────────────────────────────────────────
-        var TYPE_COLORS = { Tool: '#00ff64', Reasoning: '#38bdf8', Report: '#f59e0b' };
+        var TYPE_COLORS = { Tool: '#22d3ee', Reasoning: '#a78bfa', Report: '#fbbf24' };
 
         function addMsgRow(type, content) {
             if (!taMsgTbody) return;
@@ -159,24 +169,25 @@
             var placeholder = taMsgTbody.querySelector('.ta-placeholder');
             if (placeholder) placeholder.remove();
             var now   = new Date().toLocaleTimeString('en-US', { hour12: false });
-            var color = TYPE_COLORS[type] || '#ccc';
+            var color = TYPE_COLORS[type] || '#94a3b8';
+            var sep   = 'border-bottom:1px solid rgba(96,165,250,.07);';
             var tr = document.createElement('tr');
             tr.innerHTML =
-                '<td style="padding:3px 8px;color:#666;white-space:nowrap;vertical-align:top;border-bottom:1px solid rgba(255,255,255,.04);">' + now + '</td>' +
-                '<td style="padding:3px 8px;white-space:nowrap;vertical-align:top;border-bottom:1px solid rgba(255,255,255,.04);"><span style="color:' + color + ';font-weight:600;">' + type + '</span></td>' +
-                '<td style="padding:3px 8px;color:#ccc;font-size:.68rem;word-break:break-all;border-bottom:1px solid rgba(255,255,255,.04);">' + escapeHtml(content) + '</td>';
+                '<td style="padding:3px 8px;color:#7a9ab8;white-space:nowrap;vertical-align:top;' + sep + '">' + now + '</td>' +
+                '<td style="padding:3px 8px;white-space:nowrap;vertical-align:top;' + sep + '"><span style="color:' + color + ';font-weight:700;">' + type + '</span></td>' +
+                '<td style="padding:3px 8px;color:#dde6f0;font-size:.68rem;word-break:break-all;' + sep + '">' + escapeHtml(content) + '</td>';
             taMsgTbody.appendChild(tr);
             if (taMsgScroll) taMsgScroll.scrollTop = taMsgScroll.scrollHeight;
         }
 
         function resetMsgTable() {
-            if (taMsgTbody) taMsgTbody.innerHTML = '<tr class="ta-placeholder"><td colspan="3" style="padding:8px;color:#444;">// Waiting for agents...</td></tr>';
+            if (taMsgTbody) taMsgTbody.innerHTML = '<tr class="ta-placeholder"><td colspan="3" style="padding:10px 8px;color:#5a7a90;font-style:italic;">// Waiting for agents...</td></tr>';
         }
 
         function resetAgentTable() {
             TA_AGENTS.forEach(function (a) {
                 var cell = document.getElementById('taStatus-' + a.id);
-                if (cell) { cell.style.color = '#555'; cell.innerHTML = 'pending'; }
+                if (cell) { cell.style.color = '#3d5878'; cell.innerHTML = '·· pending'; }
             });
         }
 
@@ -252,16 +263,26 @@
                     resultArea.innerHTML = buildClassicCard(result.newsArticleId);
                 }
             } else {
-                var errorMsg   = result.errorMessage || 'An unexpected error occurred.';
-                var lowerError = errorMsg.toLowerCase();
-                var isRateLimit = lowerError.indexOf('rate limit') >= 0 || lowerError.indexOf('429') >= 0;
+                var errorMsg    = result.errorMessage || 'An unexpected error occurred.';
+                var lowerError  = errorMsg.toLowerCase();
+                var isRateLimit = lowerError.indexOf('rate limit') >= 0 || lowerError.indexOf('429') >= 0 || lowerError.indexOf('resource_exhausted') >= 0;
                 var isAuth      = lowerError.indexOf('authentication') >= 0 || lowerError.indexOf('api key') >= 0 || lowerError.indexOf('401') >= 0;
-                var extraHint   = isRateLimit
-                    ? '<p class="mb-0 small text-info mt-2"><i class="bi bi-lightning-charge me-1"></i>' +
-                      '<strong>Rate limit hit</strong> — switch to <strong>Groq</strong> (Llama, free tier) or <strong>Google Gemini</strong> in the LLM Provider dropdown and retry.</p>'
+                var providerSel = (document.getElementById('SelectedProvider') || {}).value || 'openai';
+                var rateLimitHint = '';
+                if (isRateLimit) {
+                    if (providerSel === 'openai') {
+                        rateLimitHint = '<strong>Rate limit hit on OpenAI</strong> — switch to <strong>Groq</strong> (Llama, free tier) or <strong>Google Gemini</strong> and retry.';
+                    } else if (providerSel === 'groq') {
+                        rateLimitHint = '<strong>Rate limit hit on Groq</strong> — switch to <strong>OpenAI</strong> or <strong>Google Gemini</strong> and retry.';
+                    } else {
+                        rateLimitHint = '<strong>Rate limit / quota exhausted on Google Gemini</strong> — your free-tier daily quota is used up. Switch to <strong>Groq</strong> (Llama, free tier) or <strong>OpenAI</strong> and retry, or wait until quota resets tomorrow.';
+                    }
+                }
+                var extraHint = isRateLimit
+                    ? '<p class="mb-0 small text-info mt-2"><i class="bi bi-lightning-charge me-1"></i>' + rateLimitHint + '</p>'
                     : isAuth
                     ? '<p class="mb-0 small text-warning mt-2"><i class="bi bi-key me-1"></i>' +
-                      'Check that the API key for the selected provider is set correctly in the Render dashboard env vars.</p>'
+                      'Check that the <strong>' + providerSel.toUpperCase() + '</strong> API key is set correctly in the Render dashboard env vars.</p>'
                     : '';
                 resultArea.innerHTML =
                     '<div class="alert alert-danger alert-dismissible fade show p-4 shadow-sm animate-fade-in-up" role="alert"' +

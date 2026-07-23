@@ -301,10 +301,11 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                 var adapterErr = dto!.Error;
                 _logger.LogError("[TradingAgents] Adapter error: {Error}", adapterErr);
                 var lowerErr = adapterErr.ToLowerInvariant();
+                var providerLabel = normalizedProvider.ToUpperInvariant(); // "OPENAI" | "GROQ" | "GOOGLE"
                 string errPrefix = lowerErr.Contains("authentication") || lowerErr.Contains("api key") || lowerErr.Contains("401")
-                    ? "OpenAI Auth Error — "
-                    : lowerErr.Contains("rate limit") || lowerErr.Contains("429")
-                        ? "OpenAI Rate Limit — "
+                    ? $"{providerLabel} Auth Error — "
+                    : lowerErr.Contains("rate limit") || lowerErr.Contains("429") || lowerErr.Contains("resource_exhausted")
+                        ? $"{providerLabel} Rate Limit — "
                         : lowerErr.Contains("import error") || lowerErr.Contains("no module")
                             ? "Python Dependency Error — "
                             : "";

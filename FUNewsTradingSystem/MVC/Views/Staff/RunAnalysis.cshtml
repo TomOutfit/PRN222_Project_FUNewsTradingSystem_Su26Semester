@@ -120,11 +120,11 @@
                         <i class="bi bi-lightning-charge me-1"></i>LLM Provider
                     </label>
                     <select name="SelectedProvider" id="SelectedProvider" class="form-select fintech-form-control">
-                        <option value="openai">OpenAI (GPT)</option>
-                        <option value="groq">Groq (Llama — fast/free)</option>
-                        <option value="google">Google Gemini</option>
+                        <option value="openai">OpenAI (GPT-4o)</option>
+                        <option value="google">Google Gemini (free tier)</option>
+                        <option value="groq">Groq (Llama — Classic only)</option>
                     </select>
-                    <div class="form-text mt-1" style="font-size:.78rem">Switch provider if rate-limited.</div>
+                    <div id="providerHint" class="form-text mt-1" style="font-size:.78rem"></div>
                 </div>
                 <div class="col-md-3" id="taDepthWrapper" style="display:none">
                     <label class="form-label fw-semibold">
@@ -178,14 +178,14 @@
                 <div class="row g-3">
                     @* Left: Agent Status table *@
                     <div class="col-md-5">
-                        <div class="rounded-3 p-3 font-monospace h-100" style="background:#0a0a0a;border:1px solid rgba(0,255,100,.15);font-size:.70rem;">
-                            <div class="mb-2 text-center" style="color:#00ff64;border-bottom:1px solid rgba(0,255,100,.15);padding-bottom:6px;letter-spacing:.05em;">─ Agent Status ─</div>
-                            <table class="w-100" style="border-collapse:separate;border-spacing:0 1px;">
+                        <div class="rounded-3 p-3 font-monospace h-100" style="background:#070d14;border:1px solid rgba(56,189,248,.25);font-size:.70rem;">
+                            <div class="mb-2 text-center fw-bold" style="color:#38bdf8;border-bottom:1px solid rgba(56,189,248,.2);padding-bottom:6px;letter-spacing:.06em;">─ Agent Status ─</div>
+                            <table class="w-100" style="border-collapse:separate;border-spacing:0 2px;">
                                 <thead>
                                     <tr>
-                                        <th style="color:#66ff99;padding:2px 5px;font-weight:600">Team</th>
-                                        <th style="color:#66ff99;padding:2px 5px;font-weight:600">Agent</th>
-                                        <th style="color:#66ff99;padding:2px 5px;font-weight:600">Status</th>
+                                        <th style="color:#7ec8e3;padding:2px 5px;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;">Team</th>
+                                        <th style="color:#7ec8e3;padding:2px 5px;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;">Agent</th>
+                                        <th style="color:#7ec8e3;padding:2px 5px;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="taAgentTbody"></tbody>
@@ -195,31 +195,31 @@
                     @* Right: Messages & Tools + progress bar *@
                     <div class="col-md-7 d-flex flex-column">
                         <div class="rounded-3 d-flex flex-column font-monospace flex-grow-1"
-                             style="background:#0d0d0d;border:1px solid rgba(255,255,255,.08);font-size:.70rem;">
+                             style="background:#060c14;border:1px solid rgba(96,165,250,.18);font-size:.70rem;">
                             <div class="text-center py-2 fw-bold"
-                                 style="color:#66cc99;border-bottom:1px solid rgba(255,255,255,.08);letter-spacing:.05em;">─ Messages &amp; Tools ─</div>
+                                 style="color:#60a5fa;border-bottom:1px solid rgba(96,165,250,.18);letter-spacing:.06em;">─ Messages &amp; Tools ─</div>
                             <div id="taMsgScroll" style="overflow-y:auto;max-height:260px;">
                                 <table class="w-100" style="border-collapse:collapse;">
                                     <thead>
-                                        <tr style="position:sticky;top:0;background:#0d0d0d;z-index:1;">
-                                            <th style="padding:3px 8px;color:#555;font-weight:500;white-space:nowrap;">Time</th>
-                                            <th style="padding:3px 8px;color:#555;font-weight:500;white-space:nowrap;">Type</th>
-                                            <th style="padding:3px 8px;color:#555;font-weight:500;">Content</th>
+                                        <tr style="position:sticky;top:0;background:#060c14;z-index:1;">
+                                            <th style="padding:3px 8px;color:#7aa8c4;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;">Time</th>
+                                            <th style="padding:3px 8px;color:#7aa8c4;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;">Type</th>
+                                            <th style="padding:3px 8px;color:#7aa8c4;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;">Content</th>
                                         </tr>
                                     </thead>
                                     <tbody id="taMsgTbody">
-                                        <tr class="ta-placeholder"><td colspan="3" style="padding:8px;color:#444;">// Waiting for agents...</td></tr>
+                                        <tr class="ta-placeholder"><td colspan="3" style="padding:10px 8px;color:#5a7a90;font-style:italic;">// Waiting for agents...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="px-3 py-2 mt-auto" style="border-top:1px solid rgba(255,255,255,.06)">
+                            <div class="px-3 py-2 mt-auto" style="border-top:1px solid rgba(96,165,250,.12)">
                                 <div class="d-flex justify-content-between mb-1">
-                                    <span id="taProgressMsg" class="text-muted" style="font-size:.70rem">Starting...</span>
-                                    <span id="taProgressPct" class="fw-bold" style="font-size:.70rem;color:#00ff64">0%</span>
+                                    <span id="taProgressMsg" style="font-size:.70rem;color:#94a3b8;">Starting...</span>
+                                    <span id="taProgressPct" class="fw-bold" style="font-size:.70rem;color:#34d399;">0%</span>
                                 </div>
-                                <div class="progress" style="height:4px;background:#1a1a1a;border-radius:3px;">
+                                <div class="progress" style="height:4px;background:#0f1e2e;border-radius:3px;">
                                     <div id="taProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
-                                         style="width:0%;background:#00c951;border-radius:3px;"></div>
+                                         style="width:0%;background:linear-gradient(90deg,#38bdf8,#34d399);border-radius:3px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -227,11 +227,11 @@
                 </div>
                 @* Current Report — populated with finalTradeDecision once the run completes *@
                 <div id="taCurrentReport" class="mt-3 d-none">
-                    <div class="rounded-3 font-monospace" style="background:#0a0a0a;border:1px solid rgba(0,255,100,.1);">
+                    <div class="rounded-3 font-monospace" style="background:#070d14;border:1px solid rgba(52,211,153,.2);">
                         <div class="text-center py-2 fw-bold"
-                             style="color:#66cc99;border-bottom:1px solid rgba(0,255,100,.1);letter-spacing:.05em;font-size:.70rem;">─ Current Report ─</div>
+                             style="color:#34d399;border-bottom:1px solid rgba(52,211,153,.15);letter-spacing:.06em;font-size:.70rem;">─ Current Report ─</div>
                         <div id="taReportContent"
-                             style="padding:12px;color:#ccc;font-size:.70rem;max-height:200px;overflow-y:auto;line-height:1.6;white-space:pre-wrap;"></div>
+                             style="padding:12px;color:#dde6f0;font-size:.70rem;max-height:200px;overflow-y:auto;line-height:1.7;white-space:pre-wrap;"></div>
                     </div>
                 </div>
             </div>
@@ -319,22 +319,52 @@
                 });
         });
 
-        // ── Engine hint + depth toggle (provider is always visible) ────────────
-        var engineSelect   = document.getElementById('SelectedPipeline');
-        var engineHint     = document.getElementById('engineHint');
-        var taDepthWrapper = document.getElementById('taDepthWrapper');
-        function applyEngineChoice(val) {
-            if (val === 'tradingagents') {
-                engineHint.innerHTML = '<i class="bi bi-info-circle me-1" style="color:var(--accent)"></i>'
-                    + '12 agents &middot; yfinance + FRED + StockTwits + Polymarket real data. Expect 3–8 min.';
-                if (taDepthWrapper) taDepthWrapper.style.display = '';
-            } else {
-                engineHint.innerHTML = '';
-                if (taDepthWrapper) taDepthWrapper.style.display = 'none';
+        // ── Engine + provider hints ─────────────────────────────────────────────
+        var engineSelect    = document.getElementById('SelectedPipeline');
+        var providerSelect  = document.getElementById('SelectedProvider');
+        var engineHint      = document.getElementById('engineHint');
+        var providerHint    = document.getElementById('providerHint');
+        var taDepthWrapper  = document.getElementById('taDepthWrapper');
+
+        function updateHints() {
+            var engine   = engineSelect   ? engineSelect.value   : 'classic';
+            var provider = providerSelect ? providerSelect.value : 'openai';
+
+            // Engine hint
+            if (engineHint) {
+                engineHint.innerHTML = engine === 'tradingagents'
+                    ? '<i class="bi bi-info-circle me-1" style="color:var(--accent)"></i>'
+                      + '12 agents &middot; yfinance + FRED + StockTwits real data. Expect 3–8 min.'
+                    : '';
+            }
+
+            // Depth toggle
+            if (taDepthWrapper) taDepthWrapper.style.display = engine === 'tradingagents' ? '' : 'none';
+
+            // Provider hint
+            if (providerHint) {
+                if (engine === 'tradingagents' && provider === 'groq') {
+                    providerHint.innerHTML =
+                        '<i class="bi bi-exclamation-triangle-fill me-1" style="color:#fb923c"></i>'
+                        + '<span style="color:#fb923c"><strong>Groq free tier cannot handle Multi-Agents</strong> — prompts are ~50k tokens but Groq allows only 6k TPM. '
+                        + 'Use <strong>Google Gemini</strong> (free, 1M TPM) or <strong>OpenAI</strong> instead.</span>';
+                } else if (provider === 'google') {
+                    providerHint.innerHTML =
+                        '<i class="bi bi-info-circle me-1" style="color:#60a5fa"></i>'
+                        + 'Gemini free tier: up to 1,500 requests/day. Quota resets daily at midnight UTC.';
+                } else if (provider === 'groq') {
+                    providerHint.innerHTML =
+                        '<i class="bi bi-check-circle me-1" style="color:#34d399"></i>'
+                        + 'Groq works well for Classic pipeline (small prompts).';
+                } else {
+                    providerHint.innerHTML = '';
+                }
             }
         }
-        engineSelect && engineSelect.addEventListener('change', function () { applyEngineChoice(this.value); });
-        engineSelect && applyEngineChoice(engineSelect.value); // apply on page load
+
+        engineSelect   && engineSelect.addEventListener('change',   updateHints);
+        providerSelect && providerSelect.addEventListener('change',  updateHints);
+        updateHints(); // apply on page load
 
         // ── Ticker → auto-select sector (reverse direction) ─────────────────────
         tagSelect.addEventListener('change', function () {
