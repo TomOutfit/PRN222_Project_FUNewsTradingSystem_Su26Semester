@@ -12,6 +12,7 @@ namespace FUNewsTradingSystem_BusinessLayer.Services.Interfaces
         Task<TradingAgentResult> RunAnalysisAsync(
             int tagId, int categoryId, int createdByAccountId,
             string pipeline = "classic",
-            System.Func<string, int, System.Threading.Tasks.Task>? onProgress = null);
+            System.Func<string, int, System.Threading.Tasks.Task>? onProgress = null,
+            string? depth = "fast");
     }
 }

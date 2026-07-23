@@ -53,7 +53,7 @@ services:
       - key: TradingAgents__ScriptsPath
         value: "/app/scripts"
       # C# forwards OpenAI__ApiKey → OPENAI_API_KEY to the Python subprocess automatically
-      # Limit debate rounds to keep latency manageable (default is already 1)
+      # Debate/risk rounds are overridden per-request by the depth selector (fast=1, balanced=2)
       - key: TRADINGAGENTS_MAX_DEBATE_ROUNDS
         value: "1"
       - key: TRADINGAGENTS_MAX_RISK_ROUNDS

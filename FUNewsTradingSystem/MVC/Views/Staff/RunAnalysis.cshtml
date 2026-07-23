@@ -53,6 +53,7 @@
     #resultArea.alert-danger  { border-left: 4px solid #ef4444; }
     #resultArea.alert-warning { border-left: 4px solid #f59e0b; }
     #resultArea.alert-info    { border-left: 4px solid #38bdf8; }
+    @@keyframes ta-blink { 0%,100%{opacity:1} 50%{opacity:.4} }
 </style>
 
 <div class="analysis-hero">
@@ -104,7 +105,7 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-12">
+                <div class="col-md-7">
                     <label class="form-label fw-semibold">
                         <i class="bi bi-cpu me-1"></i>Analysis Engine
                     </label>
@@ -113,6 +114,16 @@
                         <option value="tradingagents">Multi-Agents LLM Financial Trading Framework (Deep &middot; 3–8 min)</option>
                     </select>
                     <div id="engineHint" class="form-text mt-1" style="font-size:.78rem"></div>
+                </div>
+                <div class="col-md-5" id="taDepthWrapper" style="display:none">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-sliders me-1"></i>Analysis Depth
+                    </label>
+                    <select name="SelectedDepth" id="SelectedDepth" class="form-select fintech-form-control">
+                        <option value="fast">Fast — 1 debate round (~3 min)</option>
+                        <option value="balanced">Balanced — 2 debate rounds (~6 min)</option>
+                    </select>
+                    <div class="form-text mt-1" style="font-size:.78rem">More rounds = deeper bull/bear analysis but slower.</div>
                 </div>
             </div>
 
@@ -141,6 +152,50 @@
                 </div>
                 <div id="progressLogs" class="bg-dark text-light p-3 rounded-3 font-monospace small" style="max-height: 150px; overflow-y: auto; line-height: 1.5; border: 1px solid rgba(255,255,255,0.1)">
                     <div class="text-white-50">// Standing by for pipeline execution...</div>
+                </div>
+            </div>
+        </div>
+
+        @* TradingAgents live agent-status panel (hidden until pipeline runs) *@
+        <div id="taProgressPanel" class="mt-4 d-none">
+            <div class="fintech-card p-4 border-0" style="background:var(--surface-card);">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-cpu-fill text-success"></i>
+                    <span>TradingAgents — Live Agent Status</span>
+                    <span class="badge ms-2" style="background:#00441b;color:#00ff64;font-size:.7rem;font-weight:600;">RUNNING</span>
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="rounded-3 p-3 font-monospace" style="background:#0a0a0a;border:1px solid rgba(0,255,100,.15);font-size:.72rem;">
+                            <div class="mb-2 text-center" style="color:#00ff64;border-bottom:1px solid rgba(0,255,100,.15);padding-bottom:6px;letter-spacing:.05em;">─ Agent Status ─</div>
+                            <table class="w-100" style="border-collapse:separate;border-spacing:0 2px;">
+                                <thead>
+                                    <tr>
+                                        <th style="color:#66ff99;padding:2px 5px;font-weight:600">Team</th>
+                                        <th style="color:#66ff99;padding:2px 5px;font-weight:600">Agent</th>
+                                        <th style="color:#66ff99;padding:2px 5px;font-weight:600">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="taAgentTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-7 d-flex flex-column">
+                        <div id="taProgressLogs" class="rounded-3 p-3 font-monospace flex-grow-1"
+                             style="background:#0d0d0d;border:1px solid rgba(255,255,255,.08);font-size:.72rem;color:#ccc;max-height:200px;overflow-y:auto;line-height:1.6;">
+                            <span style="color:#555">// Waiting for agents...</span>
+                        </div>
+                        <div class="mt-2">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span id="taProgressMsg" class="text-muted" style="font-size:.75rem">Starting...</span>
+                                <span id="taProgressPct" class="fw-bold" style="font-size:.75rem;color:#00ff64">0%</span>
+                            </div>
+                            <div class="progress" style="height:5px;background:#1a1a1a;border-radius:3px;">
+                                <div id="taProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                     style="width:0%;background:#00c951;border-radius:3px;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -227,17 +282,22 @@
                 });
         });
 
-        // ── Engine hint ─────────────────────────────────────────────────────────
-        var engineSelect = document.getElementById('SelectedPipeline');
-        var engineHint   = document.getElementById('engineHint');
-        engineSelect && engineSelect.addEventListener('change', function () {
-            if (this.value === 'tradingagents') {
+        // ── Engine hint + depth toggle ──────────────────────────────────────────
+        var engineSelect   = document.getElementById('SelectedPipeline');
+        var engineHint     = document.getElementById('engineHint');
+        var taDepthWrapper = document.getElementById('taDepthWrapper');
+        function applyEngineChoice(val) {
+            if (val === 'tradingagents') {
                 engineHint.innerHTML = '<i class="bi bi-info-circle me-1" style="color:var(--accent)"></i>'
                     + '12 agents &middot; yfinance + FRED + StockTwits + Polymarket real data. Expect 3–8 minutes.';
+                if (taDepthWrapper) taDepthWrapper.style.display = '';
             } else {
                 engineHint.innerHTML = '';
+                if (taDepthWrapper) taDepthWrapper.style.display = 'none';
             }
-        });
+        }
+        engineSelect && engineSelect.addEventListener('change', function () { applyEngineChoice(this.value); });
+        engineSelect && applyEngineChoice(engineSelect.value); // apply on page load
 
         // ── Ticker → auto-select sector (reverse direction) ─────────────────────
         tagSelect.addEventListener('change', function () {

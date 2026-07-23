@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using FUNewsTradingSystem_BusinessLayer.Services.Interfaces;
 using FUNewsTradingSystem_BusinessLayer.Exceptions;
 using FUNewsTradingSystem_DataAccessLayer.Models;
@@ -62,15 +63,18 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<TradingAgentService> _logger;
 
         public TradingAgentService(
-            HttpClient httpClient, 
-            IConfiguration configuration, 
-            IServiceProvider serviceProvider)
+            HttpClient httpClient,
+            IConfiguration configuration,
+            IServiceProvider serviceProvider,
+            ILogger<TradingAgentService> logger)
         {
             _httpClient = httpClient;
             _configuration = configuration;
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         /// <summary>
@@ -88,7 +92,8 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
     public async Task<TradingAgentResult> RunAnalysisAsync(
             int tagId, int categoryId, int createdByAccountId,
             string pipeline = "classic",
-            Func<string, int, Task>? onProgress = null)
+            Func<string, int, Task>? onProgress = null,
+            string? depth = "fast")
         {
             try
             {
@@ -113,7 +118,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
                     // ── TradingAgents multi-agent pipeline (Python subprocess) ──
                     if (onProgress != null)
                         await onProgress("Launching TradingAgents multi-agent pipeline...", 20);
-                    (portfolioResponse, richData) = await RunPythonAdapterAsync(ticker, onProgress);
+                    (portfolioResponse, richData) = await RunPythonAdapterAsync(ticker, onProgress, depth ?? "fast");
                 }
                 else
                 {
@@ -172,7 +177,7 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             => bool.TryParse(_configuration["TradingAgents:EnablePythonAdapter"], out var v) && v;
 
         private async Task<(PortfolioManagerResponse, TradingAgentsRichData)> RunPythonAdapterAsync(
-            string ticker, Func<string, int, Task>? onProgress)
+            string ticker, Func<string, int, Task>? onProgress, string depth = "fast")
         {
             var rawScriptsPath = _configuration["TradingAgents:ScriptsPath"];
             var scriptsPath = string.IsNullOrEmpty(rawScriptsPath)
@@ -181,6 +186,9 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             var scriptPath = System.IO.Path.Combine(scriptsPath, "ta_adapter.py");
             var python = _configuration["TradingAgents:PythonExecutable"] ?? "python3";
             var date = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd");
+
+            _logger.LogInformation("[TradingAgents] Starting Python adapter: {Python} \"{Script}\" {Ticker} {Date} depth={Depth}",
+                python, scriptPath, ticker, date, depth);
 
             var psi = new ProcessStartInfo
             {
@@ -194,6 +202,12 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
             var openAiKey = _configuration["OpenAI:ApiKey"];
             if (!string.IsNullOrEmpty(openAiKey))
                 psi.EnvironmentVariables["OPENAI_API_KEY"] = openAiKey;
+
+            // Depth controls debate/risk rounds: fast=1, balanced=2
+            var rounds = depth == "balanced" ? "2" : "1";
+            psi.EnvironmentVariables["TRADINGAGENTS_MAX_DEBATE_ROUNDS"] = rounds;
+            psi.EnvironmentVariables["TRADINGAGENTS_MAX_RISK_ROUNDS"]   = rounds;
+
 
             using var proc = Process.Start(psi)
                 ?? throw new PipelineException("PYTHON_ERROR: failed to start process");
@@ -227,11 +241,18 @@ Do not use markdown code fences. The JSON must conform exactly to this schema:
 
             // Propagate any error the adapter reported explicitly
             if (!string.IsNullOrEmpty(dto?.Error))
+            {
+                _logger.LogError("[TradingAgents] Adapter reported error: {Error}", dto!.Error);
                 throw new PipelineException($"PYTHON_ERROR: {dto!.Error}");
+            }
 
             if (proc.ExitCode != 0)
+            {
+                _logger.LogError("[TradingAgents] Process exited {Code}.\nSTDERR: {Stderr}\nSTDOUT: {Stdout}",
+                    proc.ExitCode, TruncateForLog(stderr.Trim(), 500), TruncateForLog(stdout.Trim(), 300));
                 throw new PipelineException(
                     $"PYTHON_ERROR: exit {proc.ExitCode} — {TruncateForLog(stderr.Trim(), 300)}");
+            }
 
             if (dto == null)
                 throw new PipelineException("PYTHON_ERROR: no output from adapter");
