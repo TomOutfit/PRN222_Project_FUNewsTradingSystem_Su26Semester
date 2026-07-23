@@ -46,7 +46,7 @@
         _ => "Hold / Neutral"
     };
 
-    // ── Parse structured AI reports ──
+    // ── Parse classic 3-agent report ──
     string sentimentContent = "";
     string fundamentalContent = "";
     string riskContent = "";
@@ -66,6 +66,91 @@
             riskContent = content.Substring(rIndex + 4).Trim();
             isParsed = true;
         }
+    }
+
+    // ── Detect TradingAgents multi-section format (## headings separated by ---)  ──
+    bool isTradingAgents = !isParsed
+        && !string.IsNullOrWhiteSpace(Model.NewsContent)
+        && (Model.NewsContent.Contains("\n\n---\n\n") || Model.NewsContent.TrimStart().StartsWith("## "));
+
+    var taSections = new System.Collections.Generic.List<(string icon, string color, string label, string body)>();
+    if (isTradingAgents)
+    {
+        var iconMap = new System.Collections.Generic.Dictionary<string, (string icon, string color)>
+        {
+            { "Sentiment",   ("bi-graph-up-arrow", "#38bdf8") },
+            { "Fundamental", ("bi-bar-chart-fill", "#a78bfa") },
+            { "News",        ("bi-newspaper",      "#fb923c") },
+            { "Technical",   ("bi-activity",       "#fbbf24") },
+            { "Trader",      ("bi-lightbulb-fill", "#34d399") },
+            { "Final",       ("bi-check2-circle",  sectionColor) },
+        };
+        foreach (var part in Model.NewsContent.Split(new[] { "\n\n---\n\n" }, System.StringSplitOptions.RemoveEmptyEntries))
+        {
+            var trimmed = part.Trim();
+            var nl      = trimmed.IndexOf('\n');
+            var heading = (nl > 0 ? trimmed.Substring(0, nl) : trimmed).TrimStart('#').Trim();
+            var body    = nl > 0 ? trimmed.Substring(nl + 1).Trim() : "";
+            var matched = ("bi-file-text", sectionColor);
+            foreach (var kv in iconMap)
+                if (heading.IndexOf(kv.Key, System.StringComparison.OrdinalIgnoreCase) >= 0) { matched = kv.Value; break; }
+            taSections.Add((matched.Item1, matched.Item2, heading, body));
+        }
+    }
+
+    // ── Lightweight Markdown → HTML (bold, italic, headers, lists, tables) ──
+    string RenderMd(string md)
+    {
+        if (string.IsNullOrEmpty(md)) return "";
+        // Bold + italic
+        var h = System.Text.RegularExpressions.Regex.Replace(md, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
+        h = System.Text.RegularExpressions.Regex.Replace(h, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+        h = System.Text.RegularExpressions.Regex.Replace(h, @"\*([^\n*]+?)\*",  "<em>$1</em>");
+        // Headers (processed later per-line)
+        var lines = h.Split('\n');
+        var sb = new System.Text.StringBuilder();
+        bool inTable = false, inList = false, firstTableRow = true;
+        foreach (var rawLine in lines)
+        {
+            var ln = rawLine.TrimEnd();
+            // Markdown table row
+            if (ln.StartsWith('|') && ln.EndsWith('|'))
+            {
+                var cells = ln.Split('|');
+                var cols = new System.Collections.Generic.List<string>();
+                for (int ci = 1; ci < cells.Length - 1; ci++) cols.Add(cells[ci].Trim());
+                bool isSep = cols.TrueForAll(c => System.Text.RegularExpressions.Regex.IsMatch(c, @"^:?-+:?$"));
+                if (!inTable)
+                {
+                    sb.Append("<div class='table-responsive my-3'><table class='table table-sm table-bordered align-middle' style='font-size:.82rem;'>");
+                    inTable = true; firstTableRow = true;
+                }
+                if (isSep) { if (firstTableRow) { sb.Append("</thead><tbody>"); firstTableRow = false; } continue; }
+                if (firstTableRow) { sb.Append("<thead class='table-dark'><tr>"); foreach (var c in cols) sb.Append($"<th>{c}</th>"); sb.Append("</tr>"); }
+                else               { sb.Append("<tr>"); foreach (var c in cols) sb.Append($"<td>{c}</td>"); sb.Append("</tr>"); }
+                continue;
+            }
+            // Close open table
+            if (inTable) { sb.Append("</tbody></table></div>"); inTable = false; }
+            // Unordered list
+            if (System.Text.RegularExpressions.Regex.IsMatch(ln, @"^[-*] "))
+            {
+                if (!inList) { sb.Append("<ul class='mb-2 ps-4'>"); inList = true; }
+                sb.Append($"<li class='mb-1'>{ln.Substring(2)}</li>");
+                continue;
+            }
+            if (inList) { sb.Append("</ul>"); inList = false; }
+            // Headers
+            if (ln.StartsWith("### ")) { sb.Append($"<h6 class='fw-semibold mt-3 mb-1' style='font-size:.9rem'>{ln.Substring(4)}</h6>"); continue; }
+            if (ln.StartsWith("## "))  { sb.Append($"<h5 class='fw-bold mt-4 mb-2'>{ln.Substring(3)}</h5>"); continue; }
+            if (ln.StartsWith("# "))   { sb.Append($"<h4 class='fw-bold mt-4 mb-2'>{ln.Substring(2)}</h4>"); continue; }
+            // Paragraph / blank
+            if (string.IsNullOrWhiteSpace(ln)) sb.Append("<br>");
+            else sb.Append($"<p class='mb-2' style='line-height:1.75'>{ln}</p>");
+        }
+        if (inTable) sb.Append("</tbody></table></div>");
+        if (inList)  sb.Append("</ul>");
+        return sb.ToString();
     }
 
     // ── Compute fake key stats for visual richness ──
@@ -229,16 +314,7 @@
         text-transform: uppercase;
         letter-spacing: .08em;
         color: rgba(255,255,255,0.7);
-    }
-        line-height: 1;
-        margin-bottom: .2rem;
-    }
-    .stat-label {
-        display: block;
-        font-size: .68rem;
-        text-transform: uppercase;
-        letter-spacing: .08em;
-        opacity: 0.75;
+        opacity: 0.85;
     }
 
     /* ── Analysis section cards ── */
@@ -563,11 +639,45 @@
         <div class="col-lg-8">
             <!-- ── Article Body ── -->
             <article class="card fintech-card p-4 p-md-5 mb-4 border-0">
-                @if (isParsed)
+                @if (isTradingAgents && taSections.Count > 0)
                 {
-                    <!-- Parsed 3-section analysis -->
+                    <!-- TradingAgents multi-section → tab layout with markdown rendering -->
+                    <ul class="nav nav-tabs flex-wrap mb-0 border-bottom-0" id="taTabs" role="tablist" style="gap:.25rem;">
+                        @for (int i = 0; i < taSections.Count; i++)
+                        {
+                            var s = taSections[i];
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link @(i == 0 ? "active" : "") d-flex align-items-center gap-1"
+                                        id="taTab-@i" data-bs-toggle="tab" data-bs-target="#taPane-@i"
+                                        type="button" role="tab" style="font-size:.82rem;padding:.5rem .85rem;">
+                                    <i class="bi @s.icon" style="color:@s.color;font-size:.9rem;"></i>
+                                    <span>@s.label</span>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                    <div class="tab-content border border-top-0 rounded-bottom p-4" id="taTabContent"
+                         style="border-color:var(--border)!important;min-height:220px;">
+                        @for (int i = 0; i < taSections.Count; i++)
+                        {
+                            var s = taSections[i];
+                            <div class="tab-pane fade @(i == 0 ? "show active" : "")"
+                                 id="taPane-@i" role="tabpanel" aria-labelledby="taTab-@i">
+                                <div class="d-flex align-items-center gap-2 mb-3 pb-2" style="border-bottom:2px solid @s.color;">
+                                    <i class="bi @s.icon" style="color:@s.color;font-size:1.1rem;"></i>
+                                    <h5 class="fw-bold mb-0" style="font-size:1rem;color:@s.color;">@s.label</h5>
+                                </div>
+                                <div class="section-body" style="font-size:.9rem;line-height:1.75;color:var(--text-main);">
+                                    @Html.Raw(RenderMd(s.body))
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (isParsed)
+                {
+                    <!-- Classic 3-agent analysis cards -->
                     <div class="d-flex flex-column gap-4">
-                        <!-- Sentiment -->
                         <div class="analysis-section-card p-4">
                             <div class="d-flex align-items-center gap-3 mb-3">
                                 <div class="section-icon-wrap" style="background:rgba(16,185,129,.12); color:#10b981;">
@@ -577,8 +687,6 @@
                             </div>
                             <p class="section-body mb-0">@sentimentContent</p>
                         </div>
-
-                        <!-- Fundamental -->
                         <div class="analysis-section-card p-4" style="border-left-color: var(--brand-1);">
                             <div class="d-flex align-items-center gap-3 mb-3">
                                 <div class="section-icon-wrap" style="background:rgba(37,99,235,.12); color:#2563eb;">
@@ -588,8 +696,6 @@
                             </div>
                             <p class="section-body mb-0">@fundamentalContent</p>
                         </div>
-
-                        <!-- Risk -->
                         <div class="analysis-section-card p-4" style="border-left-color: #ef4444;">
                             <div class="d-flex align-items-center gap-3 mb-3">
                                 <div class="section-icon-wrap" style="background:rgba(239,68,68,.1); color:#ef4444;">
@@ -603,7 +709,6 @@
                 }
                 else
                 {
-                    <!-- Raw paragraph fallback -->
                     @if (!string.IsNullOrWhiteSpace(Model.NewsContent))
                     {
                         var paragraphs = Model.NewsContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -643,12 +748,14 @@
 
                 <!-- Period Selector -->
                 <div class="d-flex gap-2 mb-3 flex-wrap" style="margin-top: 1rem;">
-                    <button class="btn btn-sm fintech-btn-primary period-btn active" data-period="SixMonths" style="padding: 6px 12px; font-size: 0.8rem;">6M</button>
-                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneDay" style="padding: 6px 12px; font-size: 0.8rem;">1D</button>
-                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneWeek" style="padding: 6px 12px; font-size: 0.8rem;">1W</button>
-                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneMonth" style="padding: 6px 12px; font-size: 0.8rem;">1M</button>
-                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="ThreeMonths" style="padding: 6px 12px; font-size: 0.8rem;">3M</button>
-                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneYear" style="padding: 6px 12px; font-size: 0.8rem;">1Y</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneDay"      style="padding:6px 12px;font-size:0.8rem;">1D</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneWeek"     style="padding:6px 12px;font-size:0.8rem;">1W</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneMonth"    style="padding:6px 12px;font-size:0.8rem;">1M</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="ThreeMonths" style="padding:6px 12px;font-size:0.8rem;">3M</button>
+                    <button class="btn btn-sm fintech-btn-primary  period-btn active" data-period="SixMonths"   style="padding:6px 12px;font-size:0.8rem;">6M</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="OneYear"     style="padding:6px 12px;font-size:0.8rem;">1Y</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="TwoYears"    style="padding:6px 12px;font-size:0.8rem;">2Y</button>
+                    <button class="btn btn-sm fintech-btn-outline period-btn" data-period="FiveYears"   style="padding:6px 12px;font-size:0.8rem;">5Y</button>
                 </div>
 
                 <div class="chart-body" style="height:300px; position:relative;">
@@ -868,7 +975,8 @@
             var ticker = "@(Model.Tags != null && Model.Tags.Any() ? Model.Tags.First() : "FNTS")";
 
             var chartInstance = null;
-            var MAX_LIVE_POINTS = 50;
+            var MAX_LIVE_POINTS = 60;
+            var histCount = 0;  // number of historical data points (live ticks appended after this boundary)
 
             function getChartColors(isDark) {
                 var strokeColor = '#374151';
@@ -925,11 +1033,15 @@
 
                 if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
 
+                histCount = prices.length;
+                // Live dataset pre-padded with null to match historical length — fix for alignment bug
+                var livePadded = new Array(histCount).fill(null);
+
                 chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: buildDatasets(labels, prices, [])
+                        datasets: buildDatasets(labels, prices, livePadded)
                     },
                     options: {
                         responsive: true,
@@ -1033,14 +1145,20 @@
 
                     var now = new Date();
                     var label = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    var liveDataset = chartInstance.data.datasets[1];
-                    liveDataset.data.push(tick.price);
-                    chartInstance.data.labels.push(label);
+                    var histDs = chartInstance.data.datasets[0];
+                    var liveDs = chartInstance.data.datasets[1];
 
-                    if (liveDataset.data.length > MAX_LIVE_POINTS) {
-                        var excess = liveDataset.data.length - MAX_LIVE_POINTS;
-                        liveDataset.data.splice(0, excess);
-                        chartInstance.data.labels.splice(0, excess);
+                    // Append to all three in sync: labels, hist (null pad), live (price)
+                    chartInstance.data.labels.push(label);
+                    histDs.data.push(null);
+                    liveDs.data.push(tick.price);
+
+                    // Trim the oldest LIVE tick (at histCount boundary) if over limit
+                    var liveCount = liveDs.data.length - histCount;
+                    if (liveCount > MAX_LIVE_POINTS) {
+                        chartInstance.data.labels.splice(histCount, 1);
+                        histDs.data.splice(histCount, 1);
+                        liveDs.data.splice(histCount, 1);
                     }
 
                     chartInstance.update('none');
@@ -1072,20 +1190,14 @@
 
                     // Update title
                     var periodNames = {
-                        'OneDay': '1D',
-                        'OneWeek': '1W',
-                        'OneMonth': '1M',
-                        'ThreeMonths': '3M',
-                        'SixMonths': '6M',
-                        'OneYear': '1Y'
+                        'OneDay': '1D', 'OneWeek': '1W', 'OneMonth': '1M',
+                        'ThreeMonths': '3M', 'SixMonths': '6M', 'OneYear': '1Y',
+                        'TwoYears': '2Y', 'FiveYears': '5Y'
                     };
                     var periodLabels = {
-                        'OneDay': '1-day',
-                        'OneWeek': '1-week',
-                        'OneMonth': '1-month',
-                        'ThreeMonths': '3-month',
-                        'SixMonths': '6-month',
-                        'OneYear': '1-year'
+                        'OneDay': '1-day', 'OneWeek': '1-week', 'OneMonth': '1-month',
+                        'ThreeMonths': '3-month', 'SixMonths': '6-month', 'OneYear': '1-year',
+                        'TwoYears': '2-year', 'FiveYears': '5-year'
                     };
 
                     var titleEl = document.getElementById('chartTitle');
@@ -1102,10 +1214,11 @@
                         .then(function(r) { return r.json(); })
                         .then(function(data) {
                             if (data && data.success && data.prices && data.prices.length > 0) {
-                                // Clear existing dataset but keep chart structure
-                                chartInstance.data.labels = data.labels;
-                                chartInstance.data.datasets[0].data = data.prices;
-                                chartInstance.data.datasets[1].data = []; // Clear live ticks
+                                // Update histCount and reset BOTH datasets properly (fixes alignment bug)
+                                histCount = data.prices.length;
+                                chartInstance.data.labels = data.labels.slice();
+                                chartInstance.data.datasets[0].data = data.prices.slice();
+                                chartInstance.data.datasets[1].data = new Array(histCount).fill(null);
                                 chartInstance.update();
                                 var countEl = document.getElementById('dataPointCount');
                                 if (countEl) countEl.textContent = data.prices.length + ' data points loaded';

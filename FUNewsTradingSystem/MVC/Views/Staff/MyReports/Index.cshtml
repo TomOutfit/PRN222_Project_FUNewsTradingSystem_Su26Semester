@@ -12,6 +12,20 @@
     int? selectedCategory = ViewBag.SelectedCategory as int?;
     int? selectedTag = ViewBag.SelectedTag as int?;
     string selectedDecision = ViewBag.SelectedDecision as string ?? "";
+
+    string GetDecision(string title) {
+        if (title.StartsWith("[BUY]"))  return "BUY";
+        if (title.StartsWith("[SELL]")) return "SELL";
+        if (title.StartsWith("[HOLD]")) return "HOLD";
+        return "HOLD";
+    }
+    string StripDecision(string title) =>
+        title.StartsWith("[BUY]")  ? title[5..].TrimStart() :
+        title.StartsWith("[SELL]") ? title[6..].TrimStart() :
+        title.StartsWith("[HOLD]") ? title[6..].TrimStart() : title;
+
+    string GetPipeline(string? source) =>
+        !string.IsNullOrEmpty(source) && source.Contains("TradingAgents") ? "Multi-Agent" : "Classic";
 }
 
 <style>
@@ -67,7 +81,9 @@
         font-weight: 600; font-size: .875rem;
         color: var(--text-main);
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px;
+        display: block;
     }
+    a.report-title:hover { color: var(--accent) !important; }
     .report-date { font-size: .78rem; color: var(--text-muted); white-space: nowrap; }
 
     /* ── Ticker Tag ── */
@@ -483,6 +499,18 @@
                             </th>
                             <th>
                                 <div class="th-inner">
+                                    <span class="th-icon"><i class="bi bi-lightning-charge-fill"></i></span>
+                                    Decision
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-inner">
+                                    <span class="th-icon"><i class="bi bi-cpu"></i></span>
+                                    Pipeline
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-inner">
                                     <span class="th-icon"><i class="bi bi-calendar3"></i></span>
                                     Date
                                 </div>
@@ -511,12 +539,6 @@
                                     Toggle
                                 </div>
                             </th>
-                            <th class="text-end">
-                                <div class="th-inner justify-content-end">
-                                    <span class="th-icon"><i class="bi bi-eye"></i></span>
-                                    Detail
-                                </div>
-                            </th>
                         </tr>
                     </thead>
                     <tbody class="rpt-tbody" id="reportTableBody">
@@ -524,7 +546,33 @@
                         {
                             <tr id="report-row-@item.NewsArticleID">
                                 <td>
-                                    <span class="report-title fw-semibold" title="@item.NewsTitle">@item.NewsTitle</span>
+                                    <a href="/Report/Detail/@item.NewsArticleID"
+                                       class="report-title fw-semibold text-decoration-none"
+                                       title="@item.NewsTitle"
+                                       style="color:var(--text-main);transition:color .15s;">
+                                        @StripDecision(item.NewsTitle)
+                                    </a>
+                                </td>
+                                <td>
+                                    @{
+                                        var dec = GetDecision(item.NewsTitle);
+                                        var decBg = dec == "BUY" ? "#10b981" : dec == "SELL" ? "#ef4444" : "#f59e0b";
+                                    }
+                                    <span class="badge fw-bold" style="background:@decBg;color:#fff;border-radius:8px;font-size:.73rem;padding:.3em .65em;letter-spacing:.04em;">
+                                        <i class="bi bi-lightning-charge-fill me-1" style="font-size:.65rem;"></i>@dec
+                                    </span>
+                                </td>
+                                <td>
+                                    @{
+                                        var pl = GetPipeline(item.NewsSource);
+                                        bool isMulti = pl == "Multi-Agent";
+                                    }
+                                    <span style="display:inline-flex;align-items:center;gap:.3rem;border-radius:9px;font-size:.72rem;font-weight:700;padding:.25rem .6rem;
+                                                 background:@(isMulti ? "rgba(124,58,237,.1)" : "rgba(37,99,235,.08)");
+                                                 color:@(isMulti ? "#7c3aed" : "#2563eb");
+                                                 border:1px solid @(isMulti ? "rgba(124,58,237,.25)" : "rgba(37,99,235,.18)");">
+                                        <i class="bi @(isMulti ? "bi-cpu-fill" : "bi-robot")"></i>@pl
+                                    </span>
                                 </td>
                                 <td>
                                     <span class="report-date">
@@ -567,11 +615,6 @@
                                             <i class="bi bi-arrow-counterclockwise"></i>Restore
                                         </a>
                                     }
-                                </td>
-                                <td class="text-end">
-                                    <a class="rpt-btn rpt-btn-view" href="/Report/Detail/@item.NewsArticleID">
-                                        <i class="bi bi-eye"></i>View
-                                    </a>
                                 </td>
                             </tr>
                         }

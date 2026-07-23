@@ -418,6 +418,76 @@
             return el.innerHTML;
         }
 
+        function renderMd(text) {
+            if (!text) return '';
+            var lines    = text.split('\n');
+            var html     = [];
+            var inList   = false;
+            var inTable  = false;
+            var tableRows = [];
+
+            function applyInline(s) {
+                return s
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*([^\n*]+?)\*/g, '<em>$1</em>');
+            }
+            function closeList() {
+                if (inList) { html.push('</ul>'); inList = false; }
+            }
+            function flushTable() {
+                if (!inTable || !tableRows.length) { inTable = false; return; }
+                var hdr  = tableRows.shift();
+                var cols = hdr.split('|').map(function(c){ return c.trim(); }).filter(Boolean);
+                var thead = '<thead class="table-dark"><tr>' +
+                    cols.map(function(c){ return '<th>' + applyInline(c) + '</th>'; }).join('') + '</tr></thead>';
+                var tbody = '<tbody>' + tableRows.map(function(r) {
+                    var cells = r.split('|').map(function(c){ return c.trim(); }).filter(Boolean);
+                    return '<tr>' + cells.map(function(c){ return '<td>' + applyInline(c) + '</td>'; }).join('') + '</tr>';
+                }).join('') + '</tbody>';
+                html.push('<div class="table-responsive my-2"><table class="table table-sm table-bordered mb-0">' + thead + tbody + '</table></div>');
+                inTable  = false;
+                tableRows = [];
+            }
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+
+                if (line.startsWith('|') && line.endsWith('|') && line.length > 1) {
+                    closeList();
+                    if (/^\|[-:| ]+\|$/.test(line)) continue;
+                    inTable = true;
+                    tableRows.push(line.slice(1, -1));
+                    continue;
+                }
+                if (inTable) flushTable();
+
+                if (line.startsWith('### ')) {
+                    closeList();
+                    html.push('<h6 class="mt-2 mb-1 fw-semibold" style="color:var(--accent);font-size:.85rem;">' + applyInline(line.slice(4)) + '</h6>');
+                    continue;
+                }
+                if (line.startsWith('## ')) {
+                    closeList();
+                    html.push('<h5 class="mt-3 mb-1 fw-bold" style="color:var(--text-main);font-size:.9rem;border-bottom:1px solid var(--border);padding-bottom:.2rem;">' + applyInline(line.slice(3)) + '</h5>');
+                    continue;
+                }
+                if (/^[-*•] /.test(line)) {
+                    if (!inList) { html.push('<ul class="mb-2 ps-4" style="font-size:.8375rem;line-height:1.7;color:var(--text-secondary);">'); inList = true; }
+                    html.push('<li>' + applyInline(line.replace(/^[-*•] /, '')) + '</li>');
+                    continue;
+                }
+                closeList();
+
+                if (!line) { html.push('<div style="height:.4rem;"></div>'); continue; }
+
+                html.push('<p style="font-size:.8375rem;line-height:1.7;color:var(--text-secondary);margin-bottom:.2rem;">' + applyInline(line) + '</p>');
+            }
+            closeList();
+            flushTable();
+            return html.join('');
+        }
+
         function shakeElement(el) {
             el.style.animation = 'none';
             el.offsetHeight;
@@ -466,9 +536,7 @@
                         '</h2>' +
                         '<div id="' + collapseId + '" class="accordion-collapse collapse ' + (isFirst ? 'show' : '') + '">' +
                             '<div class="accordion-body p-3">' +
-                                '<pre style="white-space:pre-wrap;font-family:inherit;font-size:.8375rem;line-height:1.7;color:var(--text-secondary);margin:0;">' +
-                                    escapeHtml(s.body) +
-                                '</pre>' +
+                                renderMd(s.body) +
                             '</div>' +
                         '</div>' +
                     '</div>'

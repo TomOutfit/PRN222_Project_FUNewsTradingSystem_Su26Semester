@@ -11,4 +11,5 @@ public class ReportListItemViewModel
     public bool NewsStatus { get; set; }
     public string Decision { get; set; } = string.Empty;
     public int ConfidenceScore { get; set; }
+    public string NewsSource { get; set; } = string.Empty;
 }

@@ -20,5 +20,11 @@ public enum ChartPeriod
     SixMonths,
 
     [Display(Name = "1 Year")]
-    OneYear
+    OneYear,
+
+    [Display(Name = "2 Years")]
+    TwoYears,
+
+    [Display(Name = "5 Years")]
+    FiveYears
 }

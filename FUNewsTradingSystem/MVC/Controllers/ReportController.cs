@@ -111,6 +111,7 @@ public class ReportController : Controller
             CreatedDate = a.CreatedDate,
             CategoryName = a.Category?.CategoryName ?? "General",
             ConfidenceScore = a.ConfidenceScore ?? 0,
+            NewsSource = a.NewsSource ?? "",
             TagNames = a.NewsTagList.Select(t => t.Tag.TagName).ToList()
         }).ToPagedList(pageNumber, pageSize);
 
@@ -246,13 +247,15 @@ public class ReportController : Controller
 
         var (range, interval) = period switch
         {
-            ChartPeriod.OneDay => ("1d", "5m"),
-            ChartPeriod.OneWeek => ("1wk", "1h"),
-            ChartPeriod.OneMonth => ("1mo", "1d"),
+            ChartPeriod.OneDay      => ("1d",  "5m"),
+            ChartPeriod.OneWeek     => ("5d",  "1h"),
+            ChartPeriod.OneMonth    => ("1mo", "1d"),
             ChartPeriod.ThreeMonths => ("3mo", "1d"),
-            ChartPeriod.SixMonths => ("6mo", "1d"),
-            ChartPeriod.OneYear => ("1y", "1d"),
-            _ => ("6mo", "1d")
+            ChartPeriod.SixMonths   => ("6mo", "1d"),
+            ChartPeriod.OneYear     => ("1y",  "1d"),
+            ChartPeriod.TwoYears    => ("2y",  "1wk"),
+            ChartPeriod.FiveYears   => ("5y",  "1mo"),
+            _                       => ("6mo", "1d")
         };
 
         // ── 1. Yahoo Finance chart (primary data source) ──
