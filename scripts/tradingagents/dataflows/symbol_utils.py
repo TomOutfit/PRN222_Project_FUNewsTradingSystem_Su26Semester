@@ -80,6 +80,14 @@ _YAHOO_SAFE = re.compile(r"^[A-Za-z0-9._\-\^=]+$")
 _CRYPTO_QUOTES = ("USDT", "USDC", "USD")
 
 
+_VIETNAM_STOCKS = frozenset({
+    "FPT", "VNM", "VIC", "VHM", "VCB", "BID", "CTG", "TCB", "MBB", "VPB",
+    "HPG", "MWG", "MSN", "GAS", "PLX", "VJC", "HVN", "SSI", "VND", "REE",
+    "PNJ", "STB", "DGC", "VRE", "SAB", "BCM", "VHC", "VIB", "LPB", "KDH",
+    "POW", "SBT", "TCH", "TPB", "VCI", "VPI", "SHB", "HDB", "ACB", "EIB"
+})
+
+
 def crypto_base(raw: str) -> str | None:
     """Return the crypto base (e.g. ``BTC``) for a known USD/USDT/USDC-quoted
     crypto symbol in any form the pipeline may hold — ``BTC-USD``, ``BTCUSD``,
@@ -106,10 +114,11 @@ def normalize_symbol(raw: str) -> str:
 
     Resolution order (first match wins):
       1. Explicit alias table (metals, energy, index CFDs).
-      2. Crypto rule: a known crypto base quoted in USD/USDT/USDC (dashed or
+      2. Vietnam stock rule: HOSE/HNX Vietnamese tickers -> ``SYMBOL.HM``.
+      3. Crypto rule: a known crypto base quoted in USD/USDT/USDC (dashed or
          not) -> ``BASE-USD``.
-      3. Forex rule: six letters that are two ISO currency codes -> ``PAIR=X``.
-      4. Otherwise the upper-cased symbol is returned unchanged (plain
+      4. Forex rule: six letters that are two ISO currency codes -> ``PAIR=X``.
+      5. Otherwise the upper-cased symbol is returned unchanged (plain
          equities, ETFs, Yahoo-native symbols like ``GC=F`` or ``^GSPC``).
 
     A trailing ``+`` (broker CFD marker, e.g. ``XAUUSD+``) is stripped before
@@ -126,6 +135,8 @@ def normalize_symbol(raw: str) -> str:
     crypto = _normalize_crypto(s)
     if s in _ALIASES:
         canonical = _ALIASES[s]
+    elif s in _VIETNAM_STOCKS:
+        canonical = f"{s}.HM"
     elif crypto is not None:
         canonical = crypto
     elif len(s) == 6 and s[:3] in _FOREX_CURRENCIES and s[3:] in _FOREX_CURRENCIES:
