@@ -17,17 +17,28 @@
     {
         if (string.IsNullOrEmpty(md)) return "";
         
-        // Normalize tables
-        var text = System.Text.RegularExpressions.Regex.Replace(
-            md, @"^([^|\n]+?)(\|(?:[^|\n]+\|)+)\s*$", "$1\n$2",
+        // 1. Normalize line endings & tables
+        var text = md.Replace("\r\n", "\n").Replace("\r", "\n");
+        text = System.Text.RegularExpressions.Regex.Replace(
+            text, @"^([^|\n]+?)(\|(?:[^|\n]+\|)+)\s*$", "$1\n$2",
             System.Text.RegularExpressions.RegexOptions.Multiline);
         text = System.Text.RegularExpressions.Regex.Replace(text, @"(\|)[ \t]+(\|)", "$1\n$2");
 
-        // Bold + italic + inline code
+        // 2. Pre-clean orphan/malformed headers like "### Executive Summary**:" or "**Executive Summary:" or "Executive Summary**:"
+        text = System.Text.RegularExpressions.Regex.Replace(
+            text, @"^(?:#+\s*)?\*?\*?([A-Za-z0-9\s—–\-]+?)\*?\*?:", "<strong>$1:</strong>",
+            System.Text.RegularExpressions.RegexOptions.Multiline);
+
+        // 3. Bold, italic, code replacements
         text = System.Text.RegularExpressions.Regex.Replace(text, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
         text = System.Text.RegularExpressions.Regex.Replace(text, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"__([^_]+?)__", "<strong>$1</strong>");
         text = System.Text.RegularExpressions.Regex.Replace(text, @"\*([^\n*]+?)\*", "<em>$1</em>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"_([^\n_]+?)_", "<em>$1</em>");
         text = System.Text.RegularExpressions.Regex.Replace(text, @"`([^`]+)`", "<code style='background:rgba(0,0,0,0.06);padding:.1em .3em;border-radius:4px;font-size:.85em;'>$1</code>");
+
+        // 4. Strip any lingering orphan double asterisks
+        text = text.Replace("**", "");
 
         var lines = text.Split('\n');
         var sb = new System.Text.StringBuilder();

@@ -150,20 +150,32 @@
     string RenderMd(string? md)
     {
         if (string.IsNullOrEmpty(md)) return "";
-        // Pre-process: normalize inline tables so the line-by-line parser sees them correctly
-        md = System.Text.RegularExpressions.Regex.Replace(
-            md, @"^([^|\n]+?)(\|(?:[^|\n]+\|)+)\s*$", "$1\n$2",
+        
+        // 1. Normalize line endings & tables
+        var text = md.Replace("\r\n", "\n").Replace("\r", "\n");
+        text = System.Text.RegularExpressions.Regex.Replace(
+            text, @"^([^|\n]+?)(\|(?:[^|\n]+\|)+)\s*$", "$1\n$2",
             System.Text.RegularExpressions.RegexOptions.Multiline);
-        md = System.Text.RegularExpressions.Regex.Replace(md, @"(\|)[ \t]+(\|)", "$1\n$2");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"(\|)[ \t]+(\|)", "$1\n$2");
 
-        // Bold + italic + inline code
-        var h = System.Text.RegularExpressions.Regex.Replace(md, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
-        h = System.Text.RegularExpressions.Regex.Replace(h, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
-        h = System.Text.RegularExpressions.Regex.Replace(h, @"\*([^\n*]+?)\*",  "<em>$1</em>");
-        h = System.Text.RegularExpressions.Regex.Replace(h, @"`([^`]+)`", "<code style='background:rgba(0,0,0,0.06);padding:.1em .3em;border-radius:4px;font-size:.85em;'>$1</code>");
+        // 2. Pre-clean orphan/malformed headers like "### Executive Summary**:" or "**Executive Summary:" or "Executive Summary**:"
+        text = System.Text.RegularExpressions.Regex.Replace(
+            text, @"^(?:#+\s*)?\*?\*?([A-Za-z0-9\s—–\-]+?)\*?\*?:", "<strong>$1:</strong>",
+            System.Text.RegularExpressions.RegexOptions.Multiline);
+
+        // 3. Bold, italic, code replacements
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"__([^_]+?)__", "<strong>$1</strong>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\*([^\n*]+?)\*", "<em>$1</em>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"_([^\n_]+?)_", "<em>$1</em>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"`([^`]+)`", "<code style='background:rgba(0,0,0,0.06);padding:.1em .3em;border-radius:4px;font-size:.85em;'>$1</code>");
+
+        // 4. Strip any lingering orphan double asterisks
+        text = text.Replace("**", "");
 
         // Line-by-line processing
-        var lines = h.Split('\n');
+        var lines = text.Split('\n');
         var sb = new System.Text.StringBuilder();
         bool inTable = false, inList = false, firstTableRow = true;
         foreach (var rawLine in lines)
@@ -188,14 +200,15 @@
             }
             // Close open table
             if (inTable) { sb.Append("</tbody></table></div>"); inTable = false; }
-            // Unordered list
+
+            // Markdown unordered list (- or *)
             if (System.Text.RegularExpressions.Regex.IsMatch(ln, @"^[-*] "))
             {
                 if (!inList) { sb.Append("<ul class='mb-2 ps-4'>"); inList = true; }
                 sb.Append($"<li class='mb-1'>{ln.Substring(2)}</li>");
                 continue;
             }
-            // Ordered list
+            // Markdown ordered list (1. 2.)
             if (System.Text.RegularExpressions.Regex.IsMatch(ln, @"^\d+\.\s+"))
             {
                 var content = System.Text.RegularExpressions.Regex.Replace(ln, @"^\d+\.\s+", "");
@@ -204,13 +217,20 @@
                 continue;
             }
             if (inList) { sb.Append("</ul>"); inList = false; }
+
             // Headers
-            if (ln.StartsWith("### ")) { sb.Append($"<h6 class='fw-semibold mt-3 mb-1' style='font-size:.9rem'>{ln.Substring(4)}</h6>"); continue; }
-            if (ln.StartsWith("## "))  { sb.Append($"<h5 class='fw-bold mt-4 mb-2'>{ln.Substring(3)}</h5>"); continue; }
-            if (ln.StartsWith("# "))   { sb.Append($"<h4 class='fw-bold mt-4 mb-2'>{ln.Substring(2)}</h4>"); continue; }
-            // Paragraph / blank
-            if (string.IsNullOrWhiteSpace(ln)) sb.Append("<br>");
-            else sb.Append($"<p class='mb-2' style='line-height:1.75'>{ln}</p>");
+            if (ln.StartsWith("### ")) { sb.Append($"<h6 class='fw-semibold mt-2 mb-1' style='font-size:.9rem'>{ln.Substring(4)}</h6>"); continue; }
+            if (ln.StartsWith("## "))  { sb.Append($"<h5 class='fw-bold mt-3 mb-2'>{ln.Substring(3)}</h5>"); continue; }
+            if (ln.StartsWith("# "))   { sb.Append($"<h4 class='fw-bold mt-3 mb-2'>{ln.Substring(2)}</h4>"); continue; }
+
+            if (string.IsNullOrWhiteSpace(ln))
+            {
+                sb.Append("<br>");
+            }
+            else
+            {
+                sb.Append($"<p class='mb-2' style='line-height:1.65'>{ln}</p>");
+            }
         }
         if (inTable) sb.Append("</tbody></table></div>");
         if (inList)  sb.Append("</ul>");

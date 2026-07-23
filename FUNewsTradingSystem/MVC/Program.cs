@@ -52,7 +52,7 @@ string ConvertPostgresUrlToConnectionString(string? url)
     var host = uri.Host;
     var port = uri.Port > 0 ? uri.Port : 5432;
     var database = uri.AbsolutePath.TrimStart('/');
-    return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+    return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;Pooling=true;Minimum Pool Size=0;Maximum Pool Size=20;Connection Lifetime=300;Keepalive=30;Timeout=30;Command Timeout=30;";
 }
 
 builder.Services.AddDbContext<FUNewsManagementContext>(options =>
@@ -67,7 +67,14 @@ builder.Services.AddDbContext<FUNewsManagementContext>(options =>
     {
         connectionString = ConvertPostgresUrlToConnectionString(connectionString);
         Console.WriteLine($"[DIAGNOSTIC] Converted Connection String (Masked): '{MaskConnectionString(connectionString)}'");
-        options.UseNpgsql(connectionString);
+        options.UseNpgsql(connectionString, npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorCodesToAdd: null);
+            npgsqlOptions.CommandTimeout(30);
+        });
     }
     else
     {
