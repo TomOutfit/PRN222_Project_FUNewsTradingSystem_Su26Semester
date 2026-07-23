@@ -292,6 +292,52 @@
             filterSelect(tagSelect, allTagOptions, this.value);
         });
 
+        // ── Auto-select & open dropdown on Enter / ArrowDown ───────────────────
+        function attachSearchKeydown(inputEl, selectEl, getOptionsFn) {
+            if (!inputEl || !selectEl) return;
+
+            inputEl.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent form from submitting on Enter
+
+                    var currentOpts = getOptionsFn();
+                    filterSelect(selectEl, currentOpts, inputEl.value);
+
+                    // Auto-select first matching valid option if user typed a search term
+                    if (inputEl.value.trim() !== '') {
+                        if (selectEl.options.length > 1 && selectEl.options[0].value === '') {
+                            selectEl.selectedIndex = 1;
+                            selectEl.dispatchEvent(new Event('change'));
+                        } else if (selectEl.options.length > 0 && selectEl.options[0].value !== '') {
+                            selectEl.selectedIndex = 0;
+                            selectEl.dispatchEvent(new Event('change'));
+                        }
+                    }
+
+                    // Focus & open dropdown menu below the search box so text isn't covered
+                    setTimeout(function () {
+                        selectEl.focus();
+                        try {
+                            if (typeof selectEl.showPicker === 'function') {
+                                selectEl.showPicker();
+                            }
+                        } catch (err) {}
+                    }, 50);
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectEl.focus();
+                    try {
+                        if (typeof selectEl.showPicker === 'function') {
+                            selectEl.showPicker();
+                        }
+                    } catch (err) {}
+                }
+            });
+        }
+
+        attachSearchKeydown(sectorSearch, categorySelect, function () { return allCategoryOptions; });
+        attachSearchKeydown(tickerSearch, tagSelect, function () { return allTagOptions; });
+
         // ── Sector → filter tickers (forward direction) ─────────────────────────
         categorySelect.addEventListener('change', function () {
             var categoryId = this.value;
