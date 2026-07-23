@@ -98,23 +98,23 @@
         }
     }
 
-    // ── Lightweight Markdown → HTML (bold, italic, headers, lists, tables) ──
-    string RenderMd(string md)
+    // ── Markdown → HTML renderer (bold, italic, inline code, headers, lists, tables) ──
+    string RenderMd(string? md)
     {
         if (string.IsNullOrEmpty(md)) return "";
-        // ── Pre-process: normalize inline tables so the line-by-line parser sees them correctly ──
-        // 1. "paragraph text: | Header | Col |" → split text from table onto separate lines
+        // Pre-process: normalize inline tables so the line-by-line parser sees them correctly
         md = System.Text.RegularExpressions.Regex.Replace(
             md, @"^([^|\n]+?)(\|(?:[^|\n]+\|)+)\s*$", "$1\n$2",
             System.Text.RegularExpressions.RegexOptions.Multiline);
-        // 2. "| row1 | | row2 |" → "| row1 |\n| row2 |"
-        //    Only whitespace between two pipes means a row boundary (not a column separator which has content)
         md = System.Text.RegularExpressions.Regex.Replace(md, @"(\|)[ \t]+(\|)", "$1\n$2");
-        // Bold + italic
+
+        // Bold + italic + inline code
         var h = System.Text.RegularExpressions.Regex.Replace(md, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
         h = System.Text.RegularExpressions.Regex.Replace(h, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
         h = System.Text.RegularExpressions.Regex.Replace(h, @"\*([^\n*]+?)\*",  "<em>$1</em>");
-        // Headers (processed later per-line)
+        h = System.Text.RegularExpressions.Regex.Replace(h, @"`([^`]+)`", "<code style='background:rgba(0,0,0,0.06);padding:.1em .3em;border-radius:4px;font-size:.85em;'>$1</code>");
+
+        // Line-by-line processing
         var lines = h.Split('\n');
         var sb = new System.Text.StringBuilder();
         bool inTable = false, inList = false, firstTableRow = true;
@@ -147,6 +147,14 @@
                 sb.Append($"<li class='mb-1'>{ln.Substring(2)}</li>");
                 continue;
             }
+            // Ordered list
+            if (System.Text.RegularExpressions.Regex.IsMatch(ln, @"^\d+\.\s+"))
+            {
+                var content = System.Text.RegularExpressions.Regex.Replace(ln, @"^\d+\.\s+", "");
+                if (!inList) { sb.Append("<ol class='mb-2 ps-4'>"); inList = true; }
+                sb.Append($"<li class='mb-1'>{content}</li>");
+                continue;
+            }
             if (inList) { sb.Append("</ul>"); inList = false; }
             // Headers
             if (ln.StartsWith("### ")) { sb.Append($"<h6 class='fw-semibold mt-3 mb-1' style='font-size:.9rem'>{ln.Substring(4)}</h6>"); continue; }
@@ -159,16 +167,6 @@
         if (inTable) sb.Append("</tbody></table></div>");
         if (inList)  sb.Append("</ul>");
         return sb.ToString();
-    }
-
-    // ── Safe inline markdown (bold + italic only, HTML-encoded first) ──
-    string InlineMd(string? text) {
-        if (string.IsNullOrEmpty(text)) return "";
-        var s = System.Net.WebUtility.HtmlEncode(text);
-        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
-        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*\*(.+?)\*\*",     "<strong>$1</strong>");
-        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*([^\n*]+?)\*",    "<em>$1</em>");
-        return s;
     }
 
     // ── Compute confidence color ──
@@ -421,16 +419,20 @@
         gap: .5rem;
     }
     .meta-card-body {
-        padding: 0 1.25rem;
+        padding: 0;
     }
     .meta-row {
         display: flex;
         align-items: flex-start;
         gap: .75rem;
-        padding: .75rem 0;
+        padding: .85rem 1.25rem;
         border-bottom: 1px solid var(--border);
     }
     .meta-row:last-child { border-bottom: none; }
+    .meta-row-content {
+        flex: 1;
+        min-width: 0;
+    }
     .meta-row-icon {
         width: 28px; height: 28px;
         border-radius: 8px;
@@ -452,6 +454,7 @@
         font-size: .9rem;
         font-weight: 600;
         color: var(--text-main);
+        word-break: break-word;
     }
 
     /* ── Tag pills ── */
@@ -656,10 +659,10 @@
         <!-- Headline -->
         @if (!string.IsNullOrWhiteSpace(Model.Headline))
         {
-            <p class="hero-headline mb-0">
+            <div class="hero-headline mb-0">
                 <i class="bi bi-quote" style="font-size:1.2rem; opacity:.6;"></i>
-                @Html.Raw(InlineMd(Model.Headline))
-            </p>
+                @Html.Raw(RenderMd(Model.Headline))
+            </div>
         }
 
         <!-- Stats strip: Tags, Confidence, Date, Source -->
@@ -893,12 +896,12 @@
                         <i class="bi bi-file-earmark-text text-primary"></i>
                         Report Information
                     </div>
-                    <div class="meta-card-body p-0">
+                    <div class="meta-card-body">
                         <div class="meta-row">
                             <div class="meta-row-icon" style="background:rgba(37,99,235,.1); color:#2563eb;">
                                 <i class="bi bi-person-badge-fill"></i>
                             </div>
-                            <div>
+                            <div class="meta-row-content">
                                 <div class="meta-row-label">Author / Publisher</div>
                                 <div class="meta-row-value">
                                     @if (string.IsNullOrEmpty(Model.CreatedByName) || Model.CreatedByName == "Deleted User")
@@ -916,7 +919,7 @@
                             <div class="meta-row-icon" style="background:rgba(99,102,241,.1); color:#6366f1;">
                                 <i class="bi bi-folder-fill"></i>
                             </div>
-                            <div>
+                            <div class="meta-row-content">
                                 <div class="meta-row-label">Category Sector</div>
                                 <div class="meta-row-value">@Model.CategoryName</div>
                             </div>
@@ -925,7 +928,7 @@
                             <div class="meta-row-icon" style="background:rgba(16,185,129,.1); color:#10b981;">
                                 <i class="bi bi-calendar-event"></i>
                             </div>
-                            <div>
+                            <div class="meta-row-content">
                                 <div class="meta-row-label">Published Date</div>
                                 <div class="meta-row-value">@Model.CreatedDate.ToString("MMM dd, yyyy HH:mm") UTC</div>
                             </div>
@@ -936,7 +939,7 @@
                                 <div class="meta-row-icon" style="background:rgba(245,158,11,.1); color:#f59e0b;">
                                     <i class="bi bi-clock-history"></i>
                                 </div>
-                                <div>
+                                <div class="meta-row-content">
                                     <div class="meta-row-label">Last Updated</div>
                                     <div class="meta-row-value">@Model.ModifiedDate.Value.ToString("MMM dd, yyyy HH:mm") UTC</div>
                                 </div>
@@ -948,7 +951,7 @@
                                 <div class="meta-row-icon" style="background:rgba(14,165,233,.1); color:#0ea5e9;">
                                     <i class="bi bi-rss"></i>
                                 </div>
-                                <div>
+                                <div class="meta-row-content">
                                     <div class="meta-row-label">Data Source</div>
                                     <div class="meta-row-value">@Model.NewsSource</div>
                                 </div>
@@ -965,7 +968,7 @@
                             <i class="bi bi-tags-fill text-primary"></i>
                             Analyzed Assets
                         </div>
-                        <div class="meta-card-body">
+                        <div class="meta-card-body p-3">
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach (var tag in Model.Tags)
                                 {

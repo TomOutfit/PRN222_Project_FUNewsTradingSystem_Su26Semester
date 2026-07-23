@@ -12,14 +12,85 @@
     string selectedDecision = ViewBag.SelectedDecision as string ?? "";
     bool savedOnly = ViewBag.SavedOnly == true;
 
-    // Safe inline markdown: HTML-encodes first, then converts **bold** and *italic* only.
-    string InlineMd(string? text) {
-        if (string.IsNullOrEmpty(text)) return "";
-        var s = System.Net.WebUtility.HtmlEncode(text);
-        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
-        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*\*(.+?)\*\*",     "<strong>$1</strong>");
-        s = System.Text.RegularExpressions.Regex.Replace(s, @"\*([^\n*]+?)\*",    "<em>$1</em>");
-        return s;
+    // Markdown → HTML renderer (supports bold, italic, inline code, headers, lists, tables)
+    string RenderMd(string? md)
+    {
+        if (string.IsNullOrEmpty(md)) return "";
+        
+        // Normalize tables
+        var text = System.Text.RegularExpressions.Regex.Replace(
+            md, @"^([^|\n]+?)(\|(?:[^|\n]+\|)+)\s*$", "$1\n$2",
+            System.Text.RegularExpressions.RegexOptions.Multiline);
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"(\|)[ \t]+(\|)", "$1\n$2");
+
+        // Bold + italic + inline code
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\*\*\*(.+?)\*\*\*", "<strong><em>$1</em></strong>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\*([^\n*]+?)\*", "<em>$1</em>");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"`([^`]+)`", "<code style='background:rgba(0,0,0,0.06);padding:.1em .3em;border-radius:4px;font-size:.85em;'>$1</code>");
+
+        var lines = text.Split('\n');
+        var sb = new System.Text.StringBuilder();
+        bool inTable = false, inList = false, firstTableRow = true;
+
+        foreach (var rawLine in lines)
+        {
+            var ln = rawLine.TrimEnd();
+
+            // Table row
+            if (ln.StartsWith('|') && ln.EndsWith('|'))
+            {
+                var cells = ln.Split('|');
+                var cols = new System.Collections.Generic.List<string>();
+                for (int ci = 1; ci < cells.Length - 1; ci++) cols.Add(cells[ci].Trim());
+                bool isSep = cols.TrueForAll(c => System.Text.RegularExpressions.Regex.IsMatch(c, @"^:?-+:?$"));
+                if (!inTable)
+                {
+                    sb.Append("<div class='table-responsive my-3'><table class='table table-sm table-bordered align-middle' style='font-size:.82rem;'>");
+                    inTable = true; firstTableRow = true;
+                }
+                if (isSep) { if (firstTableRow) { sb.Append("</thead><tbody>"); firstTableRow = false; } continue; }
+                if (firstTableRow) { sb.Append("<thead class='table-dark'><tr>"); foreach (var c in cols) sb.Append($"<th>{c}</th>"); sb.Append("</tr>"); }
+                else               { sb.Append("<tr>"); foreach (var c in cols) sb.Append($"<td>{c}</td>"); sb.Append("</tr>"); }
+                continue;
+            }
+            if (inTable) { sb.Append("</tbody></table></div>"); inTable = false; }
+
+            // Unordered list
+            if (System.Text.RegularExpressions.Regex.IsMatch(ln, @"^[-*] "))
+            {
+                if (!inList) { sb.Append("<ul class='mb-2 ps-4'>"); inList = true; }
+                sb.Append($"<li class='mb-1'>{ln.Substring(2)}</li>");
+                continue;
+            }
+            // Ordered list
+            if (System.Text.RegularExpressions.Regex.IsMatch(ln, @"^\d+\.\s+"))
+            {
+                var content = System.Text.RegularExpressions.Regex.Replace(ln, @"^\d+\.\s+", "");
+                if (!inList) { sb.Append("<ol class='mb-2 ps-4'>"); inList = true; }
+                sb.Append($"<li class='mb-1'>{content}</li>");
+                continue;
+            }
+            if (inList) { sb.Append("</ul>"); inList = false; }
+
+            // Headers
+            if (ln.StartsWith("### ")) { sb.Append($"<h6 class='fw-semibold mt-2 mb-1' style='font-size:.9rem'>{ln.Substring(4)}</h6>"); continue; }
+            if (ln.StartsWith("## "))  { sb.Append($"<h5 class='fw-bold mt-3 mb-2'>{ln.Substring(3)}</h5>"); continue; }
+            if (ln.StartsWith("# "))   { sb.Append($"<h4 class='fw-bold mt-3 mb-2'>{ln.Substring(2)}</h4>"); continue; }
+
+            // Paragraph / blank
+            if (string.IsNullOrWhiteSpace(ln))
+            {
+                sb.Append("<br>");
+            }
+            else
+            {
+                sb.Append($"<p class='mb-2' style='line-height:1.65'>{ln}</p>");
+            }
+        }
+        if (inTable) sb.Append("</tbody></table></div>");
+        if (inList)  sb.Append("</ul>");
+        return sb.ToString();
     }
 }
 
@@ -179,9 +250,9 @@
                                onmouseout="this.style.color='inherit'">@item.NewsTitle</a>
                         </h5>
 
-                        <p class="card-text text-muted mb-3">
-                            @Html.Raw(InlineMd(item.Headline))
-                        </p>
+                        <div class="card-text text-muted mb-3">
+                            @Html.Raw(RenderMd(item.Headline))
+                        </div>
 
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex flex-wrap gap-1 align-items-center">
